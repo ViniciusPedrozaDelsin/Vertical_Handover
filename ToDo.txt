@@ -1,0 +1,6 @@
+Create the message to output a message when call the class.
+define the relation between the class mobile/device and the class wirelessNetworkSystem
+define the relation between the class WirelessNetworkSystem and teh QoS parameters
+understand the formula of modulations types and implement on the code
+connect the graph with the classes
+usar snr > 5, snr < 5 ecc pra colocar limites no calculo apos modulation formaula
