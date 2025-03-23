@@ -24,7 +24,17 @@ class WirelessNetworkSystem:
             device.networks.remove(self)
     
     def transmission_range(self):
-        pass
+        # Boltzmann's Constant (J/K)
+        k = 1.38 * (10**-23)
+        # Temperature 290 Kelvin
+        T = 290
+        # Speed of Light
+        c = 300000000
+        if self.corrections_real_world_applications == True:
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20) - (1) - (0.5*math.log10(2)))
+        else:
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20))
+        return transmission_range_radius
         
     def calculateDeviceDistance(self, device):
         distance = (((device.x_position - self.x_position)**2) + ((device.y_position - self.y_position))**2)**(1/2)
@@ -138,7 +148,6 @@ class WirelessNetworkSystem:
         else:
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
         
-        #print(f"Distance: {distance}m || FSPL: {fspl} || RSSI: {rssi}dBm || SNR: {snr_db}dB || CC: {channel_capacity}bps || Estimated-Throughput: {estimated_throughput}bps")
         return QoS_Parameters
         
     def __repr__(self):

@@ -22,6 +22,13 @@ class Device:
         if network in self.networks:
             QoS_Parameters = network.calculateQoSParameters(self)
             return QoS_Parameters
+            
+    def get_all_QoS_Parameters(self):
+        networks_list = []
+        for network in self.networks:
+            QoS_Parameters = network.calculateQoSParameters(self)
+            networks_list.append({f'{network.system_name}': QoS_Parameters})
+        return networks_list
     
     def __repr__(self):
         return f"Device: ({self.device_id}, X: {self.x_position}, Y: {self.y_position}, WirelessNetworkConnected: {self.networks})"
