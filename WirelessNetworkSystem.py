@@ -1,8 +1,11 @@
 import math
 
 class WirelessNetworkSystem:
-    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, corrections_real_world_applications=False):
+    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, corrections_real_world_applications=False):
         self.system_name = system_name
+        self.connected_devices = set()
+        
+        # System Configs
         self.x_position = x_position
         self.y_position = y_position
         self.transmission_power_dbm = transmission_power_dbm
@@ -10,7 +13,13 @@ class WirelessNetworkSystem:
         self.bandwidth = bandwidth
         self.minimum_snr = minimum_snr
         self.corrections_real_world_applications = corrections_real_world_applications
-        self.connected_devices = set()
+        
+        # Pre-defined Configs
+        self.maximum_radius = maximum_radius
+        self.predef_throughput = predef_throughput
+        self.predef_snr = predef_snr
+        self.predef_rssi = predef_rssi
+        
     
     def attach_device(self, device):
         # Attach a device to this network
@@ -35,7 +44,7 @@ class WirelessNetworkSystem:
         else:
             transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20))
         return transmission_range_radius
-        
+    
     def calculateDeviceDistance(self, device):
         distance = (((device.x_position - self.x_position)**2) + ((device.y_position - self.y_position))**2)**(1/2)
         return round(distance, 3)
@@ -112,6 +121,7 @@ class WirelessNetworkSystem:
             estimated_throughput = 0
         return estimated_throughput
     
+    
     def calculateQoSParameters(self, device):
         QoS_Parameters = {}
         
@@ -145,10 +155,88 @@ class WirelessNetworkSystem:
         if network_status == "Offline":
             QoS_Parameters = {}
             QoS_Parameters['Status'] = "Offline"
+            QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
         else:
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
+            QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
         
         return QoS_Parameters
+    
+    
+    # ============================== Start Predef ==============================
+    def transmission_range_predef(self):
+        transmission_range_radius = []
+        transmission_range_radius.append(self.maximum_radius)
+        transmission_range_radius.append(2*self.maximum_radius/3)
+        transmission_range_radius.append(self.maximum_radius/3)
+        return transmission_range_radius
+        
+    def calculateMaximumRadius(self, dist):
+        if dist > self.maximum_radius:
+            status = "Offline"
+        else:
+            status = "Online"
+        return status
+        
+    def estimateThroughput_predef(self, dist):
+        if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
+            estimated_throughput = self.predef_throughput[2]
+        elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
+            estimated_throughput = self.predef_throughput[1]
+        else:
+            estimated_throughput = self.predef_throughput[0]
+        return estimated_throughput
+    
+    def calculateSNR_predef(self, dist):
+        if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
+            snr_db = self.predef_snr[2]
+        elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
+            snr_db = self.predef_snr[1]
+        else:
+            snr_db = self.predef_snr[0]
+        return snr_db
+    
+    def calculateRSSI_predef(self, dist):
+        if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
+            rssi = self.predef_rssi[2]
+        elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
+            rssi = self.predef_rssi[1]
+        else:
+            rssi = self.predef_rssi[0]
+        return rssi
+    
+    def calculateQoSParametersPredef(self, device):
+        QoS_Parameters = {}
+        
+        # Calculate Distance
+        distance = self.calculateDeviceDistance(device)
+        QoS_Parameters['Distance'] = distance
+        
+        # Verify Status
+        network_status = self.calculateMaximumRadius(distance)
+        if network_status == "Offline":
+            QoS_Parameters = {}
+            QoS_Parameters['Status'] = "Offline"
+            QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
+        else:
+            # Calculate Received Signal Strength Indicator - Pre-Defined
+            rssi = self.calculateRSSI_predef(distance)
+            QoS_Parameters['RSSI'] = rssi
+            
+            # Calculate Signal Noise Ratio - Pre-Defined
+            snr_db = self.calculateSNR_predef(distance)
+            QoS_Parameters['SNR'] = snr_db
+            
+            # Calculate Estimated Throughput - Pre-Defined
+            estimated_throughput = self.estimateThroughput_predef(distance)
+            QoS_Parameters['Throughput'] = round(estimated_throughput/1000000, 3)
+            
+            QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
+            QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
+        
+        return QoS_Parameters
+    # ============================== End Predef ==============================
+        
         
     def __repr__(self):
         return f"WirelessNetworkSystem: ({self.system_name}, X: {self.x_position}, Y: {self.y_position})"

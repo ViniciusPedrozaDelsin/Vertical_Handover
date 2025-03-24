@@ -5,6 +5,9 @@ class Device:
         self.x_position = x_position
         self.y_position = y_position
         self.networks = set()
+        self.networks_list = []
+        self.available_networks = []
+        #self.decision_maker_methods = set()
     
     def updatePosition(self, x, y):
         self.x_position = x
@@ -24,11 +27,37 @@ class Device:
             return QoS_Parameters
             
     def get_all_QoS_Parameters(self):
-        networks_list = []
+        self.networks_list = []
         for network in self.networks:
             QoS_Parameters = network.calculateQoSParameters(self)
-            networks_list.append({f'{network.system_name}': QoS_Parameters})
-        return networks_list
+            self.networks_list.append(QoS_Parameters)
+        return self.networks_list
     
+    # ============================== Start Predef ==============================
+    def get_QoS_Parameters_predef(self, network):
+        if network in self.networks:
+            QoS_Parameters = network.calculateQoSParametersPredef(self)
+            return QoS_Parameters
+            
+    def get_all_QoS_Parameters_predef(self):
+        self.networks_list = []
+        for network in self.networks:
+            QoS_Parameters = network.calculateQoSParametersPredef(self)
+            self.networks_list.append(QoS_Parameters)
+        return self.networks_list
+    # ============================== End Predef ==============================
+    
+    def get_available_networks(self):
+        self.available_networks = []
+        for network in self.networks_list: 
+            if network['Status'] == 'Online':
+                self.available_networks.append(network)
+        return self.available_networks
+        
+    def makeDecision(self, decision_maker_method, inputs):
+        decision_maker_method.send_inputs(inputs)
+        output = decision_maker_method.makeDecision()
+        return output
+            
     def __repr__(self):
         return f"Device: ({self.device_id}, X: {self.x_position}, Y: {self.y_position}, WirelessNetworkConnected: {self.networks})"
