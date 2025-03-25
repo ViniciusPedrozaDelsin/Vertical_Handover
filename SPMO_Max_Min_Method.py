@@ -1,6 +1,6 @@
 from DecisionMakerMethod import DecisionMakerMethod as DMM
 
-class SPMO(DMM):
+class SPMO_Max_Min_Method(DMM):
     def __init__(self, method_name, indicator, max_value=True):
         super().__init__(method_name)
         self.indicator = indicator
@@ -8,37 +8,37 @@ class SPMO(DMM):
     
     def makeDecision(self):
         if self.max_value == True:
-            self.get_maximum_value()
+            self.output = self.get_maximum_value()
         else:
-            self.get_minimum_value()
+            self.output = self.get_minimum_value()
         return self.output
     
     def get_maximum_value(self):
-        self.output = None
+        output = None
         max_value = None
         i = 0
         for input in self.inputs:
             if i == 0:
                 max_value = input[self.indicator]
-                self.output = input
+                output = input
             else:
                 if max_value < input[self.indicator]:
                     max_value = input[self.indicator]
-                    self.output = input
+                    output = input
             i = i + 1
-        return self.output
+        return output
         
     def get_minimum_value(self):
-        self.output = None
+        output = None
         min_value = None
         i = 0
         for input in self.inputs:
             if i == 0:
                 min_value = input[self.indicator]
-                self.output = input
+                output = input
             else:
                 if min_value > input[self.indicator]:
                     min_value = input[self.indicator]
-                    self.output = input
+                    output = input
             i = i + 1
-        return self.output
+        return output

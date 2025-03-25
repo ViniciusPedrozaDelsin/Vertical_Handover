@@ -1,7 +1,8 @@
 import math
+import random
 
 class WirelessNetworkSystem:
-    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, corrections_real_world_applications=False):
+    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, corrections_real_world_applications=False):
         self.system_name = system_name
         self.connected_devices = set()
         
@@ -12,6 +13,7 @@ class WirelessNetworkSystem:
         self.frequency = frequency
         self.bandwidth = bandwidth
         self.minimum_snr = minimum_snr
+        self.protocol = protocol
         self.corrections_real_world_applications = corrections_real_world_applications
         
         # Pre-defined Configs
@@ -150,6 +152,9 @@ class WirelessNetworkSystem:
         estimated_throughput = self.estimateThroughput(snr_db, channel_capacity)
         QoS_Parameters['Throughput'] = round(estimated_throughput/1000000, 3)
         
+        # Add Protocol into QoS package
+        QoS_Parameters['Protocol'] = self.protocol
+        
         # Verify Status
         network_status = self.calculateMinimumSNR_db(snr_db)
         if network_status == "Offline":
@@ -185,7 +190,7 @@ class WirelessNetworkSystem:
             estimated_throughput = self.predef_throughput[1]
         else:
             estimated_throughput = self.predef_throughput[0]
-        return estimated_throughput
+        return round(random.uniform(estimated_throughput*0.9,estimated_throughput*1.1), 2)
     
     def calculateSNR_predef(self, dist):
         if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
@@ -194,7 +199,7 @@ class WirelessNetworkSystem:
             snr_db = self.predef_snr[1]
         else:
             snr_db = self.predef_snr[0]
-        return snr_db
+        return round(random.uniform(snr_db*0.9,snr_db*1.1), 2)
     
     def calculateRSSI_predef(self, dist):
         if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
@@ -203,7 +208,7 @@ class WirelessNetworkSystem:
             rssi = self.predef_rssi[1]
         else:
             rssi = self.predef_rssi[0]
-        return rssi
+        return round(random.uniform(rssi*0.9,rssi*1.1), 2)
     
     def calculateQoSParametersPredef(self, device):
         QoS_Parameters = {}
@@ -230,6 +235,8 @@ class WirelessNetworkSystem:
             # Calculate Estimated Throughput - Pre-Defined
             estimated_throughput = self.estimateThroughput_predef(distance)
             QoS_Parameters['Throughput'] = round(estimated_throughput/1000000, 3)
+            
+            QoS_Parameters['Protocol'] = self.protocol
             
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
             QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
