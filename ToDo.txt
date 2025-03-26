@@ -1,6 +1,4 @@
-Create the message to output a message when call the class.
-define the relation between the class mobile/device and the class wirelessNetworkSystem
-define the relation between the class WirelessNetworkSystem and teh QoS parameters
-understand the formula of modulations types and implement on the code
+Verify the functionality of all wirelessNetworkSystem and DMM
 connect the graph with the classes
-usar snr > 5, snr < 5 ecc pra colocar limites no calculo apos modulation formaula
+Solve the issue related to negatives values in RSSI that can be positive, which can corrupt the average calculation.
+check values of packloss and pack delay of different types of networks

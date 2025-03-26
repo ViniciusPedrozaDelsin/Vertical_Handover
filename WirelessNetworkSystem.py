@@ -2,7 +2,7 @@ import math
 import random
 
 class WirelessNetworkSystem:
-    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, corrections_real_world_applications=False):
+    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, corrections_real_world_applications=False):
         self.system_name = system_name
         self.connected_devices = set()
         
@@ -14,6 +14,8 @@ class WirelessNetworkSystem:
         self.bandwidth = bandwidth
         self.minimum_snr = minimum_snr
         self.protocol = protocol
+        self.power_consumption = power_consumption
+        self.monetary_cost = monetary_cost
         self.corrections_real_world_applications = corrections_real_world_applications
         
         # Pre-defined Configs
@@ -152,8 +154,10 @@ class WirelessNetworkSystem:
         estimated_throughput = self.estimateThroughput(snr_db, channel_capacity)
         QoS_Parameters['Throughput'] = round(estimated_throughput/1000000, 3)
         
-        # Add Protocol into QoS package
+        # Add Protocol Parameters into QoS package
         QoS_Parameters['Protocol'] = self.protocol
+        QoS_Parameters['PC'] = self.power_consumption
+        QoS_Parameters['MC'] = self.monetary_cost
         
         # Verify Status
         network_status = self.calculateMinimumSNR_db(snr_db)
@@ -184,30 +188,42 @@ class WirelessNetworkSystem:
         return status
         
     def estimateThroughput_predef(self, dist):
+        if dist < self.maximum_radius:
+            estimated_throughput = self.predef_throughput[0] - (((self.predef_throughput[0] - self.predef_throughput[2])/self.maximum_radius) * dist)
+        '''
         if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
             estimated_throughput = self.predef_throughput[2]
         elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
             estimated_throughput = self.predef_throughput[1]
         else:
             estimated_throughput = self.predef_throughput[0]
+        '''
         return round(random.uniform(estimated_throughput*0.9,estimated_throughput*1.1), 2)
     
     def calculateSNR_predef(self, dist):
+        if dist < self.maximum_radius:
+            snr_db = self.predef_snr[0] - (((self.predef_snr[0] - self.predef_snr[2])/self.maximum_radius) * dist)
+        '''
         if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
             snr_db = self.predef_snr[2]
         elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
             snr_db = self.predef_snr[1]
         else:
             snr_db = self.predef_snr[0]
+        '''
         return round(random.uniform(snr_db*0.9,snr_db*1.1), 2)
     
     def calculateRSSI_predef(self, dist):
+        if dist < self.maximum_radius:
+            rssi = self.predef_rssi[0] - (((self.predef_rssi[0] - self.predef_rssi[2])/self.maximum_radius) * dist)
+        '''    
         if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
             rssi = self.predef_rssi[2]
         elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
             rssi = self.predef_rssi[1]
         else:
             rssi = self.predef_rssi[0]
+        '''
         return round(random.uniform(rssi*0.9,rssi*1.1), 2)
     
     def calculateQoSParametersPredef(self, device):
@@ -236,7 +252,10 @@ class WirelessNetworkSystem:
             estimated_throughput = self.estimateThroughput_predef(distance)
             QoS_Parameters['Throughput'] = round(estimated_throughput/1000000, 3)
             
+            # Add Protocol Parameters into QoS package
             QoS_Parameters['Protocol'] = self.protocol
+            QoS_Parameters['PC'] = self.power_consumption
+            QoS_Parameters['MC'] = self.monetary_cost
             
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
             QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
