@@ -51,7 +51,7 @@ class WirelessNetworkSystem:
     
     def calculateDeviceDistance(self, device):
         distance = (((device.x_position - self.x_position)**2) + ((device.y_position - self.y_position))**2)**(1/2)
-        return round(distance, 3)
+        return distance
         
     def calculateFSPL_db(self, d):
         # Distance correction if d = 0
@@ -131,7 +131,7 @@ class WirelessNetworkSystem:
         
         # Calculate Distance
         distance = self.calculateDeviceDistance(device)
-        QoS_Parameters['Distance'] = distance
+        QoS_Parameters['Distance'] = round(distance, 3)
         
         # Calculate Free Space Path Loss
         fspl = self.calculateFSPL_db(distance)
@@ -216,6 +216,8 @@ class WirelessNetworkSystem:
     def calculateRSSI_predef(self, dist):
         if dist < self.maximum_radius:
             rssi = self.predef_rssi[0] - (((self.predef_rssi[0] - self.predef_rssi[2])/self.maximum_radius) * dist)
+        else:
+            print("Não entrou")
         '''    
         if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
             rssi = self.predef_rssi[2]

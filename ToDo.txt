@@ -1,4 +1,8 @@
-Verify the functionality of all wirelessNetworkSystem and DMM
-connect the graph with the classes
-Solve the issue related to negatives values in RSSI that can be positive, which can corrupt the average calculation.
-check values of packloss and pack delay of different types of networks
+- Verify the functionality of all wirelessNetworkSystem and DMM
+- Solve the issue related to negatives values in RSSI that can be positive, which can corrupt the average calculation.
+- Check values of packloss and pack delay of different types of networks
+- Add MC, PC, Packageloss and Package delay in the Opt Methods and Performance Analysis.
+- Criar um criterio com media ponderada para a avaliação do melhor metodo, e após isso colocar o weights dos metodos para seguir esse mesmo criterio, após isso definir o melhor metodo como aquele que teve a maior media ponderada com menos handoff.
+- Descobrir tempo de execução e custo de processamento entre uma rede neural NxM e um arlogirtmo de TOPSIS (Big O Notation) 
+- Fazer a nn e ver se ela se comporta parecido com o algoritmo di handoff ("transfer learning").
+- Create a requerimets.txt for the project

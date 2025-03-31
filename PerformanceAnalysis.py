@@ -7,6 +7,9 @@ class PerformanceAnalysis:
         
     def store_QoS_parameters(self, QoS_parameters):
         self.stack_QoS_parameters.append(QoS_parameters)
+        
+    def clean_storaged_QoS(self):
+        self.stack_QoS_parameters = []
     
     def count_number_of_handovers(self):
         count = 0
