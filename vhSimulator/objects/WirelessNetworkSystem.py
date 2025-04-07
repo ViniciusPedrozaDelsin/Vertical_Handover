@@ -2,7 +2,7 @@ import math
 import random
 
 class WirelessNetworkSystem:
-    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, corrections_real_world_applications=False):
+    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, predef_ber=None, predef_fec=None, corrections_real_world_applications=False):
         self.system_name = system_name
         self.connected_devices = set()
         
@@ -23,6 +23,8 @@ class WirelessNetworkSystem:
         self.predef_throughput = predef_throughput
         self.predef_snr = predef_snr
         self.predef_rssi = predef_rssi
+        self.predef_ber = predef_ber
+        self.predef_fec = predef_fec
         
     
     def attach_device(self, device):
@@ -189,44 +191,28 @@ class WirelessNetworkSystem:
         
     def estimateThroughput_predef(self, dist):
         if dist < self.maximum_radius:
-            estimated_throughput = self.predef_throughput[0] - (((self.predef_throughput[0] - self.predef_throughput[2])/self.maximum_radius) * dist)
-        '''
-        if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
-            estimated_throughput = self.predef_throughput[2]
-        elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
-            estimated_throughput = self.predef_throughput[1]
-        else:
-            estimated_throughput = self.predef_throughput[0]
-        '''
+            estimated_throughput = self.predef_throughput[0] - (((self.predef_throughput[0] - self.predef_throughput[1])/self.maximum_radius) * dist)
         return round(random.uniform(estimated_throughput*0.9,estimated_throughput*1.1), 2)
     
     def calculateSNR_predef(self, dist):
         if dist < self.maximum_radius:
-            snr_db = self.predef_snr[0] - (((self.predef_snr[0] - self.predef_snr[2])/self.maximum_radius) * dist)
-        '''
-        if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
-            snr_db = self.predef_snr[2]
-        elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
-            snr_db = self.predef_snr[1]
-        else:
-            snr_db = self.predef_snr[0]
-        '''
+            snr_db = self.predef_snr[0] - (((self.predef_snr[0] - self.predef_snr[1])/self.maximum_radius) * dist)
         return round(random.uniform(snr_db*0.9,snr_db*1.1), 2)
     
     def calculateRSSI_predef(self, dist):
         if dist < self.maximum_radius:
-            rssi = self.predef_rssi[0] - (((self.predef_rssi[0] - self.predef_rssi[2])/self.maximum_radius) * dist)
-        else:
-            print("Não entrou")
-        '''    
-        if dist < self.maximum_radius and dist >= ((2*self.maximum_radius)/3):
-            rssi = self.predef_rssi[2]
-        elif dist < ((2*self.maximum_radius)/3) and dist >= (self.maximum_radius/3):
-            rssi = self.predef_rssi[1]
-        else:
-            rssi = self.predef_rssi[0]
-        '''
+            rssi = self.predef_rssi[0] - (((self.predef_rssi[0] - self.predef_rssi[1])/self.maximum_radius) * dist)
         return round(random.uniform(rssi*0.9,rssi*1.1), 2)
+        
+    def calculateBER_predef(self, dist):
+        if dist < self.maximum_radius:
+            ber = self.predef_ber[0] - (((self.predef_ber[0] - self.predef_ber[1])/self.maximum_radius) * dist)
+        return random.uniform(ber*0.9,ber*1.1)
+        
+    def calculateFEC_predef(self, dist):
+        if dist < self.maximum_radius:
+            fec = self.predef_fec[0] - (((self.predef_fec[0] - self.predef_fec[1])/self.maximum_radius) * dist)
+        return random.uniform(fec*0.9, fec*1.1)
     
     def calculateQoSParametersPredef(self, device):
         QoS_Parameters = {}
@@ -250,6 +236,14 @@ class WirelessNetworkSystem:
             snr_db = self.calculateSNR_predef(distance)
             QoS_Parameters['SNR'] = snr_db
             
+            # Calculate BER - Pre-Defined
+            ber = self.calculateBER_predef(distance)
+            QoS_Parameters['BER'] = ber
+            
+            # Calculate FEC - Pre-Defined
+            fec = self.calculateFEC_predef(distance)
+            QoS_Parameters['FEC'] = fec
+            
             # Calculate Estimated Throughput - Pre-Defined
             estimated_throughput = self.estimateThroughput_predef(distance)
             QoS_Parameters['Throughput'] = round(estimated_throughput/1000000, 3)
@@ -261,7 +255,7 @@ class WirelessNetworkSystem:
             
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
             QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
-        
+
         return QoS_Parameters
     # ============================== End Predef ==============================
         

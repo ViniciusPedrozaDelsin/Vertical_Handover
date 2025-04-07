@@ -1,4 +1,4 @@
-from DecisionMakerMethod import DecisionMakerMethod as DMM
+from .DecisionMakerMethod import DecisionMakerMethod as DMM
 
 class SPMO_Max_Min_Method(DMM):
     def __init__(self, method_name, indicator, max_value=True):

@@ -1,4 +1,4 @@
-from DecisionMakerMethod import DecisionMakerMethod as DMM
+from .DecisionMakerMethod import DecisionMakerMethod as DMM
 
 class MPMO_SAW(DMM):
     def __init__(self, method_name, attributes, weights, directions):

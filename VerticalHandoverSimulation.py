@@ -1,22 +1,17 @@
 import tkinter as tk
 from tkinter import ttk
 import sys
-from collections import defaultdict
 import random
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from WirelessNetworkSystem import WirelessNetworkSystem as MNS
-from Device import Device
-from SPMO_Max_Min_Method import SPMO_Max_Min_Method as SPMO_MMM
-from SPMO_Preference import SPMO_Preference as SPMO_Pref
-from MPMO_SAW import MPMO_SAW
-from MPMO_WPM import MPMO_WPM
-from MPMO_TOPSIS import MPMO_TOPSIS
-from PerformanceAnalysis import PerformanceAnalysis
-from BenchmarkMethod import BenchmarkMethod
+from vhSimulator import Device
+from vhSimulator import WirelessNetworkSystem as WNS
+from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
+from vhSimulator import SPMO_Preference as SPMO_Pref
+from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, BenchmarkMethod, PerformanceAnalysis
 
 
 # ==================================== Initial Parameters ====================================
@@ -27,26 +22,26 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Interval between iterations
-iter_interval = 100
+iter_interval = 10
 
 # Distance for iteration
 dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 500
+n = 100
 
 # Activate Graphical Interface
-GUI = True
+GUI = False
 
 # Activate Prints for DEBBUG
 verbose = False
 
 # Number of simulations
-n_simulations = 5
+n_simulations = 2
 
 # Performance Analysis
-analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC']
+analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
 
 # Results
 final_results = []
@@ -62,71 +57,71 @@ def generate_random_WNS():
     
     # WiFi's
     global wifi_1
-    wifi_1 = MNS("WiFi-1", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 100000000, 30000000], predef_snr=[40, 25, 10], predef_rssi=[-50, -65, -80])
+    wifi_1 = WNS("WiFi-1", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_1, 'green', 0.3])
     
     global wifi_2
-    wifi_2 = MNS("WiFi-2", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 500000000, 150000000], predef_snr=[40, 25, 15], predef_rssi=[-50, -65, -80])
+    wifi_2 = WNS("WiFi-2", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_2, 'green', 0.3])
     
     global wifi_3
-    wifi_3 = MNS("WiFi-3", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 500000000, 150000000], predef_snr=[40, 25, 15], predef_rssi=[-50, -65, -80])
+    wifi_3 = WNS("WiFi-3", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_3, 'green', 0.3])
     
     global wifi_4
-    wifi_4 = MNS("WiFi-4", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 500000000, 150000000], predef_snr=[40, 25, 15], predef_rssi=[-50, -65, -80])
+    wifi_4 = WNS("WiFi-4", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_4, 'green', 0.3])
     
     global wifi_5
-    wifi_5 = MNS("WiFi-5", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 500000000, 150000000], predef_snr=[40, 25, 15], predef_rssi=[-50, -65, -80])
+    wifi_5 = WNS("WiFi-5", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_5, 'green', 0.3])
     
     global wifi_6
-    wifi_6 = MNS("WiFi-6", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 100000000, 30000000], predef_snr=[40, 25, 10], predef_rssi=[-50, -65, -80])
+    wifi_6 = WNS("WiFi-6", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_6, 'green', 0.3])
     
     global wifi_7
-    wifi_7 = MNS("WiFi-7", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 100000000, 30000000], predef_snr=[40, 25, 10], predef_rssi=[-50, -65, -80])
+    wifi_7 = WNS("WiFi-7", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_7, 'green', 0.3])
 
     global wifi_8
-    wifi_8 = MNS("WiFi-8", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 100000000, 30000000], predef_snr=[40, 25, 10], predef_rssi=[-50, -65, -80])
+    wifi_8 = WNS("WiFi-8", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_8, 'green', 0.3])
     
     global wifi_9
-    wifi_9 = MNS("WiFi-9", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 500000000, 150000000], predef_snr=[40, 25, 15], predef_rssi=[-50, -65, -80])
+    wifi_9 = WNS("WiFi-9", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_9, 'green', 0.3])
     
     global wifi_10
-    wifi_10 = MNS("WiFi-10", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 100000000, 30000000], predef_snr=[40, 25, 10], predef_rssi=[-50, -65, -80])
+    wifi_10 = WNS("WiFi-10", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_10, 'green', 0.3])
 
 
     # NB-IoT 5G
     global nbiot_5g_1
-    nbiot_5g_1 = MNS("NBIoT-5g-1", random.uniform(-10*x_max, 10*x_max), random.uniform(-10*y_max, 10*y_max), 30, 800000000, 1400000, 2, "NB-IoT-5G", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 50000, 10000], predef_snr=[10, 5, 2], predef_rssi=[-90, -105, -115])
+    nbiot_5g_1 = WNS("NBIoT-5g-1", random.uniform(-10*x_max, 10*x_max), random.uniform(-10*y_max, 10*y_max), 30, 800000000, 1400000, 2, "NB-IoT-5G", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3])
     WNS_list.append([nbiot_5g_1, 'blue', 0.03])
 
 
     # LoRa's
     global LoRa_1
-    LoRa_1 = MNS("LoRa-1", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 10000, 1000], predef_snr=[10, 5, 0], predef_rssi=[-80, -100, -120])
+    LoRa_1 = WNS("LoRa-1", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8])
     WNS_list.append([LoRa_1, 'yellow', 0.03])
     
     global LoRa_2
-    LoRa_2 = MNS("LoRa-2", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 10000, 1000], predef_snr=[10, 5, 0], predef_rssi=[-80, -100, -120])
+    LoRa_2 = WNS("LoRa-2", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8])
     WNS_list.append([LoRa_2, 'yellow', 0.03])
 
 
     # LTE 4G
     global LTE_4g
-    LTE_4g = MNS("LTE-4g-1", random.uniform(-20*x_max, 20*x_max), random.uniform(-20*y_max, 20*y_max), 40, 868000000, 250000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 40000000, 5000000], predef_snr=[15, 10, 5], predef_rssi=[-70, -90, -100])
+    LTE_4g = WNS("LTE-4g-1", random.uniform(-20*x_max, 20*x_max), random.uniform(-20*y_max, 20*y_max), 40, 868000000, 250000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3])
     WNS_list.append([LTE_4g, 'red', 0.03])
 
 
     # WiFi Max
     global wifi_max_1
-    wifi_max_1 = MNS("WiFi-Max-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 15000000, 2000000], predef_snr=[15, 10, 5], predef_rssi=[-60, -80, -90])
+    wifi_max_1 = WNS("WiFi-Max-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_max_1, 'purple', 0.03])
 
 
@@ -352,13 +347,8 @@ def plot_results():
 
         ax.tick_params(axis='x', labelsize=8)
         ax.tick_params(axis='y', labelsize=8)
-
-    # Hide any unused subplots if the number of parameters isn't even
-    for j in range(i + 1, len(axes)):
-        fig.delaxes(axes[j])
-
+        
     plt.show()
-    
 
 
 def plot_graph():
@@ -410,7 +400,7 @@ spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz'
 mpmo_saw = MPMO_SAW("MPMO-SAW", ["RSSI", "SNR", "Throughput", "Distance"], [3, 5, 10, 2], [1, 1, 1, 0])
 mpmo_wpm = MPMO_WPM("MPMO-WPM", ["RSSI", "SNR", "Throughput", "Distance"], [3, 5, 10, 2], [1, 1, 1, 0])
 mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", ["RSSI", "SNR", "Throughput", "Distance"], [3, 5, 10, 2], [1, 1, 1, 0])
-benchmark = BenchmarkMethod("Benchmark", ["RSSI", "SNR", "Throughput", "Distance", 'PC', 'MC'], [1, 1, 1, 0, 0, 0])
+benchmark = BenchmarkMethod("Benchmark", ["RSSI", "SNR", "Throughput", "Distance", 'PC', 'MC', 'BER', 'FEC'], [1, 1, 1, 0, 0, 0, 0, 1])
 
 # Instances of Performance Analysis
 p_spmo_max_min_rssi = PerformanceAnalysis("SPMO-MAX-RSSI")

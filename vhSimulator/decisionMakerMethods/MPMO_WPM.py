@@ -1,4 +1,4 @@
-from DecisionMakerMethod import DecisionMakerMethod as DMM
+from .DecisionMakerMethod import DecisionMakerMethod as DMM
 import math
 
 class MPMO_WPM(DMM):

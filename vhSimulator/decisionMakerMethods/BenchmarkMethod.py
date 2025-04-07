@@ -1,4 +1,4 @@
-from DecisionMakerMethod import DecisionMakerMethod as DMM
+from .DecisionMakerMethod import DecisionMakerMethod as DMM
 
 class BenchmarkMethod(DMM):
     def __init__(self, method_name, attributes, directions):
