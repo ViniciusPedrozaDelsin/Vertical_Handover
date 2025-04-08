@@ -7,6 +7,10 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+from matplotlib.colors import Normalize
 from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
@@ -22,14 +26,14 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Interval between iterations
-iter_interval = 10
+iter_interval = 1
 
 # Distance for iteration
 dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 100
+n = 1000
 
 # Activate Graphical Interface
 GUI = False
@@ -38,13 +42,16 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 2
+n_simulations = 1000
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
+weights = [1, 4, 4, 2, 3, 1, 2]
+directions = [1, 1, 1, 0, 0, 0, 1]
 
 # Results
 final_results = []
+indicators_results = []
 # ============================================================================================
 
 
@@ -183,6 +190,14 @@ def update_position(device):
             p_mpmo_wpm.clean_storaged_QoS()
             p_mpmo_topsis.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
+            # Cleaning old Benchmark QoS parameters Storaged
+            p_spmo_max_min_rssi.clean_Benchmark_storaged_QoS()
+            p_spmo_max_min_snr.clean_Benchmark_storaged_QoS()
+            p_spmo_pref.clean_Benchmark_storaged_QoS()
+            p_mpmo_saw.clean_Benchmark_storaged_QoS()
+            p_mpmo_wpm.clean_Benchmark_storaged_QoS()
+            p_mpmo_topsis.clean_Benchmark_storaged_QoS()
+            p_benchmark.clean_Benchmark_storaged_QoS()
             j = 0
             update_position(device)
         else:
@@ -201,71 +216,96 @@ def calculate_parameters(device, x_position, y_position):
     available_networks = device.get_available_networks()
     if verbose == True: print(f"Available Networks: {available_networks}")
     
+    decision_benchmark = device.makeDecision(benchmark, available_networks)
+    p_benchmark.store_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Benchmark {decision_benchmark}")
+    
     decision_spmo_mmm_rssi = device.makeDecision(spmo_max_min_method_rssi, available_networks)
     p_spmo_max_min_rssi.store_QoS_parameters(decision_spmo_mmm_rssi)
+    p_spmo_max_min_rssi.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision SPMO MAX MIN RSSI: {decision_spmo_mmm_rssi}")
     
     decision_spmo_mmm_snr = device.makeDecision(spmo_max_min_method_snr, available_networks)
     p_spmo_max_min_snr.store_QoS_parameters(decision_spmo_mmm_snr)
+    p_spmo_max_min_snr.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision SPMO MAX MIN SNR: {decision_spmo_mmm_snr}")
     
     decision_spmo_pref = device.makeDecision(spmo_pref, available_networks)
     p_spmo_pref.store_QoS_parameters(decision_spmo_pref)
+    p_spmo_pref.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision SPMO Preference: {decision_spmo_pref}")
     
     decision_mpmo_saw = device.makeDecision(mpmo_saw, available_networks)
     p_mpmo_saw.store_QoS_parameters(decision_mpmo_saw)
+    p_mpmo_saw.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO SAW: {decision_mpmo_saw}")
     
     decision_mpmo_wpm = device.makeDecision(mpmo_wpm, available_networks)
     p_mpmo_wpm.store_QoS_parameters(decision_mpmo_wpm)
+    p_mpmo_wpm.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO WPM: {decision_mpmo_wpm}")
     
     decision_mpmo_topsis = device.makeDecision(mpmo_topsis, available_networks)
     p_mpmo_topsis.store_QoS_parameters(decision_mpmo_topsis)
+    p_mpmo_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO TOPSIS: {decision_mpmo_topsis}")
-    
-    decision_benchmark = device.makeDecision(benchmark, available_networks)
-    p_benchmark.store_QoS_parameters(decision_benchmark)
-    if verbose == True: print(f"Benchmark {decision_benchmark}")
     
     if verbose == True: print("===================================================")
 
 
 def performe_analysis():
-    global final_results, analyzed_parameters
+    global final_results, analyzed_parameters, indicators_results
     
     # Gathering together the results
     results_list = []
+    indicators_list = []
     
     results_spmo_max_min_rssi = p_spmo_max_min_rssi.calculate_average_QoS_parameters(analyzed_parameters)
     results_spmo_max_min_rssi['Handover'] = p_spmo_max_min_rssi.count_number_of_handovers()
     results_spmo_max_min_rssi['Algorithm'] = p_spmo_max_min_rssi.algorithm
+    indicators_spmo_max_min_rssi = p_spmo_max_min_rssi.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_spmo_max_min_rssi['Algorithm'] = results_spmo_max_min_rssi['Algorithm']
+    indicators_list.append(indicators_spmo_max_min_rssi)
     results_list.append(results_spmo_max_min_rssi)
     
     results_spmo_max_min_snr = p_spmo_max_min_snr.calculate_average_QoS_parameters(analyzed_parameters)
     results_spmo_max_min_snr['Handover'] = p_spmo_max_min_snr.count_number_of_handovers()
     results_spmo_max_min_snr['Algorithm'] = p_spmo_max_min_snr.algorithm
+    indicators_spmo_max_min_snr = p_spmo_max_min_snr.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_spmo_max_min_snr['Algorithm'] = results_spmo_max_min_snr['Algorithm']
+    indicators_list.append(indicators_spmo_max_min_snr)
     results_list.append(results_spmo_max_min_snr)
     
     results_spmo_pref = p_spmo_pref.calculate_average_QoS_parameters(analyzed_parameters)
     results_spmo_pref['Handover'] = p_spmo_pref.count_number_of_handovers()
     results_spmo_pref['Algorithm'] = p_spmo_pref.algorithm
+    indicators_spmo_pref = p_spmo_pref.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_spmo_pref['Algorithm'] = results_spmo_pref['Algorithm']
+    indicators_list.append(indicators_spmo_pref)
     results_list.append(results_spmo_pref)
     
     results_mpmo_saw = p_mpmo_saw.calculate_average_QoS_parameters(analyzed_parameters)
     results_mpmo_saw['Handover'] = p_mpmo_saw.count_number_of_handovers()
     results_mpmo_saw['Algorithm'] = p_mpmo_saw.algorithm
+    indicators_mpmo_saw = p_mpmo_saw.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_saw['Algorithm'] = results_mpmo_saw['Algorithm']
+    indicators_list.append(indicators_mpmo_saw)
     results_list.append(results_mpmo_saw)
     
     results_mpmo_wpm = p_mpmo_wpm.calculate_average_QoS_parameters(analyzed_parameters)
     results_mpmo_wpm['Handover'] = p_mpmo_wpm.count_number_of_handovers()
     results_mpmo_wpm['Algorithm'] = p_mpmo_wpm.algorithm
+    indicators_mpmo_wpm = p_mpmo_wpm.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_wpm['Algorithm'] = results_mpmo_wpm['Algorithm']
+    indicators_list.append(indicators_mpmo_wpm)
     results_list.append(results_mpmo_wpm)
     
     results_mpmo_topsis = p_mpmo_topsis.calculate_average_QoS_parameters(analyzed_parameters)
     results_mpmo_topsis['Handover'] = p_mpmo_topsis.count_number_of_handovers()
     results_mpmo_topsis['Algorithm'] = p_mpmo_topsis.algorithm
+    indicators_mpmo_topsis = p_mpmo_topsis.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_topsis['Algorithm'] = results_mpmo_topsis['Algorithm']
+    indicators_list.append(indicators_mpmo_topsis)
     results_list.append(results_mpmo_topsis)
     
     results_benchmark = p_benchmark.calculate_average_QoS_parameters(analyzed_parameters)
@@ -274,21 +314,22 @@ def performe_analysis():
     results_list.append(results_benchmark)
     
     # Print the Results
-    print(f"{p_spmo_max_min_rssi.calculate_average_QoS_parameters(analyzed_parameters)}, Handoff: {p_spmo_max_min_rssi.count_number_of_handovers()}")
-    print(f"{p_spmo_max_min_snr.calculate_average_QoS_parameters(analyzed_parameters)}, Handoff: {p_spmo_max_min_snr.count_number_of_handovers()}")
-    print(f"{p_spmo_pref.calculate_average_QoS_parameters(analyzed_parameters)}, Handoff: {p_spmo_pref.count_number_of_handovers()}")
-    print(f"{p_mpmo_saw.calculate_average_QoS_parameters(analyzed_parameters)}, Handoff: {p_mpmo_saw.count_number_of_handovers()}")
-    print(f"{p_mpmo_wpm.calculate_average_QoS_parameters(analyzed_parameters)}, Handoff: {p_mpmo_wpm.count_number_of_handovers()}")
-    print(f"{p_mpmo_topsis.calculate_average_QoS_parameters(analyzed_parameters)}, Handoff: {p_mpmo_topsis.count_number_of_handovers()}")
-    print(f"{p_benchmark.calculate_average_QoS_parameters(analyzed_parameters)}, Handoff: {p_benchmark.count_number_of_handovers()}")
+    print(f"{results_spmo_max_min_rssi}, Handoff: {results_spmo_max_min_rssi['Handover']}")
+    print(f"{results_spmo_max_min_snr}, Handoff: {results_spmo_max_min_snr['Handover']}")
+    print(f"{results_spmo_pref}, Handoff: {results_spmo_pref['Handover']}")
+    print(f"{results_mpmo_saw}, Handoff: {results_mpmo_saw['Handover']}")
+    print(f"{results_mpmo_wpm}, Handoff: {results_mpmo_wpm['Handover']}")
+    print(f"{results_mpmo_topsis}, Handoff: {results_mpmo_topsis['Handover']}")
+    print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("================================================================================================================================================")
     
     final_results.append(results_list)
+    indicators_results.append(indicators_list)
     
 
 
 def plot_results():
-    global final_results, analyzed_parameters
+    global final_results, analyzed_parameters, indicators_results
     analyzed_parameters.append("Handover")
     
     # Initialize aggregation storage
@@ -316,6 +357,105 @@ def plot_results():
     
     print(f"Results: {results}")
     
+    print("================================================")
+    print("Indicators to Measure Deviation from a Benchmark")
+
+    # Initialize a dictionary to store the summed values
+    aggregated_results_rmse = {}
+
+    # Loop through each list in the indicators_results
+    for group in indicators_results:
+        for entry in group:
+            algorithm = entry['Algorithm']
+            
+            if algorithm not in aggregated_results_rmse:
+                aggregated_results_rmse[algorithm] = {param: 0 for param in entry if param != 'Algorithm'}
+            
+            for param in entry:
+                if param != 'Algorithm':
+                    aggregated_results_rmse[algorithm][param] += ((sum(entry[param]) / len(entry[param]))**(1/2))
+    
+    # Print the aggregated results
+    ind_dict = {}
+    for algorithm, values in aggregated_results_rmse.items():
+        for param, value in values.items():
+            ind_dict[param] = []
+            
+    for algorithm, values in aggregated_results_rmse.items():
+        print(f"Algorithm: {algorithm}")
+        for param, value in values.items():
+            ind_dict[param].append(value)
+            print(f"RMSE: {param}: {value}")
+        print("-" * 50)
+    
+    print("RMSE of the Normalized Results")
+    normalized_rsme = {
+        k: [v_i / max(v) for v_i in v]
+        for k, v in ind_dict.items()
+    }
+    print(normalized_rsme)
+    
+    zipped = zip(*normalized_rsme.values())
+    # Calculate RMSE by Indice
+    #rmse_per_index = [np.sqrt(np.mean([val**2 for val in values])) for values in zipped]
+    rmse_per_index = [
+        np.sqrt(np.mean([
+            val**2 for val, weight in zip(values, weights) for _ in range(weight)
+        ]))
+        for values in zipped
+    ]
+    print(rmse_per_index)
+
+    # =================== 3D PLOT ===================
+    ordered_algorithms = [algo for algo in aggregated_results_rmse]
+
+    # Reorder parameters so 'Throughput' appears last
+    parameters = list(next(iter(aggregated_results_rmse.values())).keys())
+    parameters.remove("Throughput")
+    parameters = parameters + ['Throughput']
+
+    # Normalize each parameter individually
+    param_norms = {}
+    for param in parameters:
+        values = [abs(aggregated_results_rmse[algo][param]) for algo in ordered_algorithms]
+        param_norms[param] = Normalize(vmin=min(values), vmax=max(values))
+
+    # Create the figure and 3D axis
+    fig = plt.figure(figsize=(14, 10))
+    ax = fig.add_subplot(111, projection='3d')
+
+    dx = dy = 0.8
+    cmap = cm.viridis
+    colors_dict = {}
+
+    # Draw bars with per-parameter normalization
+    for i, param in enumerate(parameters):
+        for j, algo in enumerate(ordered_algorithms):
+            raw_value = abs(aggregated_results_rmse[algo][param])
+            znorm = param_norms[param](raw_value)
+
+            xpos = j
+            ypos = i
+            zpos = 0
+            dz = max(znorm, 0.01)  # Prevent flat bars
+
+            # Assign unique color to each algorithm
+            if algo not in colors_dict:
+                colors_dict[algo] = cmap(j / len(ordered_algorithms))
+
+            ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color=colors_dict[algo], edgecolor='black', alpha=0.9)
+
+    # Customize axes
+    ax.set_xticks(np.arange(len(ordered_algorithms)) + dx / 2)
+    ax.set_yticks(np.arange(len(parameters)) + dy / 2)
+    ax.set_xticklabels(ordered_algorithms, rotation=45, ha='right', fontsize=9)
+    ax.set_yticklabels(parameters, fontsize=10)
+    ax.set_zlabel("Normalized Value (per parameter)", fontsize=12)
+    ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
+
+    plt.tight_layout()
+
+    # =================== Bar Chart Plot ===================
     # Organizing results by algorithm
     r_dict = {r['Algorithm']: r for r in results}
 
@@ -323,7 +463,7 @@ def plot_results():
     num_cols = 2  # Split into two vertical sections
     num_rows = math.ceil(num_params / num_cols)  # Calculate needed rows
 
-    fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 4 * num_rows), constrained_layout=True)
+    fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 8 * num_rows), constrained_layout=True)
 
     # Flatten axes for easy iteration when we have multiple rows
     axes = axes.flatten() if num_params > 1 else [axes]
@@ -347,7 +487,8 @@ def plot_results():
 
         ax.tick_params(axis='x', labelsize=8)
         ax.tick_params(axis='y', labelsize=8)
-        
+    
+    plt.savefig("outputs/bar_chart.png", dpi=600, bbox_inches='tight')
     plt.show()
 
 
@@ -397,10 +538,10 @@ connect_to_net(device_1)
 spmo_max_min_method_rssi = SPMO_MMM("SPMO-MAX-RSSI", "RSSI", True)
 spmo_max_min_method_snr = SPMO_MMM("SPMO-MAX-SNR", "SNR", True)
 spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', 'WiFi-Max', 'LTE-4G', 'NB-IoT-5G', 'LoRa-868'])
-mpmo_saw = MPMO_SAW("MPMO-SAW", ["RSSI", "SNR", "Throughput", "Distance"], [3, 5, 10, 2], [1, 1, 1, 0])
-mpmo_wpm = MPMO_WPM("MPMO-WPM", ["RSSI", "SNR", "Throughput", "Distance"], [3, 5, 10, 2], [1, 1, 1, 0])
-mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", ["RSSI", "SNR", "Throughput", "Distance"], [3, 5, 10, 2], [1, 1, 1, 0])
-benchmark = BenchmarkMethod("Benchmark", ["RSSI", "SNR", "Throughput", "Distance", 'PC', 'MC', 'BER', 'FEC'], [1, 1, 1, 0, 0, 0, 0, 1])
+mpmo_saw = MPMO_SAW("MPMO-SAW", analyzed_parameters, weights, directions)
+mpmo_wpm = MPMO_WPM("MPMO-WPM", analyzed_parameters, weights, directions)
+mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", analyzed_parameters, weights, directions)
+benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 
 # Instances of Performance Analysis
 p_spmo_max_min_rssi = PerformanceAnalysis("SPMO-MAX-RSSI")
