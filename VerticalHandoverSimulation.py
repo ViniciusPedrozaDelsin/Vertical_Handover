@@ -26,23 +26,23 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Interval between iterations
-iter_interval = 1
+iter_interval = 6000
 
 # Distance for iteration
 dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 1000
+n = 200
 
 # Activate Graphical Interface
-GUI = False
+GUI = True
 
 # Activate Prints for DEBBUG
-verbose = False
+verbose = True
 
 # Number of simulations
-n_simulations = 1000
+n_simulations = 10
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
@@ -122,7 +122,7 @@ def generate_random_WNS():
 
     # LTE 4G
     global LTE_4g
-    LTE_4g = WNS("LTE-4g-1", random.uniform(-20*x_max, 20*x_max), random.uniform(-20*y_max, 20*y_max), 40, 868000000, 250000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3])
+    LTE_4g = WNS("LTE-4g-1", random.uniform(-20*x_max, 20*x_max), random.uniform(-20*y_max, 20*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3])
     WNS_list.append([LTE_4g, 'red', 0.03])
 
 
