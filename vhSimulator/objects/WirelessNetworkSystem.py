@@ -219,6 +219,7 @@ class WirelessNetworkSystem:
         
         # Calculate Distance
         distance = self.calculateDeviceDistance(device)
+        #print(f"Network: {self.system_name} || Distance: {distance} || x,y: {self.x_position},{self.y_position} || Device x,y: {device.x_position},{device.y_position}")
         QoS_Parameters['Distance'] = distance
         
         # Verify Status

@@ -9,7 +9,6 @@ from matplotlib.patches import Circle
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
-import matplotlib.colors as mcolors
 from matplotlib.colors import Normalize
 from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
@@ -26,28 +25,31 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Interval between iterations
-iter_interval = 6000
+iter_interval = 1
 
 # Distance for iteration
 dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 200
+n = 10000
 
 # Activate Graphical Interface
-GUI = True
+GUI = False
 
 # Activate Prints for DEBBUG
-verbose = True
+verbose = False
 
 # Number of simulations
-n_simulations = 10
+n_simulations = 1000
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
-weights = [1, 4, 4, 2, 3, 1, 2]
+weights = [2, 2, 2, 1, 1, 1, 1]
+#weights = [2, 4, 9, 1, 1, 1, 2]
 directions = [1, 1, 1, 0, 0, 0, 1]
+hyst_percentage = 0.1
+tt_trigger = 2
 
 # Results
 final_results = []
@@ -130,6 +132,9 @@ def generate_random_WNS():
     global wifi_max_1
     wifi_max_1 = WNS("WiFi-Max-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2])
     WNS_list.append([wifi_max_1, 'purple', 0.03])
+    
+    # Print for DEBBUG
+    if verbose == True: [print(wns) for wns in WNS_list]
 
 
 def connect_to_net(device):
@@ -140,6 +145,9 @@ def connect_to_net(device):
     device.connect_to_network(wifi_5)
     device.connect_to_network(wifi_6)
     device.connect_to_network(wifi_7)
+    device.connect_to_network(wifi_8)
+    device.connect_to_network(wifi_9)
+    device.connect_to_network(wifi_10)
     device.connect_to_network(nbiot_5g_1)
     device.connect_to_network(LoRa_1)
     device.connect_to_network(LoRa_2)
@@ -180,23 +188,35 @@ def update_position(device):
             x = x_max/2
             y = y_max/2
             device = Device(1, x, y)
-            connect_to_net(device)
             generate_random_WNS()
+            connect_to_net(device)
             # Cleaning old QoS parameters Storaged
             p_spmo_max_min_rssi.clean_storaged_QoS()
             p_spmo_max_min_snr.clean_storaged_QoS()
             p_spmo_pref.clean_storaged_QoS()
             p_mpmo_saw.clean_storaged_QoS()
+            p_mpmo_saw_hyst.clean_storaged_QoS()
+            p_mpmo_saw_ttt.clean_storaged_QoS()
             p_mpmo_wpm.clean_storaged_QoS()
+            p_mpmo_wpm_hyst.clean_storaged_QoS()
+            p_mpmo_wpm_ttt.clean_storaged_QoS()
             p_mpmo_topsis.clean_storaged_QoS()
+            p_mpmo_topsis_hyst.clean_storaged_QoS()
+            p_mpmo_topsis_ttt.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
             p_spmo_max_min_rssi.clean_Benchmark_storaged_QoS()
             p_spmo_max_min_snr.clean_Benchmark_storaged_QoS()
             p_spmo_pref.clean_Benchmark_storaged_QoS()
             p_mpmo_saw.clean_Benchmark_storaged_QoS()
+            p_mpmo_saw_hyst.clean_Benchmark_storaged_QoS()
+            p_mpmo_saw_ttt.clean_Benchmark_storaged_QoS()
             p_mpmo_wpm.clean_Benchmark_storaged_QoS()
+            p_mpmo_wpm_hyst.clean_Benchmark_storaged_QoS()
+            p_mpmo_wpm_ttt.clean_Benchmark_storaged_QoS()
             p_mpmo_topsis.clean_Benchmark_storaged_QoS()
+            p_mpmo_topsis_hyst.clean_Benchmark_storaged_QoS()
+            p_mpmo_topsis_ttt.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             j = 0
             update_position(device)
@@ -240,15 +260,47 @@ def calculate_parameters(device, x_position, y_position):
     p_mpmo_saw.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO SAW: {decision_mpmo_saw}")
     
+    decision_mpmo_saw_hyst = device.makeDecision(mpmo_saw_hyst, available_networks)
+    p_mpmo_saw_hyst.store_QoS_parameters(decision_mpmo_saw_hyst)
+    p_mpmo_saw_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO SAW Hysteresis: {decision_mpmo_saw_hyst}")
+    
+    decision_mpmo_saw_ttt = device.makeDecision(mpmo_saw_ttt, available_networks)
+    p_mpmo_saw_ttt.store_QoS_parameters(decision_mpmo_saw_ttt)
+    p_mpmo_saw_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO SAW Time to Trigger: {decision_mpmo_saw_ttt}")
+    
     decision_mpmo_wpm = device.makeDecision(mpmo_wpm, available_networks)
     p_mpmo_wpm.store_QoS_parameters(decision_mpmo_wpm)
     p_mpmo_wpm.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO WPM: {decision_mpmo_wpm}")
     
+    decision_mpmo_wpm_hyst = device.makeDecision(mpmo_wpm_hyst, available_networks)
+    p_mpmo_wpm_hyst.store_QoS_parameters(decision_mpmo_wpm_hyst)
+    p_mpmo_wpm_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO WPM Hysteresis: {decision_mpmo_wpm_hyst}")
+    
+    decision_mpmo_wpm_ttt = device.makeDecision(mpmo_wpm_ttt, available_networks)
+    p_mpmo_wpm_ttt.store_QoS_parameters(decision_mpmo_wpm_ttt)
+    p_mpmo_wpm_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO WPM Time to Trigger: {decision_mpmo_wpm_ttt}")
+    
     decision_mpmo_topsis = device.makeDecision(mpmo_topsis, available_networks)
     p_mpmo_topsis.store_QoS_parameters(decision_mpmo_topsis)
     p_mpmo_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO TOPSIS: {decision_mpmo_topsis}")
+    #if verbose == True: print(f"\033[91mDecision MPMO TOPSIS: {decision_mpmo_topsis}\033[0m")
+    
+    decision_mpmo_topsis_hyst = device.makeDecision(mpmo_topsis_hyst, available_networks)
+    p_mpmo_topsis_hyst.store_QoS_parameters(decision_mpmo_topsis_hyst)
+    p_mpmo_topsis_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO TOPSIS Hysteresis: {decision_mpmo_topsis_hyst}")
+    
+    decision_mpmo_topsis_ttt = device.makeDecision(mpmo_topsis_ttt, available_networks)
+    p_mpmo_topsis_ttt.store_QoS_parameters(decision_mpmo_topsis_ttt)
+    p_mpmo_topsis_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO TOPSIS Time to Trigger: {decision_mpmo_topsis_ttt}")
+    #if verbose == True: print(f"\033[91mDecision MPMO TOPSIS Time to Trigger: {decision_mpmo_topsis_ttt}\033[0m")
     
     if verbose == True: print("===================================================")
 
@@ -292,6 +344,22 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_saw)
     results_list.append(results_mpmo_saw)
     
+    results_mpmo_saw_hyst = p_mpmo_saw_hyst.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_saw_hyst['Handover'] = p_mpmo_saw_hyst.count_number_of_handovers()
+    results_mpmo_saw_hyst['Algorithm'] = p_mpmo_saw_hyst.algorithm
+    indicators_mpmo_saw_hyst = p_mpmo_saw_hyst.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_saw_hyst['Algorithm'] = results_mpmo_saw_hyst['Algorithm']
+    indicators_list.append(indicators_mpmo_saw_hyst)
+    results_list.append(results_mpmo_saw_hyst)
+    
+    results_mpmo_saw_ttt = p_mpmo_saw_ttt.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_saw_ttt['Handover'] = p_mpmo_saw_ttt.count_number_of_handovers()
+    results_mpmo_saw_ttt['Algorithm'] = p_mpmo_saw_ttt.algorithm
+    indicators_mpmo_saw_ttt = p_mpmo_saw_ttt.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_saw_ttt['Algorithm'] = results_mpmo_saw_ttt['Algorithm']
+    indicators_list.append(indicators_mpmo_saw_ttt)
+    results_list.append(results_mpmo_saw_ttt)
+    
     results_mpmo_wpm = p_mpmo_wpm.calculate_average_QoS_parameters(analyzed_parameters)
     results_mpmo_wpm['Handover'] = p_mpmo_wpm.count_number_of_handovers()
     results_mpmo_wpm['Algorithm'] = p_mpmo_wpm.algorithm
@@ -300,6 +368,22 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_wpm)
     results_list.append(results_mpmo_wpm)
     
+    results_mpmo_wpm_hyst = p_mpmo_wpm_hyst.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_wpm_hyst['Handover'] = p_mpmo_wpm_hyst.count_number_of_handovers()
+    results_mpmo_wpm_hyst['Algorithm'] = p_mpmo_wpm_hyst.algorithm
+    indicators_mpmo_wpm_hyst = p_mpmo_wpm_hyst.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_wpm_hyst['Algorithm'] = results_mpmo_wpm_hyst['Algorithm']
+    indicators_list.append(indicators_mpmo_wpm_hyst)
+    results_list.append(results_mpmo_wpm_hyst)
+    
+    results_mpmo_wpm_ttt = p_mpmo_wpm_ttt.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_wpm_ttt['Handover'] = p_mpmo_wpm_ttt.count_number_of_handovers()
+    results_mpmo_wpm_ttt['Algorithm'] = p_mpmo_wpm_ttt.algorithm
+    indicators_mpmo_wpm_ttt = p_mpmo_wpm_ttt.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_wpm_ttt['Algorithm'] = results_mpmo_wpm_ttt['Algorithm']
+    indicators_list.append(indicators_mpmo_wpm_ttt)
+    results_list.append(results_mpmo_wpm_ttt)
+    
     results_mpmo_topsis = p_mpmo_topsis.calculate_average_QoS_parameters(analyzed_parameters)
     results_mpmo_topsis['Handover'] = p_mpmo_topsis.count_number_of_handovers()
     results_mpmo_topsis['Algorithm'] = p_mpmo_topsis.algorithm
@@ -307,6 +391,22 @@ def performe_analysis():
     indicators_mpmo_topsis['Algorithm'] = results_mpmo_topsis['Algorithm']
     indicators_list.append(indicators_mpmo_topsis)
     results_list.append(results_mpmo_topsis)
+    
+    results_mpmo_topsis_hyst = p_mpmo_topsis_hyst.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_topsis_hyst['Handover'] = p_mpmo_topsis_hyst.count_number_of_handovers()
+    results_mpmo_topsis_hyst['Algorithm'] = p_mpmo_topsis_hyst.algorithm
+    indicators_mpmo_topsis_hyst = p_mpmo_topsis_hyst.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_topsis_hyst['Algorithm'] = results_mpmo_topsis_hyst['Algorithm']
+    indicators_list.append(indicators_mpmo_topsis_hyst)
+    results_list.append(results_mpmo_topsis_hyst)
+    
+    results_mpmo_topsis_ttt = p_mpmo_topsis_ttt.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_topsis_ttt['Handover'] = p_mpmo_topsis_ttt.count_number_of_handovers()
+    results_mpmo_topsis_ttt['Algorithm'] = p_mpmo_topsis_ttt.algorithm
+    indicators_mpmo_topsis_ttt = p_mpmo_topsis_ttt.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_topsis_ttt['Algorithm'] = results_mpmo_topsis_ttt['Algorithm']
+    indicators_list.append(indicators_mpmo_topsis_ttt)
+    results_list.append(results_mpmo_topsis_ttt)
     
     results_benchmark = p_benchmark.calculate_average_QoS_parameters(analyzed_parameters)
     results_benchmark['Handover'] = p_benchmark.count_number_of_handovers()
@@ -318,8 +418,13 @@ def performe_analysis():
     print(f"{results_spmo_max_min_snr}, Handoff: {results_spmo_max_min_snr['Handover']}")
     print(f"{results_spmo_pref}, Handoff: {results_spmo_pref['Handover']}")
     print(f"{results_mpmo_saw}, Handoff: {results_mpmo_saw['Handover']}")
+    print(f"{results_mpmo_saw_hyst}, Handoff: {results_mpmo_saw_hyst['Handover']}")
     print(f"{results_mpmo_wpm}, Handoff: {results_mpmo_wpm['Handover']}")
+    print(f"{results_mpmo_wpm_hyst}, Handoff: {results_mpmo_wpm_hyst['Handover']}")
+    print(f"{results_mpmo_wpm_ttt}, Handoff: {results_mpmo_wpm_ttt['Handover']}")
     print(f"{results_mpmo_topsis}, Handoff: {results_mpmo_topsis['Handover']}")
+    print(f"{results_mpmo_topsis_hyst}, Handoff: {results_mpmo_topsis_hyst['Handover']}")
+    print(f"{results_mpmo_topsis_ttt}, Handoff: {results_mpmo_topsis_ttt['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("================================================================================================================================================")
     
@@ -454,7 +559,7 @@ def plot_results():
     ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
 
     plt.tight_layout()
-
+    '''
     # =================== Bar Chart Plot ===================
     # Organizing results by algorithm
     r_dict = {r['Algorithm']: r for r in results}
@@ -489,7 +594,50 @@ def plot_results():
         ax.tick_params(axis='y', labelsize=8)
     
     plt.savefig("outputs/bar_chart.png", dpi=600, bbox_inches='tight')
-    plt.show()
+    plt.show()'''
+    # Organize results by algorithm
+    r_dict = {r['Algorithm']: r for r in results}
+
+    num_params = len(analyzed_parameters)
+
+    # Split parameters into two halves
+    half = math.ceil(num_params / 2)
+    param_groups = [analyzed_parameters[:half], analyzed_parameters[half:]]
+
+    # Loop through each group to create two separate figures
+    for group_index, param_group in enumerate(param_groups):
+        num_params_group = len(param_group)
+        num_cols = 1
+        num_rows = math.ceil(num_params_group / num_cols)
+
+        fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 6 * num_rows), constrained_layout=True)
+
+        axes = axes.flatten() if num_params_group > 1 else [axes]
+
+        for i, param in enumerate(param_group):
+            values = [d[param] for d in r_dict.values()]
+            labels = list(r_dict.keys())
+
+            ax = axes[i]
+            ax.bar(labels, values, color=["silver", "gold", "blue", "green", "yellow", "red", "black"], edgecolor='black', linewidth=1.2)
+            ax.grid(axis='y', linestyle='--', alpha=0.7)
+            ax.set_ylabel(param, fontsize=10)
+
+            # Dynamic y-limit
+            if max(values) < 0:
+                ax.set_ylim(0, min(values) + min(values) * 0.1)
+            else:
+                ax.set_ylim(0, max(values) + max(values) * 0.1)
+
+            ax.tick_params(axis='x', labelsize=8)
+            ax.tick_params(axis='y', labelsize=8)
+
+        # Remove any unused axes
+        for j in range(i + 1, len(axes)):
+            fig.delaxes(axes[j])
+
+        plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
+        plt.show()
 
 
 def plot_graph():
@@ -504,6 +652,7 @@ def plot_graph():
         ax.add_patch(circle)
         circle = Circle((WirelessNetwork[0].x_position, WirelessNetwork[0].y_position), WirelessNetwork[0].maximum_radius/3, color=WirelessNetwork[1], alpha=WirelessNetwork[2], fill=True)
         ax.add_patch(circle)
+        ax.text(WirelessNetwork[0].x_position, WirelessNetwork[0].y_position, WirelessNetwork[0].system_name, color='white', ha='center', va='center', fontsize=10, weight='bold')
     
     ax.scatter(x, y, color='red', s=50)
     ax.set_title("Random Walk Simulation")
@@ -539,8 +688,14 @@ spmo_max_min_method_rssi = SPMO_MMM("SPMO-MAX-RSSI", "RSSI", True)
 spmo_max_min_method_snr = SPMO_MMM("SPMO-MAX-SNR", "SNR", True)
 spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', 'WiFi-Max', 'LTE-4G', 'NB-IoT-5G', 'LoRa-868'])
 mpmo_saw = MPMO_SAW("MPMO-SAW", analyzed_parameters, weights, directions)
+mpmo_saw_hyst = MPMO_SAW("MPMO-SAW-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
+mpmo_saw_ttt = MPMO_SAW("MPMO-SAW-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 mpmo_wpm = MPMO_WPM("MPMO-WPM", analyzed_parameters, weights, directions)
+mpmo_wpm_hyst = MPMO_WPM("MPMO-WPM-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
+mpmo_wpm_ttt = MPMO_WPM("MPMO-WPM-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", analyzed_parameters, weights, directions)
+mpmo_topsis_hyst = MPMO_TOPSIS("MPMO-TOPSIS-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
+mpmo_topsis_ttt = MPMO_TOPSIS("MPMO-TOPSIS-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 
 # Instances of Performance Analysis
@@ -548,8 +703,14 @@ p_spmo_max_min_rssi = PerformanceAnalysis("SPMO-MAX-RSSI")
 p_spmo_max_min_snr = PerformanceAnalysis("SPMO-MAX-SNR")
 p_spmo_pref = PerformanceAnalysis("SPMO-Preference")
 p_mpmo_saw = PerformanceAnalysis("MPMO-SAW")
+p_mpmo_saw_hyst = PerformanceAnalysis("MPMO-SAW-Hyst")
+p_mpmo_saw_ttt = PerformanceAnalysis("MPMO-SAW-TTT")
 p_mpmo_wpm = PerformanceAnalysis("MPMO-WPM")
-p_mpmo_topsis = PerformanceAnalysis("MPMO_TOPSIS")
+p_mpmo_wpm_hyst = PerformanceAnalysis("MPMO-WPM-Hyst")
+p_mpmo_wpm_ttt = PerformanceAnalysis("MPMO-WPM-TTT")
+p_mpmo_topsis = PerformanceAnalysis("MPMO-TOPSIS")
+p_mpmo_topsis_hyst = PerformanceAnalysis("MPMO-TOPSIS-Hyst")
+p_mpmo_topsis_ttt = PerformanceAnalysis("MPMO-TOPSIS-TTT")
 p_benchmark = PerformanceAnalysis("Benchmark")
 
 update_position(device_1)

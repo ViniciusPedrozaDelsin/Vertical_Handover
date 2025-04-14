@@ -1,19 +1,53 @@
 from .DecisionMakerMethod import DecisionMakerMethod as DMM
 
 class MPMO_SAW(DMM):
-    def __init__(self, method_name, attributes, weights, directions):
+    def __init__(self, method_name, attributes, weights, directions, hysterese_percentage=None, time_to_trigger=None):
         super().__init__(method_name)
         self.attributes = attributes
         self.weights = weights
         self.normalizedWeights = self.normalizeWeights()
         self.directions = directions
         self.normalizedAttributes = None
+        
+        # Hysteresis values
+        self.hysteresis_reference = None
+        self.hysterese_percentage = hysterese_percentage
+        
+        # Time to Trigger values
+        self.actual_ttt = 0
+        self.ttt_reference = None
+        self.ttt_active_network = None
+        self.time_to_trigger = time_to_trigger
     
     def makeDecision(self):
-        self.normalizedAttributes = self.normalizeAttributes()
-        self.output = self.calculate_parameters_cost()
+        if self.hysterese_percentage != None:
+            self.output = self.makeDecisionHysteresis()
+        elif self.time_to_trigger != None:
+            self.output = self.makeDecisionTimeToTrigger()
+        else:
+            self.normalizedAttributes = self.normalizeAttributes()
+            self.output = self.calculate_parameters_cost()
         return self.output
     
+    
+    def makeDecisionHysteresis(self):
+        check_hysteresis_reference = self.check_hysteresis_reference()
+        if check_hysteresis_reference[0]:
+            self.normalizedAttributes = self.normalizeAttributes()
+            self.output = self.calculate_parameters_cost()
+            self.hysteresis_reference = self.output
+        else:
+            self.output = check_hysteresis_reference[1]
+        return self.output
+    
+    def makeDecisionTimeToTrigger(self):
+        # Generate expected output
+        self.normalizedAttributes = self.normalizeAttributes()
+        expected_output = self.calculate_parameters_cost()
+        
+        self.output = self.check_time_to_trigger(expected_output)
+        return self.output
+        
     def normalizeWeights(self):
         normalizedWeights = []
         sum = 0
