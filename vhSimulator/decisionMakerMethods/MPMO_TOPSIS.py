@@ -27,20 +27,22 @@ class MPMO_TOPSIS(DMM):
         elif self.time_to_trigger != None:
             self.makeDecisionTimeToTrigger()
         else:
-            self.attributes_matrix = self.get_Attributes_Matrix()
-            self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-            attributes_weights_matrix = self.get_matrix_attributes_weights()
-            self.output = self.calculateSolution(attributes_weights_matrix)
+            #self.attributes_matrix = self.get_Attributes_Matrix()
+            #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+            #attributes_weights_matrix = self.get_matrix_attributes_weights()
+            #self.output = self.calculateSolution(attributes_weights_matrix)
+            self.output = self.decisionProcedure()
         return self.output
     
     
     def makeDecisionHysteresis(self):
         check_hysteresis_reference = self.check_hysteresis_reference()
         if check_hysteresis_reference[0]:
-            self.attributes_matrix = self.get_Attributes_Matrix()
-            self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-            attributes_weights_matrix = self.get_matrix_attributes_weights()
-            self.output = self.calculateSolution(attributes_weights_matrix)
+            #self.attributes_matrix = self.get_Attributes_Matrix()
+            #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+            #attributes_weights_matrix = self.get_matrix_attributes_weights()
+            #self.output = self.calculateSolution(attributes_weights_matrix)
+            self.output = self.decisionProcedure()
             self.hysteresis_reference = self.output
         else:
             self.output = check_hysteresis_reference[1]
@@ -48,14 +50,21 @@ class MPMO_TOPSIS(DMM):
         
     def makeDecisionTimeToTrigger(self):
         # Generate expected output
-        self.attributes_matrix = self.get_Attributes_Matrix()
-        self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-        attributes_weights_matrix = self.get_matrix_attributes_weights()
-        expected_output = self.calculateSolution(attributes_weights_matrix)
+        #self.attributes_matrix = self.get_Attributes_Matrix()
+        #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+        #attributes_weights_matrix = self.get_matrix_attributes_weights()
+        #expected_output = self.calculateSolution(attributes_weights_matrix)
+        expected_output = self.decisionProcedure()
         
         self.output = self.check_time_to_trigger(expected_output)
         return self.output
-        
+    
+    def decisionProcedure(self):
+        self.attributes_matrix = self.get_Attributes_Matrix()
+        self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+        attributes_weights_matrix = self.get_matrix_attributes_weights()
+        output = self.calculateSolution(attributes_weights_matrix)
+        return output
     
     def normalizeWeights(self):
         normalizedWeights = []

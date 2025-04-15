@@ -32,21 +32,20 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 10000
+n = 50
 
 # Activate Graphical Interface
-GUI = False
+GUI = True
 
 # Activate Prints for DEBBUG
-verbose = False
+verbose = True
 
 # Number of simulations
-n_simulations = 1000
+n_simulations = 3
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
-weights = [2, 2, 2, 1, 1, 1, 1]
-#weights = [2, 4, 9, 1, 1, 1, 2]
+weights = [1, 1, 1, 1, 1, 1, 1]
 directions = [1, 1, 1, 0, 0, 0, 1]
 hyst_percentage = 0.1
 tt_trigger = 2
@@ -228,7 +227,6 @@ def update_position(device):
 def calculate_parameters(device, x_position, y_position):
     if verbose == True: print(f"x:{round(x_position, 4)} || y:{round(y_position, 4)}")
     device.updatePosition(x_position, y_position)
-    
     
     if verbose == True: print("===================================================")
     #print(f"Networks: {device.get_all_QoS_Parameters_predef()}")
@@ -419,6 +417,7 @@ def performe_analysis():
     print(f"{results_spmo_pref}, Handoff: {results_spmo_pref['Handover']}")
     print(f"{results_mpmo_saw}, Handoff: {results_mpmo_saw['Handover']}")
     print(f"{results_mpmo_saw_hyst}, Handoff: {results_mpmo_saw_hyst['Handover']}")
+    print(f"{results_mpmo_saw_ttt}, Handoff: {results_mpmo_saw_ttt['Handover']}")
     print(f"{results_mpmo_wpm}, Handoff: {results_mpmo_wpm['Handover']}")
     print(f"{results_mpmo_wpm_hyst}, Handoff: {results_mpmo_wpm_hyst['Handover']}")
     print(f"{results_mpmo_wpm_ttt}, Handoff: {results_mpmo_wpm_ttt['Handover']}")
@@ -559,13 +558,13 @@ def plot_results():
     ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
 
     plt.tight_layout()
-    '''
     # =================== Bar Chart Plot ===================
+    '''
     # Organizing results by algorithm
     r_dict = {r['Algorithm']: r for r in results}
 
     num_params = len(analyzed_parameters)
-    num_cols = 2  # Split into two vertical sections
+    num_cols = 1  # Split into two vertical sections
     num_rows = math.ceil(num_params / num_cols)  # Calculate needed rows
 
     fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 8 * num_rows), constrained_layout=True)
@@ -579,7 +578,7 @@ def plot_results():
 
         ax = axes[i]  # Get the correct subplot
 
-        ax.bar(labels, values, color=["silver", "gold", "blue", "green", "yellow", "red", "black"], edgecolor='black', linewidth=1.2)
+        ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red"], edgecolor='black', linewidth=1.2)
         ax.grid(axis='y', linestyle='--', alpha=0.7)
         ax.set_ylabel(param, fontsize=10)
         #ax.set_title(f"Optimization Methods X {param}", fontsize=12)
@@ -619,7 +618,11 @@ def plot_results():
             labels = list(r_dict.keys())
 
             ax = axes[i]
-            ax.bar(labels, values, color=["silver", "gold", "blue", "green", "yellow", "red", "black"], edgecolor='black', linewidth=1.2)
+            hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x']
+            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "black"], edgecolor='black', linewidth=1.2)
+            # Apply hatch patterns to each bar
+            for bar, hatch in zip(bars, hatches):
+                bar.set_hatch(hatch)
             ax.grid(axis='y', linestyle='--', alpha=0.7)
             ax.set_ylabel(param, fontsize=10)
 

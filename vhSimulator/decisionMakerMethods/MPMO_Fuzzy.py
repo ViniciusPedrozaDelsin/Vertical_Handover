@@ -1,8 +1,8 @@
 from .DecisionMakerMethod import DecisionMakerMethod as DMM
 import numpy as np
 
-class MPMO_TOPSIS_Hysteresis(DMM):
-    def __init__(self, method_name, attributes, weights, directions, hysterese_percentage):
+class MPMO_Fuzzy(DMM):
+    def __init__(self, method_name, attributes, weights, directions, hysterese_percentage=None, time_to_trigger=None):
         super().__init__(method_name)
         self.attributes = attributes
         self.weights = weights
@@ -10,60 +10,61 @@ class MPMO_TOPSIS_Hysteresis(DMM):
         self.directions = directions
         self.attributes_matrix = None
         self.normalized_attributes_matrix = None
+        
+        # Hysteresis values
         self.hysteresis_reference = None
         self.hysterese_percentage = hysterese_percentage
+        
+        # Time to Trigger values
+        self.actual_ttt = 0
+        self.ttt_reference = None
+        self.ttt_active_network = None
+        self.time_to_trigger = time_to_trigger
     
     def makeDecision(self):
+        if self.hysterese_percentage != None:
+            self.output = self.makeDecisionHysteresis()
+        elif self.time_to_trigger != None:
+            self.makeDecisionTimeToTrigger()
+        else:
+            #self.attributes_matrix = self.get_Attributes_Matrix()
+            #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+            #attributes_weights_matrix = self.get_matrix_attributes_weights()
+            #self.output = self.calculateSolution(attributes_weights_matrix)
+            self.output = self.decisionProcedure()
+        return self.output
+    
+    
+    def makeDecisionHysteresis(self):
         check_hysteresis_reference = self.check_hysteresis_reference()
         if check_hysteresis_reference[0]:
-            self.attributes_matrix = self.get_Attributes_Matrix()
-            self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-            attributes_weights_matrix = self.get_matrix_attributes_weights()
-            self.output = self.calculateSolution(attributes_weights_matrix)
+            #self.attributes_matrix = self.get_Attributes_Matrix()
+            #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+            #attributes_weights_matrix = self.get_matrix_attributes_weights()
+            #self.output = self.calculateSolution(attributes_weights_matrix)
+            self.output = self.decisionProcedure()
             self.hysteresis_reference = self.output
         else:
             self.output = check_hysteresis_reference[1]
         return self.output
-    
-    def check_hysteresis_reference(self):
-        network_still_available = False
-        actual_network = None
-        if self.hysteresis_reference != None:
-            for input in self.inputs:
-                if self.hysteresis_reference['Network'] == input['Network']:
-                    # Get new parameters of the actual network
-                    actual_network = input
-                    network_still_available = True
         
-        network_scanning = [True, None]
-        if network_still_available:
-            network_ok = True
-            i = 0
-            for attribute in self.attributes:
-                #print(f"{actual_network[attribute]} < {self.hysteresis_reference[attribute]}")
-                if self.directions[i] == 1 and self.hysteresis_reference[attribute] > 0:
-                    if actual_network[attribute] <= self.hysteresis_reference[attribute] * (1 - self.hysterese_percentage):
-                        network_ok = False
-                        #print(f"Network_ok = False || direction: {self.directions[i]}")
-                elif self.directions[i] == 1 and self.hysteresis_reference[attribute] < 0:
-                    if actual_network[attribute] <= self.hysteresis_reference[attribute] * (1 + self.hysterese_percentage):
-                        network_ok = False
-                        #print(f"Network_ok = False || direction: {self.directions[i]}")
-                elif self.directions[i] == 0 and self.hysteresis_reference[attribute] > 0:
-                    if actual_network[attribute] >= self.hysteresis_reference[attribute] * (1 + self.hysterese_percentage):
-                        network_ok = False
-                        #print(f"Network_ok = False || direction: {self.directions[i]}")
-                else:
-                    if actual_network[attribute] >= self.hysteresis_reference[attribute] * (1 - self.hysterese_percentage):
-                        network_ok = False
-                        #print(f"Network_ok = False || direction: {self.directions[i]}")
-                i = i + 1
-            if network_ok:
-                network_scanning = [False, actual_network]
-            else:
-                network_scanning = [True, None]
-            
-        return network_scanning
+    def makeDecisionTimeToTrigger(self):
+        # Generate expected output
+        #self.attributes_matrix = self.get_Attributes_Matrix()
+        #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+        #attributes_weights_matrix = self.get_matrix_attributes_weights()
+        #expected_output = self.calculateSolution(attributes_weights_matrix)
+        expected_output = self.decisionProcedure()
+        
+        self.output = self.check_time_to_trigger(expected_output)
+        return self.output
+    
+    def decisionProcedure(self):
+        self.attributes_matrix = self.get_Attributes_Matrix()
+        self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
+        attributes_weights_matrix = self.get_matrix_attributes_weights()
+        output = self.calculateSolution(attributes_weights_matrix)
+        return output
     
     def normalizeWeights(self):
         normalizedWeights = []

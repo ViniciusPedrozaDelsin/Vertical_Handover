@@ -25,16 +25,18 @@ class MPMO_SAW(DMM):
         elif self.time_to_trigger != None:
             self.output = self.makeDecisionTimeToTrigger()
         else:
-            self.normalizedAttributes = self.normalizeAttributes()
-            self.output = self.calculate_parameters_cost()
+            self.output = self.decisionProcedure()
+            #self.normalizedAttributes = self.normalizeAttributes()
+            #self.output = self.calculate_parameters_cost()
         return self.output
     
     
     def makeDecisionHysteresis(self):
         check_hysteresis_reference = self.check_hysteresis_reference()
         if check_hysteresis_reference[0]:
-            self.normalizedAttributes = self.normalizeAttributes()
-            self.output = self.calculate_parameters_cost()
+            #self.normalizedAttributes = self.normalizeAttributes()
+            #self.output = self.calculate_parameters_cost()
+            self.output = self.decisionProcedure()
             self.hysteresis_reference = self.output
         else:
             self.output = check_hysteresis_reference[1]
@@ -42,12 +44,17 @@ class MPMO_SAW(DMM):
     
     def makeDecisionTimeToTrigger(self):
         # Generate expected output
-        self.normalizedAttributes = self.normalizeAttributes()
-        expected_output = self.calculate_parameters_cost()
-        
+        #self.normalizedAttributes = self.normalizeAttributes()
+        #expected_output = self.calculate_parameters_cost()
+        expected_output = self.decisionProcedure()
         self.output = self.check_time_to_trigger(expected_output)
         return self.output
-        
+    
+    def decisionProcedure(self):
+        self.normalizedAttributes = self.normalizeAttributes()
+        output = self.calculate_parameters_cost()
+        return output
+    
     def normalizeWeights(self):
         normalizedWeights = []
         sum = 0
