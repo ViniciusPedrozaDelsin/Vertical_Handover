@@ -1,15 +1,11 @@
 from .DecisionMakerMethod import DecisionMakerMethod as DMM
-import numpy as np
 
 class MPMO_Fuzzy(DMM):
-    def __init__(self, method_name, attributes, weights, directions, hysterese_percentage=None, time_to_trigger=None):
+    def __init__(self, method_name, hysterese_percentage=None, time_to_trigger=None):
         super().__init__(method_name)
-        self.attributes = attributes
-        self.weights = weights
-        self.normalizedWeights = self.normalizeWeights()
-        self.directions = directions
-        self.attributes_matrix = None
-        self.normalized_attributes_matrix = None
+        self.membership = {}
+        self.membership_degree = {}
+        self.rules = []
         
         # Hysteresis values
         self.hysteresis_reference = None
@@ -20,6 +16,7 @@ class MPMO_Fuzzy(DMM):
         self.ttt_reference = None
         self.ttt_active_network = None
         self.time_to_trigger = time_to_trigger
+        
     
     def makeDecision(self):
         if self.hysterese_percentage != None:
@@ -27,10 +24,6 @@ class MPMO_Fuzzy(DMM):
         elif self.time_to_trigger != None:
             self.makeDecisionTimeToTrigger()
         else:
-            #self.attributes_matrix = self.get_Attributes_Matrix()
-            #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-            #attributes_weights_matrix = self.get_matrix_attributes_weights()
-            #self.output = self.calculateSolution(attributes_weights_matrix)
             self.output = self.decisionProcedure()
         return self.output
     
@@ -38,10 +31,6 @@ class MPMO_Fuzzy(DMM):
     def makeDecisionHysteresis(self):
         check_hysteresis_reference = self.check_hysteresis_reference()
         if check_hysteresis_reference[0]:
-            #self.attributes_matrix = self.get_Attributes_Matrix()
-            #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-            #attributes_weights_matrix = self.get_matrix_attributes_weights()
-            #self.output = self.calculateSolution(attributes_weights_matrix)
             self.output = self.decisionProcedure()
             self.hysteresis_reference = self.output
         else:
@@ -49,80 +38,145 @@ class MPMO_Fuzzy(DMM):
         return self.output
         
     def makeDecisionTimeToTrigger(self):
-        # Generate expected output
-        #self.attributes_matrix = self.get_Attributes_Matrix()
-        #self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-        #attributes_weights_matrix = self.get_matrix_attributes_weights()
-        #expected_output = self.calculateSolution(attributes_weights_matrix)
         expected_output = self.decisionProcedure()
-        
         self.output = self.check_time_to_trigger(expected_output)
         return self.output
     
     def decisionProcedure(self):
-        self.attributes_matrix = self.get_Attributes_Matrix()
-        self.normalized_attributes_matrix = self.NormalizeAttributesMatrix()
-        attributes_weights_matrix = self.get_matrix_attributes_weights()
-        output = self.calculateSolution(attributes_weights_matrix)
+        fuzzification = self.Fuzzification(self.membership_degree)
+        applied_rules = self.ApplyRules(fuzzification)
+        final_results = self.Defuzzification(applied_rules)
+        output = self.choose_handoff_fuzzified(final_results)
+        #output = {'Network': 'LoRa-2', 'Status': 'Online', 'Distance': 7710.096427074727, 'RSSI': -101.02, 'SNR': 2.37, 'BER': 0.008294665075988363, 'FEC': 0.5765109730288961, 'Throughput': 0.013, 'Protocol': 'LoRa-868', 'PC': 0.05, 'MC': 1}
         return output
     
-    def normalizeWeights(self):
-        normalizedWeights = []
-        sum = 0
-        for weight in self.weights:
-            sum = sum + weight
+    def defineMembershipDegree(self):
+        pass
+    
+    def defineRules(self):
+        pass
+    
+    def definePresetConfigs(self):
+        # Set Membership Degree
+        self.membership['RSSI'] = {'Low': [-120, -80], 'Medium': [-90, -60], 'High': [-65, -35]}
+        self.membership['SNR'] = {'Low': [0, 15], 'High': [13, 30]}
+        self.membership['Throughput'] = {'Low': [2, 30], 'Medium': [20, 100], 'High': [80, 1500]}
+        self.membership['PC'] = {'Low': [0.05, 0.6], 'High': [0.4, 1.05]}
+        self.membership['MC'] = {'Low': [1, 2.5], 'High': [2, 4]}
+        self.membership['BER'] = {'Low': [0.00000001, 0.00001], 'High': [0.000001, 0.01]}
+        self.membership['FEC'] = {'Low': [0.5, 0.75], 'High': [0.7, 1]}
         
-        for weight in self.weights:
-            normalizedWeights.append(weight/sum)
+        # Set Fuzzy Rules
+        self.rules.append({'Handoff': 'YES', 'Conjunction': 'AND', 'Rules': {'Throughput': 'High', 'RSSI': 'Medium', 'FEC': 'High'}})
+        self.rules.append({'Handoff': 'YES', 'Conjunction': 'AND', 'Rules': {'Throughput': 'High', 'RSSI': 'High'}})
+        self.rules.append({'Handoff': 'YES', 'Conjunction': 'OR', 'Rules': {'Throughput': 'High', 'SNR': 'High'}})
+        self.rules.append({'Handoff': 'YES', 'Conjunction': 'AND', 'Rules': {'RSSI': 'High', 'SNR': 'High', 'FEC': 'High'}})
+        self.rules.append({'Handoff': 'YES', 'Conjunction': 'AND', 'Rules': {'Throughput': 'High', 'PC': 'Low', 'MC': 'Low'}})
+        self.rules.append({'Handoff': 'NO', 'Conjunction': 'OR', 'Rules': {'Throughput': 'Low', 'PC': 'High'}})
+        self.rules.append({'Handoff': 'NO', 'Conjunction': 'AND', 'Rules': {'RSSI': 'Low', 'PC': 'High', 'FEC': 'Low'}})
+        self.rules.append({'Handoff': 'NO', 'Conjunction': 'AND', 'Rules': {'Throughput': 'Low', 'SNR': 'Low'}})
+        self.rules.append({'Handoff': 'NO', 'Conjunction': 'AND', 'Rules': {'RSSI': 'Low', 'SNR': 'Low'}})
         
-        return np.array(normalizedWeights, dtype=float)
+        self.calculateTrianglesPeak()
     
-    def get_Attributes_Matrix(self):
-        attributes_matrix = []
-        for input in self.inputs:
-            input_list = []
-            for attribute in self.attributes:
-                input_list.append(input[attribute])
-            attributes_matrix.append(input_list)  
-        return np.array(attributes_matrix, dtype=float)
+    def calculateTrianglesPeak(self):
+        self.membership_degree = self.membership
+        for key, value in self.membership.items():
+            for name, v in value.items():
+                v_sum = 0
+                for element in v:
+                    v_sum = v_sum + element
+                self.membership_degree[key][name].insert(1, v_sum/2)
+        return self.membership_degree
     
-    
-    def NormalizeAttributesMatrix(self):        
-        norm_matrix = self.attributes_matrix / np.sqrt((self.attributes_matrix ** 2).sum(axis=0))
-        return norm_matrix
-    
-    
-    def get_matrix_attributes_weights(self):
-        attributes_matrix_multiplied_by_weights = self.normalized_attributes_matrix * self.normalizedWeights
-        return attributes_matrix_multiplied_by_weights
-        
-    def calculateSolution(self, matrix):
-        # Determine ideal and negative-ideal solutions
-        i = 0
-        a_plus_list = []
-        a_minus_list = []
-        for direction in self.directions:
-            if direction == True:
-                a_plus = np.max(matrix[:,i], axis=0)
-                a_minus = np.min(matrix[:,i], axis=0)
+    def calculateTrianglesSlope(self, parameter, value):
+        output = {}
+        for key, value_mdegree in self.membership_degree[parameter].items():
+            if key == "High":
+                if value >= value_mdegree[2]:
+                    output[key] = 1
+                elif value <= value_mdegree[0]:
+                    output[key] = 0
+                else:
+                    output[key] = (value - value_mdegree[0]) / (value_mdegree[2] - value_mdegree[0])
+            elif key == "Low":
+                if value >= value_mdegree[2]:
+                    output[key] = 0
+                elif value <= value_mdegree[0]:
+                    output[key] = 1
+                else:
+                    output[key] = (value_mdegree[2] - value) / (value_mdegree[2] - value_mdegree[0])
             else:
-                a_plus = np.min(matrix[:,i], axis=0)
-                a_minus = np.max(matrix[:,i], axis=0)
-            a_plus_list.append(a_plus)
-            a_minus_list.append(a_minus)
-            i = i + 1
-        a_plus_matrix = np.array(a_plus_list, dtype=float)
-        a_minus_matrix = np.array(a_minus_list, dtype=float)
+                if value >= value_mdegree[2] or value <= value_mdegree[0]:
+                    output[key] = 0
+                else:
+                    # Left Slope
+                    if value < value_mdegree[1]:
+                        output[key] = (value - value_mdegree[0]) / (value_mdegree[1] - value_mdegree[0])
+                        
+                    # Right Slope
+                    elif value > value_mdegree[1]:
+                        output[key] = (value_mdegree[2] - value) / (value_mdegree[2] - value_mdegree[1])
+                        
+                    # Triangle Peak
+                    else:
+                        output[key] = 1
+            
+        return output
+    
+    
+    def Fuzzification(self, membership_degree):
+        fuzzified_inputs = []
+        for ipt in self.inputs:
+            fuzzified_input = {}
+            fuzzified_input['Network'] = ipt['Network']
+            for att, value in ipt.items():
+                if att in self.membership_degree:
+                    fuzzified_input[att] = self.calculateTrianglesSlope(att, value)
+            fuzzified_inputs.append(fuzzified_input)
+        return fuzzified_inputs
+    
+    
+    def ApplyRules(self, fuzzified_inputs):
+        for fuzzified_input in fuzzified_inputs:
+            rules_dict = {}
+            rules_dict['YES'] = []
+            rules_dict['NO'] = []
+            for rule in self.rules:
+                activation_values  = []
+                for k, v in rule['Rules'].items():
+                    activation_values.append(fuzzified_input[k][v])
+                if rule['Conjunction'] == 'AND':
+                    activation_strength  = min(activation_values)
+                else:
+                    activation_strength  = max(activation_values)
+                
+                if rule['Handoff'] == "YES":
+                    rules_dict['YES'].append(activation_strength)
+                else:
+                    rules_dict['NO'].append(activation_strength)
+            fuzzified_input['Strength'] = rules_dict
+        return fuzzified_inputs
+    
+    def Defuzzification(self, fuzzified_values):
+        for fv in fuzzified_values:
+            sum_yes = sum(fv['Strength']['YES'])
+            sum_no = sum(fv['Strength']['NO'])
+            crisp_output = sum_yes / (sum_yes + sum_no)
+            fv['CrispOutput'] = crisp_output
+        return fuzzified_values
+    
+    def choose_handoff_fuzzified(self, crisp_results):
+        crisp_resp = 0
+        choosen_network = None
+        output = None
+        for cr in crisp_results:
+            if cr['CrispOutput'] >= crisp_resp:
+                choosen_network = cr['Network']
         
-        # Calculate Euclidean distances
-        dist_ideal = np.sqrt(((matrix - a_plus_matrix) ** 2).sum(axis=1))
-        dist_negative_ideal = np.sqrt(((matrix - a_minus_matrix) ** 2).sum(axis=1))
-
-        # Calculate relative closeness to ideal solution
-        closeness_coefficient = dist_negative_ideal / (dist_ideal + dist_negative_ideal)
-        
-        # Rank alternatives (higher is better)
-        # Get the index of the max value
-        max_index = np.argmax(closeness_coefficient)
-        
-        return self.inputs[max_index]
+        for inpt in self.inputs:
+            if inpt['Network'] == choosen_network:
+                output = inpt
+                
+        return output
+    

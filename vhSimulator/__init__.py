@@ -6,5 +6,6 @@ from .decisionMakerMethods import SPMO_Max_Min_Method
 from .decisionMakerMethods import MPMO_SAW
 from .decisionMakerMethods import MPMO_WPM
 from .decisionMakerMethods import MPMO_TOPSIS
+from .decisionMakerMethods import MPMO_Fuzzy
 from .decisionMakerMethods import BenchmarkMethod
 from .analysis import PerformanceAnalysis

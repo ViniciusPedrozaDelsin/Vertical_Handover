@@ -14,7 +14,7 @@ from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
 from vhSimulator import SPMO_Preference as SPMO_Pref
-from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, BenchmarkMethod, PerformanceAnalysis
+from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, BenchmarkMethod, PerformanceAnalysis
 
 
 # ==================================== Initial Parameters ====================================
@@ -32,16 +32,16 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 50
+n = 5000
 
 # Activate Graphical Interface
 GUI = True
 
 # Activate Prints for DEBBUG
-verbose = True
+verbose = False
 
 # Number of simulations
-n_simulations = 3
+n_simulations = 3000
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
@@ -202,6 +202,7 @@ def update_position(device):
             p_mpmo_topsis.clean_storaged_QoS()
             p_mpmo_topsis_hyst.clean_storaged_QoS()
             p_mpmo_topsis_ttt.clean_storaged_QoS()
+            p_mpmo_fuzzy.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
             p_spmo_max_min_rssi.clean_Benchmark_storaged_QoS()
@@ -216,6 +217,7 @@ def update_position(device):
             p_mpmo_topsis.clean_Benchmark_storaged_QoS()
             p_mpmo_topsis_hyst.clean_Benchmark_storaged_QoS()
             p_mpmo_topsis_ttt.clean_Benchmark_storaged_QoS()
+            p_mpmo_fuzzy.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             j = 0
             update_position(device)
@@ -287,7 +289,6 @@ def calculate_parameters(device, x_position, y_position):
     p_mpmo_topsis.store_QoS_parameters(decision_mpmo_topsis)
     p_mpmo_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO TOPSIS: {decision_mpmo_topsis}")
-    #if verbose == True: print(f"\033[91mDecision MPMO TOPSIS: {decision_mpmo_topsis}\033[0m")
     
     decision_mpmo_topsis_hyst = device.makeDecision(mpmo_topsis_hyst, available_networks)
     p_mpmo_topsis_hyst.store_QoS_parameters(decision_mpmo_topsis_hyst)
@@ -299,6 +300,11 @@ def calculate_parameters(device, x_position, y_position):
     p_mpmo_topsis_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO TOPSIS Time to Trigger: {decision_mpmo_topsis_ttt}")
     #if verbose == True: print(f"\033[91mDecision MPMO TOPSIS Time to Trigger: {decision_mpmo_topsis_ttt}\033[0m")
+    
+    decision_mpmo_fuzzy = device.makeDecision(mpmo_fuzzy, available_networks)
+    p_mpmo_fuzzy.store_QoS_parameters(decision_mpmo_fuzzy)
+    p_mpmo_fuzzy.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy}")
     
     if verbose == True: print("===================================================")
 
@@ -406,6 +412,14 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_topsis_ttt)
     results_list.append(results_mpmo_topsis_ttt)
     
+    results_mpmo_fuzzy = p_mpmo_fuzzy.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_fuzzy['Handover'] = p_mpmo_fuzzy.count_number_of_handovers()
+    results_mpmo_fuzzy['Algorithm'] = p_mpmo_fuzzy.algorithm
+    indicators_mpmo_fuzzy = p_mpmo_fuzzy.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_fuzzy['Algorithm'] = results_mpmo_fuzzy['Algorithm']
+    indicators_list.append(indicators_mpmo_fuzzy)
+    results_list.append(results_mpmo_fuzzy)
+    
     results_benchmark = p_benchmark.calculate_average_QoS_parameters(analyzed_parameters)
     results_benchmark['Handover'] = p_benchmark.count_number_of_handovers()
     results_benchmark['Algorithm'] = p_benchmark.algorithm
@@ -424,6 +438,7 @@ def performe_analysis():
     print(f"{results_mpmo_topsis}, Handoff: {results_mpmo_topsis['Handover']}")
     print(f"{results_mpmo_topsis_hyst}, Handoff: {results_mpmo_topsis_hyst['Handover']}")
     print(f"{results_mpmo_topsis_ttt}, Handoff: {results_mpmo_topsis_ttt['Handover']}")
+    print(f"{results_mpmo_fuzzy}, Handoff: {results_mpmo_fuzzy['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("================================================================================================================================================")
     
@@ -468,6 +483,7 @@ def plot_results():
     aggregated_results_rmse = {}
 
     # Loop through each list in the indicators_results
+    #print(f"Indicator Results: {indicators_results}")
     for group in indicators_results:
         for entry in group:
             algorithm = entry['Algorithm']
@@ -477,7 +493,7 @@ def plot_results():
             
             for param in entry:
                 if param != 'Algorithm':
-                    aggregated_results_rmse[algorithm][param] += ((sum(entry[param]) / len(entry[param]))**(1/2))
+                    aggregated_results_rmse[algorithm][param] += ((sum([x**2 for x in entry[param]]) / len(entry[param]))**(1/2))
     
     # Print the aggregated results
     ind_dict = {}
@@ -499,7 +515,9 @@ def plot_results():
     }
     print(normalized_rsme)
     
+    # Transpose the matrix
     zipped = zip(*normalized_rsme.values())
+    
     # Calculate RMSE by Indice
     #rmse_per_index = [np.sqrt(np.mean([val**2 for val in values])) for values in zipped]
     rmse_per_index = [
@@ -619,7 +637,7 @@ def plot_results():
 
             ax = axes[i]
             hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x']
-            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "black"], edgecolor='black', linewidth=1.2)
+            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "black"], edgecolor='black', linewidth=1.2)
             # Apply hatch patterns to each bar
             for bar, hatch in zip(bars, hatches):
                 bar.set_hatch(hatch)
@@ -699,6 +717,8 @@ mpmo_wpm_ttt = MPMO_WPM("MPMO-WPM-TimeToTrigger", analyzed_parameters, weights, 
 mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", analyzed_parameters, weights, directions)
 mpmo_topsis_hyst = MPMO_TOPSIS("MPMO-TOPSIS-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
 mpmo_topsis_ttt = MPMO_TOPSIS("MPMO-TOPSIS-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
+mpmo_fuzzy = MPMO_Fuzzy("MPMO-Fuzzy")
+mpmo_fuzzy.definePresetConfigs()
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 
 # Instances of Performance Analysis
@@ -714,6 +734,7 @@ p_mpmo_wpm_ttt = PerformanceAnalysis("MPMO-WPM-TTT")
 p_mpmo_topsis = PerformanceAnalysis("MPMO-TOPSIS")
 p_mpmo_topsis_hyst = PerformanceAnalysis("MPMO-TOPSIS-Hyst")
 p_mpmo_topsis_ttt = PerformanceAnalysis("MPMO-TOPSIS-TTT")
+p_mpmo_fuzzy = PerformanceAnalysis("MPMO-Fuzzy")
 p_benchmark = PerformanceAnalysis("Benchmark")
 
 update_position(device_1)
