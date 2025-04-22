@@ -32,16 +32,16 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 5000
+n = 500
 
 # Activate Graphical Interface
-GUI = True
+GUI = False
 
 # Activate Prints for DEBBUG
 verbose = False
 
 # Number of simulations
-n_simulations = 3000
+n_simulations = 1
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
@@ -510,7 +510,7 @@ def plot_results():
     
     print("RMSE of the Normalized Results")
     normalized_rsme = {
-        k: [v_i / max(v) for v_i in v]
+        k: [(v_i-min(v)) / (max(v)-min(v)) for v_i in v]
         for k, v in ind_dict.items()
     }
     print(normalized_rsme)
