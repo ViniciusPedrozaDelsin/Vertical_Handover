@@ -4,6 +4,7 @@ import sys
 import random
 import numpy as np
 import math
+import copy
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -32,7 +33,7 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 500
+n = 1000
 
 # Activate Graphical Interface
 GUI = False
@@ -41,7 +42,10 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 1
+n_simulations = 200
+
+# Iteration x Simulations
+iter_x_simu = n_simulations * n
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
@@ -443,12 +447,12 @@ def performe_analysis():
     print("================================================================================================================================================")
     
     final_results.append(results_list)
-    indicators_results.append(indicators_list)
+    indicators_results.append(copy.deepcopy(indicators_list))
     
 
 
 def plot_results():
-    global final_results, analyzed_parameters, indicators_results
+    global final_results, analyzed_parameters, indicators_results, iter_x_simu
     analyzed_parameters.append("Handover")
     
     # Initialize aggregation storage
@@ -493,7 +497,13 @@ def plot_results():
             
             for param in entry:
                 if param != 'Algorithm':
-                    aggregated_results_rmse[algorithm][param] += ((sum([x**2 for x in entry[param]]) / len(entry[param]))**(1/2))
+                    aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
+    
+    for agg in aggregated_results_rmse:
+        for parm in aggregated_results_rmse[agg]:
+            aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm] / (iter_x_simu))**(1/2)
+    
+    print(f"Aggregated results: {aggregated_results_rmse}")
     
     # Print the aggregated results
     ind_dict = {}
@@ -657,7 +667,7 @@ def plot_results():
         for j in range(i + 1, len(axes)):
             fig.delaxes(axes[j])
 
-        plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
+        #plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
         plt.show()
 
 
