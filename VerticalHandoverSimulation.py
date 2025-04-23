@@ -42,7 +42,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 200
+n_simulations = 2000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
