@@ -207,6 +207,8 @@ def update_position(device):
             p_mpmo_topsis_hyst.clean_storaged_QoS()
             p_mpmo_topsis_ttt.clean_storaged_QoS()
             p_mpmo_fuzzy.clean_storaged_QoS()
+            p_mpmo_fuzzy_hyst.clean_storaged_QoS()
+            p_mpmo_fuzzy_ttt.clean_storaged_QoS()
             p_mpmo_rmse.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             p_worst_scenario.clean_storaged_QoS()
@@ -224,6 +226,8 @@ def update_position(device):
             p_mpmo_topsis_hyst.clean_Benchmark_storaged_QoS()
             p_mpmo_topsis_ttt.clean_Benchmark_storaged_QoS()
             p_mpmo_fuzzy.clean_Benchmark_storaged_QoS()
+            p_mpmo_fuzzy_hyst.clean_Benchmark_storaged_QoS()
+            p_mpmo_fuzzy_ttt.clean_Benchmark_storaged_QoS()
             p_mpmo_rmse.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             p_worst_scenario.clean_Benchmark_storaged_QoS()
@@ -319,6 +323,16 @@ def calculate_parameters(device, x_position, y_position):
     p_mpmo_fuzzy.store_QoS_parameters(decision_mpmo_fuzzy)
     p_mpmo_fuzzy.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy}")
+    
+    decision_mpmo_fuzzy_hyst = device.makeDecision(mpmo_fuzzy_hyst, available_networks)
+    p_mpmo_fuzzy_hyst.store_QoS_parameters(decision_mpmo_fuzzy_hyst)
+    p_mpmo_fuzzy_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy_hyst}")
+    
+    decision_mpmo_fuzzy_ttt = device.makeDecision(mpmo_fuzzy_ttt, available_networks)
+    p_mpmo_fuzzy_ttt.store_QoS_parameters(decision_mpmo_fuzzy_ttt)
+    p_mpmo_fuzzy_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy_ttt}")
     
     decision_mpmo_rmse = device.makeDecision(mpmo_rmse, available_networks)
     p_mpmo_rmse.store_QoS_parameters(decision_mpmo_rmse)
@@ -439,6 +453,22 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_fuzzy)
     results_list.append(results_mpmo_fuzzy)
     
+    results_mpmo_fuzzy_hyst = p_mpmo_fuzzy_hyst.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_fuzzy_hyst['Handover'] = p_mpmo_fuzzy_hyst.count_number_of_handovers()
+    results_mpmo_fuzzy_hyst['Algorithm'] = p_mpmo_fuzzy_hyst.algorithm
+    indicators_mpmo_fuzzy_hyst = p_mpmo_fuzzy_hyst.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_fuzzy_hyst['Algorithm'] = results_mpmo_fuzzy_hyst['Algorithm']
+    indicators_list.append(indicators_mpmo_fuzzy_hyst)
+    results_list.append(results_mpmo_fuzzy_hyst)
+    
+    results_mpmo_fuzzy_ttt = p_mpmo_fuzzy_ttt.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_fuzzy_ttt['Handover'] = p_mpmo_fuzzy_ttt.count_number_of_handovers()
+    results_mpmo_fuzzy_ttt['Algorithm'] = p_mpmo_fuzzy_ttt.algorithm
+    indicators_mpmo_fuzzy_ttt = p_mpmo_fuzzy_ttt.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_fuzzy_ttt['Algorithm'] = results_mpmo_fuzzy_ttt['Algorithm']
+    indicators_list.append(indicators_mpmo_fuzzy_ttt)
+    results_list.append(results_mpmo_fuzzy_ttt)
+    
     results_mpmo_rmse = p_mpmo_rmse.calculate_average_QoS_parameters(analyzed_parameters)
     results_mpmo_rmse['Handover'] = p_mpmo_rmse.count_number_of_handovers()
     results_mpmo_rmse['Algorithm'] = p_mpmo_rmse.algorithm
@@ -455,8 +485,6 @@ def performe_analysis():
     results_benchmark['Handover'] = p_benchmark.count_number_of_handovers()
     results_benchmark['Algorithm'] = p_benchmark.algorithm
     results_list.append(results_benchmark)
-    
-
     
     
     # Print the Results
@@ -475,7 +503,7 @@ def performe_analysis():
     print(f"{results_mpmo_fuzzy}, Handoff: {results_mpmo_fuzzy['Handover']}")
     print(f"{results_mpmo_rmse}, Handoff: {results_mpmo_rmse['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
-    print("================================================================================================================================================")
+    print("========================================================================================================================")
     
     final_results.append(results_list)
     indicators_results.append(copy.deepcopy(indicators_list))
@@ -511,7 +539,10 @@ def plot_results():
     
     print(f"Results: {results}")
     
-    print("================================================")
+    
+    
+    # ==================================================== Start - RMSE Analisys ====================================================
+    print("========================================================================================================================")
     print("Indicators to Measure Deviation from a Benchmark")
 
     # Initialize a dictionary to store the summed values
@@ -519,25 +550,27 @@ def plot_results():
 
     # Loop through each list in the indicators_results
     #print(f"Indicator Results: {indicators_results}")
-    '''
+    
     for group in indicators_results:
         for entry in group:
             algorithm = entry['Algorithm']
-            
-            if algorithm not in aggregated_results_rmse:
-                aggregated_results_rmse[algorithm] = {param: 0 for param in entry if param != 'Algorithm'}
-            
-            for param in entry:
-                if param != 'Algorithm':
-                    #aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
-                    aggregated_results_rmse[algorithm][param] += sum([x for x in entry[param]])
+
+            if algorithm != 'Worst-Scenario':
+                if algorithm not in aggregated_results_rmse:
+                    aggregated_results_rmse[algorithm] = {param: 0 for param in entry if param != 'Algorithm'}
+                
+                for param in entry:
+                    if param != 'Algorithm':
+                        aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
+                        #aggregated_results_rmse[algorithm][param] += sum([x for x in entry[param]])
+    
     
     for agg in aggregated_results_rmse:
         for parm in aggregated_results_rmse[agg]:
-            aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm])
+            aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm] / iter_x_simu)**(1/2)
+    
     
     print(f"Aggregated results: {aggregated_results_rmse}")
-    
     
     # Print the aggregated results
     ind_dict = {}
@@ -559,17 +592,6 @@ def plot_results():
     }
     print(normalized_rsme)
     
-    # Transpose the matrix
-    zipped = zip(*normalized_rsme.values())
-    
-    # Calculate RMSE by Indice
-    #rmse_per_index = [np.sqrt(np.mean([val**2 for val in values])) for values in zipped]
-    rmse_per_index = [
-        np.sqrt(np.mean([
-            val**2 for val, weight in zip(values, weights) for _ in range(weight)
-        ]))
-        for values in zipped
-    ]'''
     simulations = indicators_results
     simulations_aux_max = []
     simulations_aux_min = []
@@ -676,11 +698,16 @@ def plot_results():
     rmse_per_index = [(x - x_min) / (x_max - x_min) for x in results_sim_sum]
 
     print("========================================================================================================================")
-    print(rmse_per_index)
-    print(rmse_per_index.index(min(rmse_per_index)))
-    '''
-    # =================== 3D PLOT ===================
-    aggregated_results_rmse = {'SPMO-MAX-RSSI': {'RSSI': 0.0, 'SNR': 18.470000000000002, 'Throughput': 269.183, 'PC': 4.35, 'MC': 4, 'BER': 0.0006910325280948917, 'FEC': 0.5393583747281879}, 'SPMO-MAX-SNR': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'SPMO-Preference': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-SAW': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}, 'MPMO-SAW-Hyst': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}, 'MPMO-SAW-TTT': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}, 'MPMO-WPM': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-WPM-Hyst': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-WPM-TTT': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-TOPSIS': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'MPMO-TOPSIS-Hyst': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'MPMO-TOPSIS-TTT': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'MPMO-Fuzzy': {'RSSI': 123.78, 'SNR': 65.27, 'Throughput': 436.689, 'PC': 7.0, 'MC': 12, 'BER': 0.00025052278945682086, 'FEC': 1.5148706869651583}, 'MPMO-RMSE': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}}
+    print(f"RMSE of each Decision Maker: {rmse_per_index}")
+    print("========================================================================================================================")
+    print(f"Best option using RMSE: {rmse_per_index.index(min(rmse_per_index))}")
+    print("========================================================================================================================")
+    # ===================================================== End - RMSE Analisys =====================================================
+    
+    
+    
+    
+    # ======================================================= Start - 3D Plot =======================================================
     ordered_algorithms = [algo for algo in aggregated_results_rmse]
 
     # Reorder parameters so 'Throughput' appears last
@@ -728,8 +755,13 @@ def plot_results():
     ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
 
     plt.tight_layout()
-    # =================== Bar Chart Plot ===================
+    # ======================================================= End - 3D Plot =======================================================
     
+    
+    
+    
+    
+    # ================================================== Start - Bar Chart Plot ====================================================
     # Organize results by algorithm
     r_dict = {r['Algorithm']: r for r in results}
 
@@ -754,8 +786,8 @@ def plot_results():
             labels = list(r_dict.keys())
 
             ax = axes[i]
-            hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x']
-            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+            hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x']
+            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
             # Apply hatch patterns to each bar
             for bar, hatch in zip(bars, hatches):
                 bar.set_hatch(hatch)
@@ -776,7 +808,9 @@ def plot_results():
             fig.delaxes(axes[j])
 
         #plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
-        plt.show()'''
+        plt.show()
+    # =================================================== End - Bar Chart Plot ====================================================
+
 
 
 def plot_graph():
@@ -837,6 +871,10 @@ mpmo_topsis_hyst = MPMO_TOPSIS("MPMO-TOPSIS-Hysteresis", analyzed_parameters, we
 mpmo_topsis_ttt = MPMO_TOPSIS("MPMO-TOPSIS-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 mpmo_fuzzy = MPMO_Fuzzy("MPMO-Fuzzy")
 mpmo_fuzzy.definePresetConfigs()
+mpmo_fuzzy_hyst = MPMO_Fuzzy("MPMO-Fuzzy-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
+mpmo_fuzzy_hyst.definePresetConfigs()
+mpmo_fuzzy_ttt = MPMO_Fuzzy("MPMO-Fuzzy-TimeToTrigger", time_to_trigger=tt_trigger)
+mpmo_fuzzy_ttt.definePresetConfigs()
 mpmo_rmse = MPMO_RMSE("MPMO-RMSE", analyzed_parameters, weights, directions)
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
@@ -855,6 +893,8 @@ p_mpmo_topsis = PerformanceAnalysis("MPMO-TOPSIS")
 p_mpmo_topsis_hyst = PerformanceAnalysis("MPMO-TOPSIS-Hyst")
 p_mpmo_topsis_ttt = PerformanceAnalysis("MPMO-TOPSIS-TTT")
 p_mpmo_fuzzy = PerformanceAnalysis("MPMO-Fuzzy")
+p_mpmo_fuzzy_hyst = PerformanceAnalysis("MPMO-Fuzzy-Hyst")
+p_mpmo_fuzzy_ttt = PerformanceAnalysis("MPMO-Fuzzy-TTT")
 p_mpmo_rmse = PerformanceAnalysis("MPMO-RMSE")
 p_benchmark = PerformanceAnalysis("Benchmark")
 p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
