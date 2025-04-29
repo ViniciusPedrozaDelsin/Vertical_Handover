@@ -71,3 +71,4 @@ class PerformanceAnalysis:
             self.abs_error_parameters[param] = [abs(QoS_param[param][i] - Benchmark_param[param][i]) for i in range(len(QoS_param[param]))]
         
         return self.abs_error_parameters
+    

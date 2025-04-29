@@ -15,7 +15,7 @@ from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
 from vhSimulator import SPMO_Preference as SPMO_Pref
-from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, BenchmarkMethod, PerformanceAnalysis
+from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
 
 
 # ==================================== Initial Parameters ====================================
@@ -33,7 +33,7 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 1000
+n = 100
 
 # Activate Graphical Interface
 GUI = False
@@ -42,7 +42,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 2000
+n_simulations = 10
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -207,7 +207,9 @@ def update_position(device):
             p_mpmo_topsis_hyst.clean_storaged_QoS()
             p_mpmo_topsis_ttt.clean_storaged_QoS()
             p_mpmo_fuzzy.clean_storaged_QoS()
+            p_mpmo_rmse.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
+            p_worst_scenario.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
             p_spmo_max_min_rssi.clean_Benchmark_storaged_QoS()
             p_spmo_max_min_snr.clean_Benchmark_storaged_QoS()
@@ -222,7 +224,9 @@ def update_position(device):
             p_mpmo_topsis_hyst.clean_Benchmark_storaged_QoS()
             p_mpmo_topsis_ttt.clean_Benchmark_storaged_QoS()
             p_mpmo_fuzzy.clean_Benchmark_storaged_QoS()
+            p_mpmo_rmse.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
+            p_worst_scenario.clean_Benchmark_storaged_QoS()
             j = 0
             update_position(device)
         else:
@@ -240,9 +244,16 @@ def calculate_parameters(device, x_position, y_position):
     available_networks = device.get_available_networks()
     if verbose == True: print(f"Available Networks: {available_networks}")
     
+    # ============================== Benchmark  ==============================
     decision_benchmark = device.makeDecision(benchmark, available_networks)
     p_benchmark.store_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Benchmark {decision_benchmark}")
+    
+    # ============================== Worst Scenario ==============================
+    decision_worst_scenario = device.makeDecision(worst_scenario, available_networks)
+    p_worst_scenario.store_QoS_parameters(decision_worst_scenario)
+    p_worst_scenario.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Worst Scenario: {decision_worst_scenario}")
     
     decision_spmo_mmm_rssi = device.makeDecision(spmo_max_min_method_rssi, available_networks)
     p_spmo_max_min_rssi.store_QoS_parameters(decision_spmo_mmm_rssi)
@@ -303,12 +314,16 @@ def calculate_parameters(device, x_position, y_position):
     p_mpmo_topsis_ttt.store_QoS_parameters(decision_mpmo_topsis_ttt)
     p_mpmo_topsis_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO TOPSIS Time to Trigger: {decision_mpmo_topsis_ttt}")
-    #if verbose == True: print(f"\033[91mDecision MPMO TOPSIS Time to Trigger: {decision_mpmo_topsis_ttt}\033[0m")
     
     decision_mpmo_fuzzy = device.makeDecision(mpmo_fuzzy, available_networks)
     p_mpmo_fuzzy.store_QoS_parameters(decision_mpmo_fuzzy)
     p_mpmo_fuzzy.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy}")
+    
+    decision_mpmo_rmse = device.makeDecision(mpmo_rmse, available_networks)
+    p_mpmo_rmse.store_QoS_parameters(decision_mpmo_rmse)
+    p_mpmo_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO RMSE: {decision_mpmo_rmse}")
     
     if verbose == True: print("===================================================")
 
@@ -424,10 +439,25 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_fuzzy)
     results_list.append(results_mpmo_fuzzy)
     
+    results_mpmo_rmse = p_mpmo_rmse.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_rmse['Handover'] = p_mpmo_rmse.count_number_of_handovers()
+    results_mpmo_rmse['Algorithm'] = p_mpmo_rmse.algorithm
+    indicators_mpmo_rsme = p_mpmo_rmse.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_rsme['Algorithm'] = results_mpmo_rmse['Algorithm']
+    indicators_list.append(indicators_mpmo_rsme)
+    results_list.append(results_mpmo_rmse)
+    
+    indicators_worst_scenario = p_worst_scenario.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_worst_scenario['Algorithm'] = p_worst_scenario.algorithm
+    indicators_list.append(indicators_worst_scenario)
+    
     results_benchmark = p_benchmark.calculate_average_QoS_parameters(analyzed_parameters)
     results_benchmark['Handover'] = p_benchmark.count_number_of_handovers()
     results_benchmark['Algorithm'] = p_benchmark.algorithm
     results_list.append(results_benchmark)
+    
+
+    
     
     # Print the Results
     print(f"{results_spmo_max_min_rssi}, Handoff: {results_spmo_max_min_rssi['Handover']}")
@@ -443,6 +473,7 @@ def performe_analysis():
     print(f"{results_mpmo_topsis_hyst}, Handoff: {results_mpmo_topsis_hyst['Handover']}")
     print(f"{results_mpmo_topsis_ttt}, Handoff: {results_mpmo_topsis_ttt['Handover']}")
     print(f"{results_mpmo_fuzzy}, Handoff: {results_mpmo_fuzzy['Handover']}")
+    print(f"{results_mpmo_rmse}, Handoff: {results_mpmo_rmse['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("================================================================================================================================================")
     
@@ -488,6 +519,7 @@ def plot_results():
 
     # Loop through each list in the indicators_results
     #print(f"Indicator Results: {indicators_results}")
+    '''
     for group in indicators_results:
         for entry in group:
             algorithm = entry['Algorithm']
@@ -497,13 +529,15 @@ def plot_results():
             
             for param in entry:
                 if param != 'Algorithm':
-                    aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
+                    #aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
+                    aggregated_results_rmse[algorithm][param] += sum([x for x in entry[param]])
     
     for agg in aggregated_results_rmse:
         for parm in aggregated_results_rmse[agg]:
-            aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm] / (iter_x_simu))**(1/2)
+            aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm])
     
     print(f"Aggregated results: {aggregated_results_rmse}")
+    
     
     # Print the aggregated results
     ind_dict = {}
@@ -535,10 +569,118 @@ def plot_results():
             val**2 for val, weight in zip(values, weights) for _ in range(weight)
         ]))
         for values in zipped
-    ]
-    print(rmse_per_index)
+    ]'''
+    simulations = indicators_results
+    simulations_aux_max = []
+    simulations_aux_min = []
 
+    for sim in simulations:
+        
+        algo_aux_max = {}
+        for att in analyzed_parameters:
+            algo_aux_max[att] = []
+
+        algo_aux_min = {}
+        for att in analyzed_parameters:
+            algo_aux_min[att] = []
+
+        for algo in sim:
+            for param, values_list in algo.items():
+                if param != 'Algorithm':
+                    
+                    # Fill the algo_aux_max with zeros
+                    if algo_aux_max[param] == []:
+                        algo_aux_max[param] = [0] * len(values_list)    
+                    i = 0
+                    for value in values_list:
+                        if value > algo_aux_max[param][i]:
+                            algo_aux_max[param][i] = value
+                        i = i + 1
+                    
+                    # Fill the algo_aux_min with 999999999999
+                    if algo_aux_min[param] == []:
+                        algo_aux_min[param] = [999999999999] * len(values_list)    
+                    i = 0
+                    for value in values_list:
+                        if value < algo_aux_min[param][i]:
+                            algo_aux_min[param][i] = 0
+                        i = i + 1
+                    
+        simulations_aux_max.append(algo_aux_max)
+        simulations_aux_min.append(algo_aux_min)
+    
+    # Remove 'Worst-Scenario' entries
+    cleaned_data = []
+    for group in simulations:  # for each inner list
+        new_group = [item for item in group if item['Algorithm'] != 'Worst-Scenario']
+        cleaned_data.append(new_group)   
+    simulations = cleaned_data
+    
+    i = 0
+    for sim in simulations:
+        j = 0
+        for algo in sim:
+            for param, values_list in algo.items():
+                if param != 'Algorithm':
+                    k = 0
+                    for value in values_list:
+                        if simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k] == 0:
+                            simulations[i][j][param][k] = 0
+                        else:
+                            simulations[i][j][param][k] = (simulations[i][j][param][k] - simulations_aux_min[i][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
+                        k = k + 1
+            j = j + 1
+        i = i + 1
+    
+    rmse_simulations = []
+    for sim in simulations:
+        rmse_sim = []
+        for algo in sim:
+            rmse_algo = [0] * len(simulations[0][0][next(iter(algo))])
+            for i in range(len(simulations[0][0][next(iter(algo))])):
+                for param, values_list in algo.items():
+                    if param != 'Algorithm':
+                        rmse_algo[i] = rmse_algo[i] + (values_list[i]**2)
+            rmse_sim.append(rmse_algo)
+        rmse_simulations.append(rmse_sim)
+
+    rsme_final_results = []
+    for rmse_simu in rmse_simulations:
+        rsme_list_results = []
+        for algo in rmse_simu:
+            rmse_results = [(x / (len(simulations[0][0])-1))**(1/2) for x in algo]
+            rsme_list_results.append(rmse_results)
+            
+        rsme_final_results.append(rsme_list_results)
+        
+    i = 0
+    for sum_result_list in rsme_final_results:
+        j = 0
+        for sum_result in sum_result_list:
+            rsme_final_results[i][j] = sum(rsme_final_results[i][j])
+            j = j + 1
+        i = i + 1
+
+    results_sim_sum = [0] * len(rsme_final_results[0])
+    for simu_sum in rsme_final_results:
+        j = 0
+        for sum_rsme in simu_sum:
+            results_sim_sum[j] = results_sim_sum[j] + sum_rsme
+            j = j + 1
+    
+    print("========================================================================================================================")
+    print(results_sim_sum)
+
+    x_min = min(results_sim_sum)
+    x_max = max(results_sim_sum)
+    rmse_per_index = [(x - x_min) / (x_max - x_min) for x in results_sim_sum]
+
+    print("========================================================================================================================")
+    print(rmse_per_index)
+    print(rmse_per_index.index(min(rmse_per_index)))
+    '''
     # =================== 3D PLOT ===================
+    aggregated_results_rmse = {'SPMO-MAX-RSSI': {'RSSI': 0.0, 'SNR': 18.470000000000002, 'Throughput': 269.183, 'PC': 4.35, 'MC': 4, 'BER': 0.0006910325280948917, 'FEC': 0.5393583747281879}, 'SPMO-MAX-SNR': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'SPMO-Preference': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-SAW': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}, 'MPMO-SAW-Hyst': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}, 'MPMO-SAW-TTT': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}, 'MPMO-WPM': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-WPM-Hyst': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-WPM-TTT': {'RSSI': 9.210000000000008, 'SNR': 6.330000000000002, 'Throughput': 168.17000000000002, 'PC': 4.8, 'MC': 4, 'BER': 0.0002114421762709044, 'FEC': 0.7768937665238017}, 'MPMO-TOPSIS': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'MPMO-TOPSIS-Hyst': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'MPMO-TOPSIS-TTT': {'RSSI': 36.47999999999999, 'SNR': 0.0, 'Throughput': 0.0, 'PC': 5.8, 'MC': 8, 'BER': 0.0003611728542801284, 'FEC': 1.1122698485595106}, 'MPMO-Fuzzy': {'RSSI': 123.78, 'SNR': 65.27, 'Throughput': 436.689, 'PC': 7.0, 'MC': 12, 'BER': 0.00025052278945682086, 'FEC': 1.5148706869651583}, 'MPMO-RMSE': {'RSSI': 12.100000000000009, 'SNR': 7.030000000000001, 'Throughput': 246.045, 'PC': 1.8, 'MC': 0, 'BER': 0.0023188930189147992, 'FEC': 0.21265084756872443}}
     ordered_algorithms = [algo for algo in aggregated_results_rmse]
 
     # Reorder parameters so 'Throughput' appears last
@@ -587,41 +729,7 @@ def plot_results():
 
     plt.tight_layout()
     # =================== Bar Chart Plot ===================
-    '''
-    # Organizing results by algorithm
-    r_dict = {r['Algorithm']: r for r in results}
-
-    num_params = len(analyzed_parameters)
-    num_cols = 1  # Split into two vertical sections
-    num_rows = math.ceil(num_params / num_cols)  # Calculate needed rows
-
-    fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 8 * num_rows), constrained_layout=True)
-
-    # Flatten axes for easy iteration when we have multiple rows
-    axes = axes.flatten() if num_params > 1 else [axes]
-
-    for i, param in enumerate(analyzed_parameters):
-        values = [d[param] for d in r_dict.values()]
-        labels = list(r_dict.keys())
-
-        ax = axes[i]  # Get the correct subplot
-
-        ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red"], edgecolor='black', linewidth=1.2)
-        ax.grid(axis='y', linestyle='--', alpha=0.7)
-        ax.set_ylabel(param, fontsize=10)
-        #ax.set_title(f"Optimization Methods X {param}", fontsize=12)
-
-        # Set y-axis limits dynamically
-        if max(values) < 0:
-            ax.set_ylim(0, min(values) + min(values) * 0.1)
-        else:
-            ax.set_ylim(0, max(values) + max(values) * 0.1)
-
-        ax.tick_params(axis='x', labelsize=8)
-        ax.tick_params(axis='y', labelsize=8)
     
-    plt.savefig("outputs/bar_chart.png", dpi=600, bbox_inches='tight')
-    plt.show()'''
     # Organize results by algorithm
     r_dict = {r['Algorithm']: r for r in results}
 
@@ -647,7 +755,7 @@ def plot_results():
 
             ax = axes[i]
             hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x']
-            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
             # Apply hatch patterns to each bar
             for bar, hatch in zip(bars, hatches):
                 bar.set_hatch(hatch)
@@ -668,7 +776,7 @@ def plot_results():
             fig.delaxes(axes[j])
 
         #plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
-        plt.show()
+        plt.show()'''
 
 
 def plot_graph():
@@ -729,7 +837,9 @@ mpmo_topsis_hyst = MPMO_TOPSIS("MPMO-TOPSIS-Hysteresis", analyzed_parameters, we
 mpmo_topsis_ttt = MPMO_TOPSIS("MPMO-TOPSIS-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 mpmo_fuzzy = MPMO_Fuzzy("MPMO-Fuzzy")
 mpmo_fuzzy.definePresetConfigs()
+mpmo_rmse = MPMO_RMSE("MPMO-RMSE", analyzed_parameters, weights, directions)
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
+worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
 # Instances of Performance Analysis
 p_spmo_max_min_rssi = PerformanceAnalysis("SPMO-MAX-RSSI")
@@ -745,7 +855,9 @@ p_mpmo_topsis = PerformanceAnalysis("MPMO-TOPSIS")
 p_mpmo_topsis_hyst = PerformanceAnalysis("MPMO-TOPSIS-Hyst")
 p_mpmo_topsis_ttt = PerformanceAnalysis("MPMO-TOPSIS-TTT")
 p_mpmo_fuzzy = PerformanceAnalysis("MPMO-Fuzzy")
+p_mpmo_rmse = PerformanceAnalysis("MPMO-RMSE")
 p_benchmark = PerformanceAnalysis("Benchmark")
+p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
 
 update_position(device_1)
 root.mainloop()

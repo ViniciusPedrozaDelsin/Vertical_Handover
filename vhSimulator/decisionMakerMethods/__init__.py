@@ -4,4 +4,6 @@ from .MPMO_SAW import MPMO_SAW
 from .MPMO_WPM import MPMO_WPM
 from .MPMO_TOPSIS import MPMO_TOPSIS
 from .MPMO_Fuzzy import MPMO_Fuzzy
+from .MPMO_RMSE import MPMO_RMSE
 from .BenchmarkMethod import BenchmarkMethod
+from .WorstScenarioMethod import WorstScenarioMethod

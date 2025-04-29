@@ -7,5 +7,7 @@ from .decisionMakerMethods import MPMO_SAW
 from .decisionMakerMethods import MPMO_WPM
 from .decisionMakerMethods import MPMO_TOPSIS
 from .decisionMakerMethods import MPMO_Fuzzy
+from .decisionMakerMethods import MPMO_RMSE
 from .decisionMakerMethods import BenchmarkMethod
+from .decisionMakerMethods import WorstScenarioMethod
 from .analysis import PerformanceAnalysis
