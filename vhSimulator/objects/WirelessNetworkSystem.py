@@ -2,7 +2,7 @@ import math
 import random
 
 class WirelessNetworkSystem:
-    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, predef_ber=None, predef_fec=None, corrections_real_world_applications=False):
+    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, predef_ber=None, predef_fec=None, predef_config=True, corrections_real_world_applications=False):
         self.system_name = system_name
         self.connected_devices = set()
         
@@ -17,9 +17,13 @@ class WirelessNetworkSystem:
         self.power_consumption = power_consumption
         self.monetary_cost = monetary_cost
         self.corrections_real_world_applications = corrections_real_world_applications
+        self.predef_config = predef_config
+        if self.predef_config == True:
+            self.maximum_radius = maximum_radius
+        else:
+            self.maximum_radius = self.transmission_range()
         
         # Pre-defined Configs
-        self.maximum_radius = maximum_radius
         self.predef_throughput = predef_throughput
         self.predef_snr = predef_snr
         self.predef_rssi = predef_rssi
@@ -95,7 +99,8 @@ class WirelessNetworkSystem:
             snr_db = 10 * math.log10(snr*0.5)
         else:
             snr_db = 10 * math.log10(snr)
-        return round(snr_db, 3)
+        #return round(snr_db, 3)
+        return snr_db
     
     def calculateMinimumSNR_db(self, snr_db):
         if snr_db >= self.minimum_snr:
@@ -127,6 +132,15 @@ class WirelessNetworkSystem:
             estimated_throughput = 0
         return estimated_throughput
     
+    def calculateBER(self, dist):
+        if dist < self.maximum_radius:
+            ber = self.predef_ber[0] - (((self.predef_ber[0] - self.predef_ber[1])/self.maximum_radius) * dist)
+        return random.uniform(ber*0.9,ber*1.1)
+        
+    def calculateFEC(self, dist):
+        if dist < self.maximum_radius:
+            fec = self.predef_fec[0] - (((self.predef_fec[0] - self.predef_fec[1])/self.maximum_radius) * dist)
+        return random.uniform(fec*0.9, fec*1.1)
     
     def calculateQoSParameters(self, device):
         QoS_Parameters = {}
@@ -137,7 +151,7 @@ class WirelessNetworkSystem:
         
         # Calculate Free Space Path Loss
         fspl = self.calculateFSPL_db(distance)
-        QoS_Parameters['FSPL'] = fspl
+        #QoS_Parameters['FSPL'] = fspl
         
         # Calculate Received Signal Strength Indicator
         rssi = self.calculateRSSI_dbm(fspl)
@@ -150,16 +164,11 @@ class WirelessNetworkSystem:
         
         # Calculate Channel Capacity
         channel_capacity = self.calculateChannelCapacity(snr_db)
-        QoS_Parameters['CC'] = round(channel_capacity/1000000, 3)
+        #QoS_Parameters['CC'] = round(channel_capacity/1000000, 3)
         
         # Calculate Estimated Throughput
         estimated_throughput = self.estimateThroughput(snr_db, channel_capacity)
         QoS_Parameters['Throughput'] = round(estimated_throughput/1000000, 3)
-        
-        # Add Protocol Parameters into QoS package
-        QoS_Parameters['Protocol'] = self.protocol
-        QoS_Parameters['PC'] = self.power_consumption
-        QoS_Parameters['MC'] = self.monetary_cost
         
         # Verify Status
         network_status = self.calculateMinimumSNR_db(snr_db)
@@ -167,10 +176,25 @@ class WirelessNetworkSystem:
             QoS_Parameters = {}
             QoS_Parameters['Status'] = "Offline"
             QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
+        
         else:
+            # Calculate BER - Pre-Defined
+            ber = self.calculateBER(distance)
+            QoS_Parameters['BER'] = ber
+            
+            # Calculate FEC - Pre-Defined
+            fec = self.calculateFEC(distance)
+            QoS_Parameters['FEC'] = fec
+            
+            # Add Protocol Parameters into QoS package
+            QoS_Parameters['Protocol'] = self.protocol
+            QoS_Parameters['PC'] = self.power_consumption
+            QoS_Parameters['MC'] = self.monetary_cost
+            
+        
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
             QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
-        
+
         return QoS_Parameters
     
     

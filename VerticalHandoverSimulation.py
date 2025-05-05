@@ -26,17 +26,17 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Interval between iterations
-iter_interval = 1
+iter_interval = 10
 
 # Distance for iteration
 dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 100
+n = 50
 
 # Activate Graphical Interface
-GUI = False
+GUI = True
 
 # Activate Prints for DEBBUG
 verbose = False
@@ -46,6 +46,15 @@ n_simulations = 10
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
+
+# Plot Results
+plots = True
+
+# Predef Configs
+predef_conf = False
+
+# Corrections Real World Applications
+corrections_real_world = True
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
@@ -63,77 +72,77 @@ indicators_results = []
 # Wireless Network Systems
 WNS_list = []
 
-def generate_random_WNS():
+def generate_random_WNS(predef):
     global WNS_list
     WNS_list = []
     
     # WiFi's
     global wifi_1
-    wifi_1 = WNS("WiFi-1", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
+    wifi_1 = WNS("WiFi-1", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_1, 'green', 0.3])
     
     global wifi_2
-    wifi_2 = WNS("WiFi-2", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
+    wifi_2 = WNS("WiFi-2", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_2, 'green', 0.3])
     
     global wifi_3
-    wifi_3 = WNS("WiFi-3", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
+    wifi_3 = WNS("WiFi-3", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_3, 'green', 0.3])
     
     global wifi_4
-    wifi_4 = WNS("WiFi-4", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
+    wifi_4 = WNS("WiFi-4", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_4, 'green', 0.3])
     
     global wifi_5
-    wifi_5 = WNS("WiFi-5", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
+    wifi_5 = WNS("WiFi-5", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_5, 'green', 0.3])
     
     global wifi_6
-    wifi_6 = WNS("WiFi-6", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
+    wifi_6 = WNS("WiFi-6", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_6, 'green', 0.3])
     
     global wifi_7
-    wifi_7 = WNS("WiFi-7", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
+    wifi_7 = WNS("WiFi-7", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_7, 'green', 0.3])
 
     global wifi_8
-    wifi_8 = WNS("WiFi-8", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
+    wifi_8 = WNS("WiFi-8", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_8, 'green', 0.3])
     
     global wifi_9
-    wifi_9 = WNS("WiFi-9", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2])
+    wifi_9 = WNS("WiFi-9", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 15, "WiFi-5GHz", 0.50, 1, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_9, 'green', 0.3])
     
     global wifi_10
-    wifi_10 = WNS("WiFi-10", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2])
+    wifi_10 = WNS("WiFi-10", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_10, 'green', 0.3])
 
 
     # NB-IoT 5G
     global nbiot_5g_1
-    nbiot_5g_1 = WNS("NBIoT-5g-1", random.uniform(-10*x_max, 10*x_max), random.uniform(-10*y_max, 10*y_max), 30, 800000000, 1400000, 2, "NB-IoT-5G", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3])
+    nbiot_5g_1 = WNS("NBIoT-5g-1", random.uniform(-10*x_max, 10*x_max), random.uniform(-10*y_max, 10*y_max), 30, 800000000, 1400000, 2, "NB-IoT-5G", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([nbiot_5g_1, 'blue', 0.03])
 
 
     # LoRa's
     global LoRa_1
-    LoRa_1 = WNS("LoRa-1", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8])
+    LoRa_1 = WNS("LoRa-1", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([LoRa_1, 'yellow', 0.03])
     
     global LoRa_2
-    LoRa_2 = WNS("LoRa-2", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8])
+    LoRa_2 = WNS("LoRa-2", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([LoRa_2, 'yellow', 0.03])
 
 
     # LTE 4G
     global LTE_4g
-    LTE_4g = WNS("LTE-4g-1", random.uniform(-20*x_max, 20*x_max), random.uniform(-20*y_max, 20*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3])
+    LTE_4g = WNS("LTE-4g-1", random.uniform(-20*x_max, 20*x_max), random.uniform(-20*y_max, 20*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([LTE_4g, 'red', 0.03])
 
 
     # WiFi Max
     global wifi_max_1
-    wifi_max_1 = WNS("WiFi-Max-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2])
+    wifi_max_1 = WNS("WiFi-Max-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world)
     WNS_list.append([wifi_max_1, 'purple', 0.03])
     
     # Print for DEBBUG
@@ -171,7 +180,7 @@ def random_direction():
 
 
 def update_position(device):
-    global x, y, j, n, iter_interval, WNS_list, n_simulations, x_max, y_max
+    global x, y, j, n, iter_interval, WNS_list, n_simulations, x_max, y_max, predef_conf
     dx, dy = random_direction()
     x = min(max(x + dx, 0), x_max)
     y = min(max(y + dy, 0), y_max)
@@ -191,7 +200,7 @@ def update_position(device):
             x = x_max/2
             y = y_max/2
             device = Device(1, x, y)
-            generate_random_WNS()
+            generate_random_WNS(predef_conf)
             connect_to_net(device)
             # Cleaning old QoS parameters Storaged
             p_spmo_max_min_rssi.clean_storaged_QoS()
@@ -244,7 +253,10 @@ def calculate_parameters(device, x_position, y_position):
     
     if verbose == True: print("===================================================")
     #print(f"Networks: {device.get_all_QoS_Parameters_predef()}")
-    device.get_all_QoS_Parameters_predef()
+    if predef_conf == True:
+        device.get_all_QoS_Parameters_predef()
+    else:
+        device.get_all_QoS_Parameters()
     available_networks = device.get_available_networks()
     if verbose == True: print(f"Available Networks: {available_networks}")
     
@@ -660,9 +672,11 @@ def plot_results():
         for algo in sim:
             rmse_algo = [0] * len(simulations[0][0][next(iter(algo))])
             for i in range(len(simulations[0][0][next(iter(algo))])):
+                j = 0
                 for param, values_list in algo.items():
                     if param != 'Algorithm':
-                        rmse_algo[i] = rmse_algo[i] + (values_list[i]**2)
+                        rmse_algo[i] = rmse_algo[i] + (weights[j]*(values_list[i]**2))
+                    j = j + 1
             rmse_sim.append(rmse_algo)
         rmse_simulations.append(rmse_sim)
 
@@ -708,53 +722,54 @@ def plot_results():
     
     
     # ======================================================= Start - 3D Plot =======================================================
-    ordered_algorithms = [algo for algo in aggregated_results_rmse]
+    if plots == True:
+        ordered_algorithms = [algo for algo in aggregated_results_rmse]
 
-    # Reorder parameters so 'Throughput' appears last
-    parameters = list(next(iter(aggregated_results_rmse.values())).keys())
-    parameters.remove("Throughput")
-    parameters = parameters + ['Throughput']
+        # Reorder parameters so 'Throughput' appears last
+        parameters = list(next(iter(aggregated_results_rmse.values())).keys())
+        parameters.remove("Throughput")
+        parameters = parameters + ['Throughput']
 
-    # Normalize each parameter individually
-    param_norms = {}
-    for param in parameters:
-        values = [abs(aggregated_results_rmse[algo][param]) for algo in ordered_algorithms]
-        param_norms[param] = Normalize(vmin=min(values), vmax=max(values))
+        # Normalize each parameter individually
+        param_norms = {}
+        for param in parameters:
+            values = [abs(aggregated_results_rmse[algo][param]) for algo in ordered_algorithms]
+            param_norms[param] = Normalize(vmin=min(values), vmax=max(values))
 
-    # Create the figure and 3D axis
-    fig = plt.figure(figsize=(14, 10))
-    ax = fig.add_subplot(111, projection='3d')
+        # Create the figure and 3D axis
+        fig = plt.figure(figsize=(14, 10))
+        ax = fig.add_subplot(111, projection='3d')
 
-    dx = dy = 0.8
-    cmap = cm.viridis
-    colors_dict = {}
+        dx = dy = 0.8
+        cmap = cm.viridis
+        colors_dict = {}
 
-    # Draw bars with per-parameter normalization
-    for i, param in enumerate(parameters):
-        for j, algo in enumerate(ordered_algorithms):
-            raw_value = abs(aggregated_results_rmse[algo][param])
-            znorm = param_norms[param](raw_value)
+        # Draw bars with per-parameter normalization
+        for i, param in enumerate(parameters):
+            for j, algo in enumerate(ordered_algorithms):
+                raw_value = abs(aggregated_results_rmse[algo][param])
+                znorm = param_norms[param](raw_value)
 
-            xpos = j
-            ypos = i
-            zpos = 0
-            dz = max(znorm, 0.01)  # Prevent flat bars
+                xpos = j
+                ypos = i
+                zpos = 0
+                dz = max(znorm, 0.01)  # Prevent flat bars
 
-            # Assign unique color to each algorithm
-            if algo not in colors_dict:
-                colors_dict[algo] = cmap(j / len(ordered_algorithms))
+                # Assign unique color to each algorithm
+                if algo not in colors_dict:
+                    colors_dict[algo] = cmap(j / len(ordered_algorithms))
 
-            ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color=colors_dict[algo], edgecolor='black', alpha=0.9)
+                ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color=colors_dict[algo], edgecolor='black', alpha=0.9)
 
-    # Customize axes
-    ax.set_xticks(np.arange(len(ordered_algorithms)) + dx / 2)
-    ax.set_yticks(np.arange(len(parameters)) + dy / 2)
-    ax.set_xticklabels(ordered_algorithms, rotation=45, ha='right', fontsize=9)
-    ax.set_yticklabels(parameters, fontsize=10)
-    ax.set_zlabel("Normalized Value (per parameter)", fontsize=12)
-    ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
+        # Customize axes
+        ax.set_xticks(np.arange(len(ordered_algorithms)) + dx / 2)
+        ax.set_yticks(np.arange(len(parameters)) + dy / 2)
+        ax.set_xticklabels(ordered_algorithms, rotation=45, ha='right', fontsize=9)
+        ax.set_yticklabels(parameters, fontsize=10)
+        ax.set_zlabel("Normalized Value (per parameter)", fontsize=12)
+        ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
 
-    plt.tight_layout()
+        plt.tight_layout()
     # ======================================================= End - 3D Plot =======================================================
     
     
@@ -762,53 +777,54 @@ def plot_results():
     
     
     # ================================================== Start - Bar Chart Plot ====================================================
-    # Organize results by algorithm
-    r_dict = {r['Algorithm']: r for r in results}
+    if plots == True:
+        # Organize results by algorithm
+        r_dict = {r['Algorithm']: r for r in results}
 
-    num_params = len(analyzed_parameters)
+        num_params = len(analyzed_parameters)
 
-    # Split parameters into two halves
-    half = math.ceil(num_params / 2)
-    param_groups = [analyzed_parameters[:half], analyzed_parameters[half:]]
+        # Split parameters into two halves
+        half = math.ceil(num_params / 2)
+        param_groups = [analyzed_parameters[:half], analyzed_parameters[half:]]
 
-    # Loop through each group to create two separate figures
-    for group_index, param_group in enumerate(param_groups):
-        num_params_group = len(param_group)
-        num_cols = 1
-        num_rows = math.ceil(num_params_group / num_cols)
+        # Loop through each group to create two separate figures
+        for group_index, param_group in enumerate(param_groups):
+            num_params_group = len(param_group)
+            num_cols = 1
+            num_rows = math.ceil(num_params_group / num_cols)
 
-        fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 6 * num_rows), constrained_layout=True)
+            fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 6 * num_rows), constrained_layout=True)
 
-        axes = axes.flatten() if num_params_group > 1 else [axes]
+            axes = axes.flatten() if num_params_group > 1 else [axes]
 
-        for i, param in enumerate(param_group):
-            values = [d[param] for d in r_dict.values()]
-            labels = list(r_dict.keys())
+            for i, param in enumerate(param_group):
+                values = [d[param] for d in r_dict.values()]
+                labels = list(r_dict.keys())
 
-            ax = axes[i]
-            hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x']
-            bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
-            # Apply hatch patterns to each bar
-            for bar, hatch in zip(bars, hatches):
-                bar.set_hatch(hatch)
-            ax.grid(axis='y', linestyle='--', alpha=0.7)
-            ax.set_ylabel(param, fontsize=10)
+                ax = axes[i]
+                hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x']
+                bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                # Apply hatch patterns to each bar
+                for bar, hatch in zip(bars, hatches):
+                    bar.set_hatch(hatch)
+                ax.grid(axis='y', linestyle='--', alpha=0.7)
+                ax.set_ylabel(param, fontsize=10)
 
-            # Dynamic y-limit
-            if max(values) < 0:
-                ax.set_ylim(0, min(values) + min(values) * 0.1)
-            else:
-                ax.set_ylim(0, max(values) + max(values) * 0.1)
+                # Dynamic y-limit
+                if max(values) < 0:
+                    ax.set_ylim(0, min(values) + min(values) * 0.1)
+                else:
+                    ax.set_ylim(0, max(values) + max(values) * 0.1)
 
-            ax.tick_params(axis='x', labelsize=8)
-            ax.tick_params(axis='y', labelsize=8)
+                ax.tick_params(axis='x', labelsize=8)
+                ax.tick_params(axis='y', labelsize=8)
 
-        # Remove any unused axes
-        for j in range(i + 1, len(axes)):
-            fig.delaxes(axes[j])
+            # Remove any unused axes
+            for j in range(i + 1, len(axes)):
+                fig.delaxes(axes[j])
 
-        #plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
-        plt.show()
+            #plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
+            plt.show()
     # =================================================== End - Bar Chart Plot ====================================================
 
 
@@ -851,7 +867,7 @@ start_GUI()
 device_1 = Device(1, x, y)
 
 # Generate Random WNS
-generate_random_WNS()
+generate_random_WNS(predef_conf)
 
 # Wireless Networks
 connect_to_net(device_1)
@@ -871,7 +887,7 @@ mpmo_topsis_hyst = MPMO_TOPSIS("MPMO-TOPSIS-Hysteresis", analyzed_parameters, we
 mpmo_topsis_ttt = MPMO_TOPSIS("MPMO-TOPSIS-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 mpmo_fuzzy = MPMO_Fuzzy("MPMO-Fuzzy")
 mpmo_fuzzy.definePresetConfigs()
-mpmo_fuzzy_hyst = MPMO_Fuzzy("MPMO-Fuzzy-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
+mpmo_fuzzy_hyst = MPMO_Fuzzy("MPMO-Fuzzy-Hysteresis", analyzed_parameters, directions, hysterese_percentage=hyst_percentage)
 mpmo_fuzzy_hyst.definePresetConfigs()
 mpmo_fuzzy_ttt = MPMO_Fuzzy("MPMO-Fuzzy-TimeToTrigger", time_to_trigger=tt_trigger)
 mpmo_fuzzy_ttt.definePresetConfigs()

@@ -111,8 +111,10 @@ class MPMO_RMSE(DMM):
         n_parm = 0
         for k, v in transposed.items():
             sum_value = 0
+            i = 0
             for value in v:
-                sum_value = sum_value + (value**2)
+                sum_value = sum_value + (self.weights[i] * (value**2))
+                i = i + 1
             rmse_list.append(sum_value)
             n_parm = len(v)
         final_rmse_list = [(x/n_parm)**(1/2) for x in rmse_list]

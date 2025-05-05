@@ -1,10 +1,9 @@
 from .DecisionMakerMethod import DecisionMakerMethod as DMM
 
 class MPMO_Fuzzy(DMM):
-    def __init__(self, method_name, attributes=None, weights=None, directions=None, hysterese_percentage=None, time_to_trigger=None):
+    def __init__(self, method_name, attributes=None, directions=None, hysterese_percentage=None, time_to_trigger=None):
         super().__init__(method_name)
         self.attributes = attributes
-        self.weights = weights
         self.directions = directions
         self.membership = {}
         self.membership_degree = {}
