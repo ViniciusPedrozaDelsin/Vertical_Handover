@@ -72,8 +72,6 @@ class MPMO_RMSE(DMM):
     
     def calculateRMSE(self):
         benchmark_parameters = self.getBenchmarkParameters()
-        #print(benchmark_parameters)
-        #print(f"1: {self.inputs}")
         # Get the Absolute Value
         abs_inputs = []
         for input in self.inputs:
@@ -82,31 +80,20 @@ class MPMO_RMSE(DMM):
                 abs_val = abs(input[attribute] - benchmark_parameters[attribute])
                 abs_input_dict[attribute] = abs_val
             abs_inputs.append(abs_input_dict)
-        #print("==========================================================================================")
-        #print(f"abs: {abs_inputs}")
-        #print("==========================================================================================")
-        #print(f"2: {self.inputs}")
         # Normalizing Values
         parm_dict = {}
         for attribute in self.attributes:
             parm_dict[attribute] = []
             for abs_input in abs_inputs:
                 parm_dict[attribute].append(abs_input[attribute])
-        #print("==========================================================================================")
-        #print(parm_dict)
         for k, v in parm_dict.items():
             new_value = [(x-min(v))/(max(v)-min(v)) for x in v]
             parm_dict[k] = new_value
-        #print("==========================================================================================")
-        #print(f"norm: {parm_dict}")
-        #print(f"3: {self.inputs}")
         # Transpose the dictionary
         transposed = {
             str(i): [parm_dict[key][i] for key in parm_dict]
             for i in range(len(next(iter(parm_dict.values()))))
         }
-        #print("==========================================================================================")
-        #print(transposed)
         rmse_list = []
         n_parm = 0
         for k, v in transposed.items():
@@ -118,9 +105,6 @@ class MPMO_RMSE(DMM):
             rmse_list.append(sum_value)
             n_parm = len(v)
         final_rmse_list = [(x/n_parm)**(1/2) for x in rmse_list]
-        
-        #print("==========================================================================================")
-        #print(final_rmse_list)
         
         min_index = final_rmse_list.index(min(final_rmse_list))
         output = self.inputs[min_index]
