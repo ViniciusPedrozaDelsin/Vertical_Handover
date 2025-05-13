@@ -26,23 +26,23 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Interval between iterations
-iter_interval = 10
+iter_interval = 1
 
 # Distance for iteration
 dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 50
+n = 1000
 
 # Activate Graphical Interface
-GUI = True
+GUI = False
 
 # Activate Prints for DEBBUG
 verbose = False
 
 # Number of simulations
-n_simulations = 10
+n_simulations = 5000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -51,14 +51,14 @@ iter_x_simu = n_simulations * n
 plots = True
 
 # Predef Configs
-predef_conf = False
+predef_conf = True
 
 # Corrections Real World Applications
-corrections_real_world = True
+corrections_real_world = False
 
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
-weights = [1, 1, 1, 1, 1, 1, 1]
+weights = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
 directions = [1, 1, 1, 0, 0, 0, 1]
 hyst_percentage = 0.1
 tt_trigger = 2

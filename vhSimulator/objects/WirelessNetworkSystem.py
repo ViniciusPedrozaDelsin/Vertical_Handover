@@ -65,7 +65,7 @@ class WirelessNetworkSystem:
         # Speed of Light
         c = 300000000
         if self.corrections_real_world_applications == True:
-            # Add Miscellaneous Loss = 20db
+            # Add Arbitrary Loss = 20db
             free_space_path_loss_db = (20*math.log10(d)) + (20*math.log10(self.frequency)) + (20*math.log10((4*math.pi)/c)) + 20
             # FSPL correction if it is less then twenty
             if free_space_path_loss_db < 20: free_space_path_loss_db = 20
@@ -74,14 +74,14 @@ class WirelessNetworkSystem:
             free_space_path_loss_db = (20*math.log10(d)) + (20*math.log10(self.frequency)) + (20*math.log10((4*math.pi)/c))
             # FSPL correction if it is less then zero
             if free_space_path_loss_db < 0: free_space_path_loss_db = 0
-        return round(free_space_path_loss_db, 3)
+        return free_space_path_loss_db
         
     def calculateCOST231HataModel(self, d):
         pass
         
     def calculateRSSI_dbm(self, fspl):
         rssi_dbm = self.transmission_power_dbm - fspl
-        return round(rssi_dbm, 3)
+        return rssi_dbm
         
     def calculateThermalNoise_dbm(self):
         # Boltzmann's Constant (J/K)
@@ -151,16 +151,16 @@ class WirelessNetworkSystem:
         
         # Calculate Free Space Path Loss
         fspl = self.calculateFSPL_db(distance)
-        #QoS_Parameters['FSPL'] = fspl
+        #QoS_Parameters['FSPL'] = round(fspl, 3)
         
         # Calculate Received Signal Strength Indicator
         rssi = self.calculateRSSI_dbm(fspl)
-        QoS_Parameters['RSSI'] = rssi
+        QoS_Parameters['RSSI'] = round(rssi, 3)
         
         # Calculate Signal Noise Ratio
         thermal_noise_dbm = self.calculateThermalNoise_dbm()
         snr_db = self.calculateSNR_db(rssi, thermal_noise_dbm)
-        QoS_Parameters['SNR'] = snr_db
+        QoS_Parameters['SNR'] = round(snr_db, 3)
         
         # Calculate Channel Capacity
         channel_capacity = self.calculateChannelCapacity(snr_db)

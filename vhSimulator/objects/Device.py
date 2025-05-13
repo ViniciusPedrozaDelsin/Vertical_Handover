@@ -1,3 +1,4 @@
+import time
 class Device:
     
     def __init__(self, device_id, x_position, y_position):
@@ -8,6 +9,14 @@ class Device:
         self.networks_list = []
         self.available_networks = []
         #self.decision_maker_methods = set()
+        
+        dict_now = {}
+        dict_now['MPMO-Fuzzy'] = 0
+        dict_now['MPMO-TOPSIS'] = 0
+        dict_now['MPMO-WPM'] = 0
+        dict_now['MPMO-SAW'] = 0
+        
+        self.dict_now = dict_now
     
     def updatePosition(self, x, y):
         self.x_position = x
@@ -56,7 +65,19 @@ class Device:
         
     def makeDecision(self, decision_maker_method, inputs):
         decision_maker_method.send_inputs(inputs)
+        '''if decision_maker_method.method_name == "MPMO-Fuzzy" or decision_maker_method.method_name == "MPMO-TOPSIS" or decision_maker_method.method_name == "MPMO-WPM" or decision_maker_method.method_name == "MPMO-SAW":
+            #print(f"DM Method: {decision_maker_method.method_name}")
+            start_time = time.perf_counter()
+            #print(f"Start Time: {start_time}")'''
         output = decision_maker_method.makeDecision()
+        '''if decision_maker_method.method_name == "MPMO-Fuzzy" or decision_maker_method.method_name == "MPMO-TOPSIS" or decision_maker_method.method_name == "MPMO-WPM" or decision_maker_method.method_name == "MPMO-SAW":
+            end_time = time.perf_counter()
+            #print(f"End Time: {end_time}")
+            diff = end_time-start_time
+            #print(f"Difference: {diff}")
+            self.dict_now[decision_maker_method.method_name] = self.dict_now[decision_maker_method.method_name] + diff
+            print("==================================")
+            print(self.dict_now)'''
         return output
             
     def __repr__(self):
