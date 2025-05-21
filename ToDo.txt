@@ -3,3 +3,10 @@
 - Create a requerimets.txt for the project
 - Rayleigh and Rician
 - Optimization Pareto, Multi object optimization
+- add histerese and ttt in rmse - OK
+
+cercare simulatore simili
+Rayleigh and Rician
+calcolari i pesi
+grafici n-handover x n-ttt e n-handover x percent-hyst
+nn supervised

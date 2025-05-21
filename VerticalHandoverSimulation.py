@@ -33,7 +33,7 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 1000
+n = 500
 
 # Activate Graphical Interface
 GUI = False
@@ -42,7 +42,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 5000
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -219,6 +219,8 @@ def update_position(device):
             p_mpmo_fuzzy_hyst.clean_storaged_QoS()
             p_mpmo_fuzzy_ttt.clean_storaged_QoS()
             p_mpmo_rmse.clean_storaged_QoS()
+            p_mpmo_rmse_hyst.clean_storaged_QoS()
+            p_mpmo_rmse_ttt.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             p_worst_scenario.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
@@ -238,6 +240,8 @@ def update_position(device):
             p_mpmo_fuzzy_hyst.clean_Benchmark_storaged_QoS()
             p_mpmo_fuzzy_ttt.clean_Benchmark_storaged_QoS()
             p_mpmo_rmse.clean_Benchmark_storaged_QoS()
+            p_mpmo_rmse_hyst.clean_Benchmark_storaged_QoS()
+            p_mpmo_rmse_ttt.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             p_worst_scenario.clean_Benchmark_storaged_QoS()
             j = 0
@@ -339,17 +343,27 @@ def calculate_parameters(device, x_position, y_position):
     decision_mpmo_fuzzy_hyst = device.makeDecision(mpmo_fuzzy_hyst, available_networks)
     p_mpmo_fuzzy_hyst.store_QoS_parameters(decision_mpmo_fuzzy_hyst)
     p_mpmo_fuzzy_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
-    if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy_hyst}")
+    if verbose == True: print(f"Decision MPMO Fuzzy Hysteresis: {decision_mpmo_fuzzy_hyst}")
     
     decision_mpmo_fuzzy_ttt = device.makeDecision(mpmo_fuzzy_ttt, available_networks)
     p_mpmo_fuzzy_ttt.store_QoS_parameters(decision_mpmo_fuzzy_ttt)
     p_mpmo_fuzzy_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
-    if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy_ttt}")
+    if verbose == True: print(f"Decision MPMO Fuzzy Time to Trigger: {decision_mpmo_fuzzy_ttt}")
     
     decision_mpmo_rmse = device.makeDecision(mpmo_rmse, available_networks)
     p_mpmo_rmse.store_QoS_parameters(decision_mpmo_rmse)
     p_mpmo_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO RMSE: {decision_mpmo_rmse}")
+    
+    decision_mpmo_rmse_hyst = device.makeDecision(mpmo_rmse_hyst, available_networks)
+    p_mpmo_rmse_hyst.store_QoS_parameters(decision_mpmo_rmse_hyst)
+    p_mpmo_rmse_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO RMSE Hysteresis: {decision_mpmo_rmse_hyst}")
+    
+    decision_mpmo_rmse_ttt = device.makeDecision(mpmo_rmse_ttt, available_networks)
+    p_mpmo_rmse_ttt.store_QoS_parameters(decision_mpmo_rmse_ttt)
+    p_mpmo_rmse_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision MPMO RMSE Time to Trigger: {decision_mpmo_rmse_ttt}")
     
     if verbose == True: print("===================================================")
 
@@ -489,6 +503,22 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_rsme)
     results_list.append(results_mpmo_rmse)
     
+    results_mpmo_rmse_hyst = p_mpmo_rmse_hyst.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_rmse_hyst['Handover'] = p_mpmo_rmse_hyst.count_number_of_handovers()
+    results_mpmo_rmse_hyst['Algorithm'] = p_mpmo_rmse_hyst.algorithm
+    indicators_mpmo_rsme_hyst = p_mpmo_rmse_hyst.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_rsme_hyst['Algorithm'] = results_mpmo_rmse_hyst['Algorithm']
+    indicators_list.append(indicators_mpmo_rsme_hyst)
+    results_list.append(results_mpmo_rmse_hyst)
+    
+    results_mpmo_rmse_ttt = p_mpmo_rmse_ttt.calculate_average_QoS_parameters(analyzed_parameters)
+    results_mpmo_rmse_ttt['Handover'] = p_mpmo_rmse_ttt.count_number_of_handovers()
+    results_mpmo_rmse_ttt['Algorithm'] = p_mpmo_rmse_ttt.algorithm
+    indicators_mpmo_rsme_ttt = p_mpmo_rmse_ttt.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_mpmo_rsme_ttt['Algorithm'] = results_mpmo_rmse_ttt['Algorithm']
+    indicators_list.append(indicators_mpmo_rsme_ttt)
+    results_list.append(results_mpmo_rmse_ttt)
+    
     indicators_worst_scenario = p_worst_scenario.calculate_Abs_error_QoS_parameters(analyzed_parameters)
     indicators_worst_scenario['Algorithm'] = p_worst_scenario.algorithm
     indicators_list.append(indicators_worst_scenario)
@@ -514,6 +544,8 @@ def performe_analysis():
     print(f"{results_mpmo_topsis_ttt}, Handoff: {results_mpmo_topsis_ttt['Handover']}")
     print(f"{results_mpmo_fuzzy}, Handoff: {results_mpmo_fuzzy['Handover']}")
     print(f"{results_mpmo_rmse}, Handoff: {results_mpmo_rmse['Handover']}")
+    print(f"{results_mpmo_rmse_hyst}, Handoff: {results_mpmo_rmse['Handover']}")
+    print(f"{results_mpmo_rmse_ttt}, Handoff: {results_mpmo_rmse['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("========================================================================================================================")
     
@@ -802,8 +834,8 @@ def plot_results():
                 labels = list(r_dict.keys())
 
                 ax = axes[i]
-                hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x']
-                bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x']
+                bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
                 # Apply hatch patterns to each bar
                 for bar, hatch in zip(bars, hatches):
                     bar.set_hatch(hatch)
@@ -892,6 +924,8 @@ mpmo_fuzzy_hyst.definePresetConfigs()
 mpmo_fuzzy_ttt = MPMO_Fuzzy("MPMO-Fuzzy-TimeToTrigger", time_to_trigger=tt_trigger)
 mpmo_fuzzy_ttt.definePresetConfigs()
 mpmo_rmse = MPMO_RMSE("MPMO-RMSE", analyzed_parameters, weights, directions)
+mpmo_rmse_hyst = MPMO_RMSE("MPMO-RMSE-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
+mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
@@ -912,6 +946,8 @@ p_mpmo_fuzzy = PerformanceAnalysis("MPMO-Fuzzy")
 p_mpmo_fuzzy_hyst = PerformanceAnalysis("MPMO-Fuzzy-Hyst")
 p_mpmo_fuzzy_ttt = PerformanceAnalysis("MPMO-Fuzzy-TTT")
 p_mpmo_rmse = PerformanceAnalysis("MPMO-RMSE")
+p_mpmo_rmse_hyst = PerformanceAnalysis("MPMO-RMSE-Hyst")
+p_mpmo_rmse_ttt = PerformanceAnalysis("MPMO-RMSE-TTT")
 p_benchmark = PerformanceAnalysis("Benchmark")
 p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
 
