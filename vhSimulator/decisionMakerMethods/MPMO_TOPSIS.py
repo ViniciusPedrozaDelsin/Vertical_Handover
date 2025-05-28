@@ -2,8 +2,8 @@ from .DecisionMakerMethod import DecisionMakerMethod as DMM
 import numpy as np
 
 class MPMO_TOPSIS(DMM):
-    def __init__(self, method_name, attributes, weights, directions, hysterese_percentage=None, time_to_trigger=None):
-        super().__init__(method_name)
+    def __init__(self, method_name, attributes, weights, directions, hysterese_percentage=None, time_to_trigger=None, **kwargs):
+        super().__init__(method_name, **kwargs)
         self.attributes = attributes
         self.weights = weights
         self.normalizedWeights = self.normalizeWeights()
@@ -107,6 +107,9 @@ class MPMO_TOPSIS(DMM):
 
         # Calculate relative closeness to ideal solution
         closeness_coefficient = dist_negative_ideal / (dist_ideal + dist_negative_ideal)
+        
+        # Save data into .CSV
+        if self.file_to_save != None: self.saveData(closeness_coefficient)
         
         # Rank alternatives (higher is better)
         # Get the index of the max value

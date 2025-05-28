@@ -15,7 +15,7 @@ from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
 from vhSimulator import SPMO_Preference as SPMO_Pref
-from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
+from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, NN_TOPSIS, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
 
 
 # ==================================== Initial Parameters ====================================
@@ -33,7 +33,7 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 500
+n = 50
 
 # Activate Graphical Interface
 GUI = False
@@ -42,7 +42,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 50
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -62,6 +62,9 @@ weights = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
 directions = [1, 1, 1, 0, 0, 0, 1]
 hyst_percentage = 0.1
 tt_trigger = 2
+
+# NOW
+NOW = 0
 
 # Results
 final_results = []
@@ -221,6 +224,7 @@ def update_position(device):
             p_mpmo_rmse.clean_storaged_QoS()
             p_mpmo_rmse_hyst.clean_storaged_QoS()
             p_mpmo_rmse_ttt.clean_storaged_QoS()
+            p_nn_topsis.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             p_worst_scenario.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
@@ -242,6 +246,7 @@ def update_position(device):
             p_mpmo_rmse.clean_Benchmark_storaged_QoS()
             p_mpmo_rmse_hyst.clean_Benchmark_storaged_QoS()
             p_mpmo_rmse_ttt.clean_Benchmark_storaged_QoS()
+            p_nn_topsis.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             p_worst_scenario.clean_Benchmark_storaged_QoS()
             j = 0
@@ -252,6 +257,7 @@ def update_position(device):
 
 
 def calculate_parameters(device, x_position, y_position):
+    global NOW
     if verbose == True: print(f"x:{round(x_position, 4)} || y:{round(y_position, 4)}")
     device.updatePosition(x_position, y_position)
     
@@ -364,6 +370,15 @@ def calculate_parameters(device, x_position, y_position):
     p_mpmo_rmse_ttt.store_QoS_parameters(decision_mpmo_rmse_ttt)
     p_mpmo_rmse_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO RMSE Time to Trigger: {decision_mpmo_rmse_ttt}")
+    
+    decision_nn_topsis = device.makeDecision(nn_topsis, available_networks)
+    p_nn_topsis.store_QoS_parameters(decision_nn_topsis)
+    p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
+    if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
+    
+    if decision_nn_topsis == decision_mpmo_topsis:
+        NOW = NOW + 1
+    print(NOW)
     
     if verbose == True: print("===================================================")
 
@@ -519,6 +534,14 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_rsme_ttt)
     results_list.append(results_mpmo_rmse_ttt)
     
+    results_nn_topsis = p_nn_topsis.calculate_average_QoS_parameters(analyzed_parameters)
+    results_nn_topsis['Handover'] = p_nn_topsis.count_number_of_handovers()
+    results_nn_topsis['Algorithm'] = p_nn_topsis.algorithm
+    indicators_nn_topsis = p_nn_topsis.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+    indicators_nn_topsis['Algorithm'] = results_nn_topsis['Algorithm']
+    indicators_list.append(indicators_nn_topsis)
+    results_list.append(results_nn_topsis)
+    
     indicators_worst_scenario = p_worst_scenario.calculate_Abs_error_QoS_parameters(analyzed_parameters)
     indicators_worst_scenario['Algorithm'] = p_worst_scenario.algorithm
     indicators_list.append(indicators_worst_scenario)
@@ -544,8 +567,9 @@ def performe_analysis():
     print(f"{results_mpmo_topsis_ttt}, Handoff: {results_mpmo_topsis_ttt['Handover']}")
     print(f"{results_mpmo_fuzzy}, Handoff: {results_mpmo_fuzzy['Handover']}")
     print(f"{results_mpmo_rmse}, Handoff: {results_mpmo_rmse['Handover']}")
-    print(f"{results_mpmo_rmse_hyst}, Handoff: {results_mpmo_rmse['Handover']}")
-    print(f"{results_mpmo_rmse_ttt}, Handoff: {results_mpmo_rmse['Handover']}")
+    print(f"{results_mpmo_rmse_hyst}, Handoff: {results_mpmo_rmse_hyst['Handover']}")
+    print(f"{results_mpmo_rmse_ttt}, Handoff: {results_mpmo_rmse_ttt['Handover']}")
+    print(f"{results_nn_topsis}, Handoff: {results_nn_topsis['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("========================================================================================================================")
     
@@ -834,8 +858,8 @@ def plot_results():
                 labels = list(r_dict.keys())
 
                 ax = axes[i]
-                hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x']
-                bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', 'x|+']
+                bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "purple", "purple", "green", "black"], edgecolor='black', linewidth=1.2)
                 # Apply hatch patterns to each bar
                 for bar, hatch in zip(bars, hatches):
                     bar.set_hatch(hatch)
@@ -926,28 +950,30 @@ mpmo_fuzzy_ttt.definePresetConfigs()
 mpmo_rmse = MPMO_RMSE("MPMO-RMSE", analyzed_parameters, weights, directions)
 mpmo_rmse_hyst = MPMO_RMSE("MPMO-RMSE-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
 mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
+nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
 # Instances of Performance Analysis
-p_spmo_max_min_rssi = PerformanceAnalysis("SPMO-MAX-RSSI")
-p_spmo_max_min_snr = PerformanceAnalysis("SPMO-MAX-SNR")
-p_spmo_pref = PerformanceAnalysis("SPMO-Preference")
-p_mpmo_saw = PerformanceAnalysis("MPMO-SAW")
-p_mpmo_saw_hyst = PerformanceAnalysis("MPMO-SAW-Hyst")
-p_mpmo_saw_ttt = PerformanceAnalysis("MPMO-SAW-TTT")
-p_mpmo_wpm = PerformanceAnalysis("MPMO-WPM")
-p_mpmo_wpm_hyst = PerformanceAnalysis("MPMO-WPM-Hyst")
-p_mpmo_wpm_ttt = PerformanceAnalysis("MPMO-WPM-TTT")
-p_mpmo_topsis = PerformanceAnalysis("MPMO-TOPSIS")
-p_mpmo_topsis_hyst = PerformanceAnalysis("MPMO-TOPSIS-Hyst")
-p_mpmo_topsis_ttt = PerformanceAnalysis("MPMO-TOPSIS-TTT")
-p_mpmo_fuzzy = PerformanceAnalysis("MPMO-Fuzzy")
-p_mpmo_fuzzy_hyst = PerformanceAnalysis("MPMO-Fuzzy-Hyst")
-p_mpmo_fuzzy_ttt = PerformanceAnalysis("MPMO-Fuzzy-TTT")
-p_mpmo_rmse = PerformanceAnalysis("MPMO-RMSE")
-p_mpmo_rmse_hyst = PerformanceAnalysis("MPMO-RMSE-Hyst")
-p_mpmo_rmse_ttt = PerformanceAnalysis("MPMO-RMSE-TTT")
+p_spmo_max_min_rssi = PerformanceAnalysis("MAX-RSSI")
+p_spmo_max_min_snr = PerformanceAnalysis("MAX-SNR")
+p_spmo_pref = PerformanceAnalysis("Preference")
+p_mpmo_saw = PerformanceAnalysis("SAW")
+p_mpmo_saw_hyst = PerformanceAnalysis("SAW-Hyst")
+p_mpmo_saw_ttt = PerformanceAnalysis("SAW-TTT")
+p_mpmo_wpm = PerformanceAnalysis("WPM")
+p_mpmo_wpm_hyst = PerformanceAnalysis("WPM-Hyst")
+p_mpmo_wpm_ttt = PerformanceAnalysis("WPM-TTT")
+p_mpmo_topsis = PerformanceAnalysis("TOPSIS")
+p_mpmo_topsis_hyst = PerformanceAnalysis("TOPSIS-Hyst")
+p_mpmo_topsis_ttt = PerformanceAnalysis("TOPSIS-TTT")
+p_mpmo_fuzzy = PerformanceAnalysis("Fuzzy")
+p_mpmo_fuzzy_hyst = PerformanceAnalysis("Fuzzy-Hyst")
+p_mpmo_fuzzy_ttt = PerformanceAnalysis("Fuzzy-TTT")
+p_mpmo_rmse = PerformanceAnalysis("RMSE")
+p_mpmo_rmse_hyst = PerformanceAnalysis("RMSE-Hyst")
+p_mpmo_rmse_ttt = PerformanceAnalysis("RMSE-TTT")
+p_nn_topsis = PerformanceAnalysis("NN-TOPSIS")
 p_benchmark = PerformanceAnalysis("Benchmark")
 p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
 

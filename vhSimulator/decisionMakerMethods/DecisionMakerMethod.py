@@ -1,13 +1,73 @@
+import pandas as pd
+import numpy as np
+import hashlib
+
+
 class DecisionMakerMethod:
 
-    def __init__(self, method_name):
+    def __init__(self, method_name, file_to_save=None):
         self.method_name = method_name
+        self.file_to_save = file_to_save
         self.inputs = None
         self.output = None
         
     def send_inputs(self, inputs):
         self.inputs = inputs
     
+    def create_unique_id(*args):
+        # Combine all inputs into a single string
+        combined = '_'.join(map(str, args))
+        return hashlib.sha256(combined.encode()).hexdigest()
+    
+    def saveData(self, outputs):
+        #print(self.inputs)
+        #print(outputs)
+        
+        # Fields to normalize
+        fields = ['RSSI', 'SNR', 'BER', 'FEC', 'Throughput', 'PC', 'MC']
+
+        # Compute min and max for each field
+        mins = {field: min(d[field] for d in self.inputs) for field in fields}
+        maxs = {field: max(d[field] for d in self.inputs) for field in fields}
+
+        # Normalize
+        normalized_data = []
+        for item in self.inputs:
+            normalized_item = item.copy()
+            for field in fields:
+                min_val = mins[field]
+                max_val = maxs[field]
+                if max_val == min_val:
+                    normalized_item[field] = 0.0
+                else:
+                    normalized_item[field] = (item[field] - min_val) / (max_val - min_val)
+            normalized_data.append(normalized_item)
+            
+        uuid = self.create_unique_id(self.inputs, outputs)
+        data = []
+        i = 0
+        for input_network in normalized_data:
+            data.append(
+                [
+                    uuid,
+                    #input_network['Network'], 
+                    #input_network['Status'], 
+                    #input_network['Distance'], 
+                    input_network['RSSI'], 
+                    input_network['SNR'], 
+                    input_network['Throughput'], 
+                    input_network['BER'], 
+                    input_network['FEC'], 
+                    #input_network['Protocol'], 
+                    input_network['PC'], 
+                    input_network['MC'], 
+                    outputs[i]
+                ]
+            )
+            i += 1
+        df = pd.DataFrame(data)
+        df.to_csv(self.file_to_save, mode='a', header=False, index=False)
+        
     # ================================ Hysteresis: Only available for MPMO
     def check_hysteresis_reference(self):
         network_still_available = False

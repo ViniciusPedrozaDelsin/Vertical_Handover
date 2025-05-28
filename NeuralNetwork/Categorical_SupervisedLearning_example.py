@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
@@ -6,6 +7,11 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 
+df = pd.read_csv('./data/TOPSIS.csv', index_col=False)
+print(df.shape)     # (rows, columns)
+print(df.columns)   # List of column names
+print(df.dtypes)    # Data types of each column
+
 # Load dataset
 iris = load_iris()
 X = iris.data
@@ -13,7 +19,7 @@ y_raw = iris.target
 y = y_raw.reshape(-1, 1)  # reshape for OneHotEncoder
 
 print("Input features shape:", X.shape)
-#print(f"Labels before reshape: {y_raw}")
+print(f"Labels before reshape: {y_raw}")
 print("Labels before encoding:", np.unique(y))
 
 # Normalize features
@@ -29,6 +35,7 @@ y_encoded = encoder.fit_transform(y)
 
 print("\nExample of one-hot encoded labels (first 5 samples):")
 print(y_encoded[:5])
+x=input("")
 
 # Split into train/test sets
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y_encoded, test_size=0.2, random_state=42)
