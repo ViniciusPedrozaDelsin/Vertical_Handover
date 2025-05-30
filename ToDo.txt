@@ -1,5 +1,3 @@
-- Descobrir tempo de execução e custo de processamento entre uma rede neural NxM e um arlogirtmo de TOPSIS (Big O Notation) 
-- Fazer a nn e ver se ela se comporta parecido com o algoritmo di handoff ("transfer learning").
 - Create a requerimets.txt for the project
 - Rayleigh and Rician
 - Optimization Pareto, Multi object optimization
@@ -10,7 +8,6 @@ Rayleigh and Rician
 calcolari i pesi
 grafici n-handover x n-ttt e n-handover x percent-hyst
 fix and understand fuzzy
-nn supervised (baysianOptimization, matrix to compact data without losing information)
 nn unsupervised
 
 colocar normal em 1 quadrado 1x1 para fazer MC

@@ -33,7 +33,7 @@ dist_iter = 10
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 50
+n = 100
 
 # Activate Graphical Interface
 GUI = False
@@ -42,7 +42,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 50
+n_simulations = 500
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -858,7 +858,7 @@ def plot_results():
                 labels = list(r_dict.keys())
 
                 ax = axes[i]
-                hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', 'x|+']
+                hatches = ['', '', '', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', '', '+', 'x', '|']
                 bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "blue", "blue", "blue", "green", "green", "green", "red", "red", "red", "purple", "purple", "purple", "green", "black"], edgecolor='black', linewidth=1.2)
                 # Apply hatch patterns to each bar
                 for bar, hatch in zip(bars, hatches):

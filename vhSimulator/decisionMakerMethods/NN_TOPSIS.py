@@ -6,7 +6,7 @@ class NN_TOPSIS(DMM):
     def __init__(self, method_name, attributes, hysterese_percentage=None, time_to_trigger=None, **kwargs):
         super().__init__(method_name, **kwargs)
         self.attributes = attributes
-        self.model = tf.keras.models.load_model("TOPSIS_NN_4_8_4.keras")
+        self.model = tf.keras.models.load_model("TOPSIS_NN_7_6_2.keras")
         
         # Hysteresis values
         self.hysteresis_reference = None

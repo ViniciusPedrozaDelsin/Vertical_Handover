@@ -1,0 +1,604 @@
+============================================
+Trial Number: 0
+Neural Network Shape: [4, 5, 2]
+Learning Rate: 0.00010090989106506319
+Number of epochs: 27
+Validation Loss: 0.0003585674276109785
+============================================
+Trial Number: 1
+Neural Network Shape: [4, 5, 6]
+Learning Rate: 0.0011525047813314242
+Number of epochs: 31
+Validation Loss: 0.0003204176318831742
+============================================
+Trial Number: 2
+Neural Network Shape: [6]
+Learning Rate: 0.0039953683673273205
+Number of epochs: 21
+Validation Loss: 0.0003295598435215652
+============================================
+Trial Number: 3
+Neural Network Shape: [2, 7]
+Learning Rate: 5.144443435747352e-05
+Number of epochs: 27
+Validation Loss: 0.0005282717756927013
+============================================
+Trial Number: 4
+Neural Network Shape: [6, 6, 3]
+Learning Rate: 0.0006896854263222469
+Number of epochs: 29
+Validation Loss: 0.0003293595218565315
+============================================
+Trial Number: 5
+Neural Network Shape: [3, 3, 2]
+Learning Rate: 0.0015078761385617012
+Number of epochs: 30
+Validation Loss: 0.0003410399367567152
+============================================
+Trial Number: 6
+Neural Network Shape: [6, 4]
+Learning Rate: 0.0001097707011556677
+Number of epochs: 34
+Validation Loss: 0.0003204826498404145
+============================================
+Trial Number: 7
+Neural Network Shape: [2, 3, 5]
+Learning Rate: 0.004164237680841725
+Number of epochs: 37
+Validation Loss: 0.01717500574886799
+============================================
+Trial Number: 8
+Neural Network Shape: [4, 2, 7, 4]
+Learning Rate: 0.0005792201007599726
+Number of epochs: 40
+Validation Loss: 0.0003207175468560308
+============================================
+Trial Number: 9
+Neural Network Shape: [7]
+Learning Rate: 1.9221110294848563e-05
+Number of epochs: 28
+Validation Loss: 0.0009897430427372456
+============================================
+Trial Number: 10
+Neural Network Shape: [5, 2, 3, 6]
+Learning Rate: 0.006807882778026234
+Number of epochs: 21
+Validation Loss: 0.0006200874922797084
+============================================
+Trial Number: 11
+Neural Network Shape: [8, 5]
+Learning Rate: 0.00015684004864581402
+Number of epochs: 35
+Validation Loss: 0.00031606361153535545
+============================================
+Trial Number: 12
+Neural Network Shape: [3, 4]
+Learning Rate: 0.0002457713176535428
+Number of epochs: 35
+Validation Loss: 0.017066078260540962
+============================================
+Trial Number: 13
+Neural Network Shape: [2, 8]
+Learning Rate: 0.0014040148237050843
+Number of epochs: 35
+Validation Loss: 0.00033825321588665247
+============================================
+Trial Number: 14
+Neural Network Shape: [6, 8, 3, 3]
+Learning Rate: 0.00019981383561290574
+Number of epochs: 32
+Validation Loss: 0.00032069781445898116
+============================================
+Trial Number: 15
+Neural Network Shape: [6]
+Learning Rate: 1.1361406029414579e-05
+Number of epochs: 24
+Validation Loss: 0.0032643757294863462
+============================================
+Trial Number: 16
+Neural Network Shape: [2, 2]
+Learning Rate: 0.0007920136121033045
+Number of epochs: 39
+Validation Loss: 0.017109716311097145
+============================================
+Trial Number: 17
+Neural Network Shape: [2, 4, 6]
+Learning Rate: 4.089304315742758e-05
+Number of epochs: 32
+Validation Loss: 0.000494450272526592
+============================================
+Trial Number: 18
+Neural Network Shape: [2, 6, 3]
+Learning Rate: 0.0018950968724262697
+Number of epochs: 32
+Validation Loss: 0.0003963655617553741
+============================================
+Trial Number: 19
+Neural Network Shape: [6, 5]
+Learning Rate: 0.0003935219379907096
+Number of epochs: 37
+Validation Loss: 0.0003543717029970139
+============================================
+Trial Number: 20
+Neural Network Shape: [7, 7, 5, 2]
+Learning Rate: 0.0001417725314778773
+Number of epochs: 25
+Validation Loss: 0.00032780319452285767
+============================================
+Trial Number: 21
+Neural Network Shape: [3, 4]
+Learning Rate: 7.08621336269414e-05
+Number of epochs: 34
+Validation Loss: 0.0006632632575929165
+============================================
+Trial Number: 22
+Neural Network Shape: [2, 2]
+Learning Rate: 0.0003504264954462603
+Number of epochs: 33
+Validation Loss: 0.01704704947769642
+============================================
+Trial Number: 23
+Neural Network Shape: [5]
+Learning Rate: 3.05457448709369e-05
+Number of epochs: 37
+Validation Loss: 0.000587430433370173
+============================================
+Trial Number: 24
+Neural Network Shape: [7, 5]
+Learning Rate: 0.0001234216392070991
+Number of epochs: 31
+Validation Loss: 0.00034632152528502047
+============================================
+Trial Number: 25
+Neural Network Shape: [4, 4, 5]
+Learning Rate: 8.324170954638395e-05
+Number of epochs: 35
+Validation Loss: 0.00038315349956974387
+============================================
+Trial Number: 26
+Neural Network Shape: [3, 8]
+Learning Rate: 0.00018087063106474614
+Number of epochs: 38
+Validation Loss: 0.00031565138488076627
+============================================
+Trial Number: 27
+Neural Network Shape: [2]
+Learning Rate: 0.0010533154198211004
+Number of epochs: 38
+Validation Loss: 0.00046282896073535085
+============================================
+Trial Number: 28
+Neural Network Shape: [6, 4, 3]
+Learning Rate: 0.0004888507853613726
+Number of epochs: 36
+Validation Loss: 0.01704958826303482
+============================================
+Trial Number: 29
+Neural Network Shape: [6, 8]
+Learning Rate: 0.00024520396279572784
+Number of epochs: 40
+Validation Loss: 0.00035733802360482514
+============================================
+Trial Number: 30
+Neural Network Shape: [2, 2, 8]
+Learning Rate: 0.002023977707178921
+Number of epochs: 30
+Validation Loss: 0.00036752299638465047
+============================================
+Trial Number: 31
+Neural Network Shape: [6, 5]
+Learning Rate: 0.0001613597739083001
+Number of epochs: 34
+Validation Loss: 0.00033727288246154785
+============================================
+Trial Number: 32
+Neural Network Shape: [6, 8]
+Learning Rate: 8.862780189441565e-05
+Number of epochs: 33
+Validation Loss: 0.00032930169254541397
+============================================
+Trial Number: 33
+Neural Network Shape: [6, 2]
+Learning Rate: 5.5335872736318284e-05
+Number of epochs: 38
+Validation Loss: 0.0004262762959115207
+============================================
+Trial Number: 34
+Neural Network Shape: [6]
+Learning Rate: 0.00030032616119277865
+Number of epochs: 36
+Validation Loss: 0.000367420056136325
+============================================
+Trial Number: 35
+Neural Network Shape: [5, 3, 3]
+Learning Rate: 9.991743217996483e-05
+Number of epochs: 29
+Validation Loss: 0.0005100840935483575
+============================================
+Trial Number: 36
+Neural Network Shape: [2, 5]
+Learning Rate: 0.0030270751289547364
+Number of epochs: 34
+Validation Loss: 0.0004698049451690167
+============================================
+Trial Number: 37
+Neural Network Shape: [5, 3]
+Learning Rate: 0.00016178268105613802
+Number of epochs: 26
+Validation Loss: 0.0003632136795204133
+============================================
+Trial Number: 38
+Neural Network Shape: [2, 6, 3]
+Learning Rate: 2.675805764561681e-05
+Number of epochs: 31
+Validation Loss: 0.017055124044418335
+============================================
+Trial Number: 39
+Neural Network Shape: [4]
+Learning Rate: 0.0007526770902479377
+Number of epochs: 39
+Validation Loss: 0.00042437479714863
+============================================
+Trial Number: 40
+Neural Network Shape: [7, 8]
+Learning Rate: 0.007934173860481869
+Number of epochs: 29
+Validation Loss: 0.0003129666147287935
+============================================
+Trial Number: 41
+Neural Network Shape: [3, 6]
+Learning Rate: 0.004139983095783047
+Number of epochs: 28
+Validation Loss: 0.0009259263169951737
+============================================
+Trial Number: 42
+Neural Network Shape: [6, 2]
+Learning Rate: 0.007276703916049094
+Number of epochs: 30
+Validation Loss: 0.0003464430046733469
+============================================
+Trial Number: 43
+Neural Network Shape: [8, 8]
+Learning Rate: 5.6961488309456596e-05
+Number of epochs: 28
+Validation Loss: 0.00036090187495574355
+============================================
+Trial Number: 44
+Neural Network Shape: [2, 5]
+Learning Rate: 0.006185038212119359
+Number of epochs: 36
+Validation Loss: 0.01702178455889225
+============================================
+Trial Number: 45
+Neural Network Shape: [6, 4, 5]
+Learning Rate: 0.00022860011004077678
+Number of epochs: 33
+Validation Loss: 0.000330582435708493
+============================================
+Trial Number: 46
+Neural Network Shape: [2, 7]
+Learning Rate: 0.008867396733840497
+Number of epochs: 31
+Validation Loss: 0.00035015842877328396
+============================================
+Trial Number: 47
+Neural Network Shape: [7]
+Learning Rate: 0.0027321383241269677
+Number of epochs: 29
+Validation Loss: 0.00030160797177813947
+============================================
+Trial Number: 48
+Neural Network Shape: [6]
+Learning Rate: 0.002656771016868336
+Number of epochs: 26
+Validation Loss: 0.0003893307875841856
+============================================
+Trial Number: 49
+Neural Network Shape: [4]
+Learning Rate: 0.0013505745298210885
+Number of epochs: 27
+Validation Loss: 0.0003838385746348649
+============================================
+Trial Number: 50
+Neural Network Shape: [6, 2, 2, 4]
+Learning Rate: 0.004973527231549317
+Number of epochs: 23
+Validation Loss: 0.00032523219124414027
+============================================
+Trial Number: 51
+Neural Network Shape: [3, 2, 6]
+Learning Rate: 0.0030948364591794402
+Number of epochs: 29
+Validation Loss: 0.00038212790968827903
+============================================
+Trial Number: 52
+Neural Network Shape: [6]
+Learning Rate: 0.0005417657166778936
+Number of epochs: 30
+Validation Loss: 0.0005191076779738069
+============================================
+Trial Number: 53
+Neural Network Shape: [2, 4]
+Learning Rate: 0.009684201920408685
+Number of epochs: 29
+Validation Loss: 0.017882516607642174
+============================================
+Trial Number: 54
+Neural Network Shape: [8, 8, 4]
+Learning Rate: 0.0022321794360336644
+Number of epochs: 32
+Validation Loss: 0.0002630274975672364
+============================================
+Trial Number: 55
+Neural Network Shape: [8, 4, 3]
+Learning Rate: 0.0009499889992844399
+Number of epochs: 32
+Validation Loss: 0.00030680320924147964
+============================================
+Trial Number: 56
+Neural Network Shape: [4, 2, 8]
+Learning Rate: 0.0026898319388056115
+Number of epochs: 32
+Validation Loss: 0.0003348175960127264
+============================================
+Trial Number: 57
+Neural Network Shape: [2, 6, 6]
+Learning Rate: 0.0009251120092793807
+Number of epochs: 31
+Validation Loss: 0.0003319834067951888
+============================================
+Trial Number: 58
+Neural Network Shape: [8, 4, 6]
+Learning Rate: 0.001999130476305338
+Number of epochs: 33
+Validation Loss: 0.0003339062095619738
+============================================
+Trial Number: 59
+Neural Network Shape: [5, 6, 2, 5]
+Learning Rate: 0.0016974936927909752
+Number of epochs: 27
+Validation Loss: 0.01710471883416176
+============================================
+Trial Number: 60
+Neural Network Shape: [3, 4, 5]
+Learning Rate: 0.0052959374545337974
+Number of epochs: 35
+Validation Loss: 0.0005292773712426424
+============================================
+Trial Number: 61
+Neural Network Shape: [4, 7, 7]
+Learning Rate: 0.0012480643174740552
+Number of epochs: 32
+Validation Loss: 0.00032568900496698916
+============================================
+Trial Number: 62
+Neural Network Shape: [4, 5, 2]
+Learning Rate: 0.0006242306791743209
+Number of epochs: 29
+Validation Loss: 0.01702897436916828
+============================================
+Trial Number: 63
+Neural Network Shape: [6, 7, 8]
+Learning Rate: 0.0036646339710598858
+Number of epochs: 31
+Validation Loss: 0.00033450592309236526
+============================================
+Trial Number: 64
+Neural Network Shape: [6, 8, 8]
+Learning Rate: 0.0004276628606776135
+Number of epochs: 34
+Validation Loss: 0.00031563270022161305
+============================================
+Trial Number: 65
+Neural Network Shape: [6, 3, 6, 2]
+Learning Rate: 0.0004592410392483339
+Number of epochs: 34
+Validation Loss: 0.017027290537953377
+============================================
+Trial Number: 66
+Neural Network Shape: [5, 5, 7]
+Learning Rate: 0.00032682408056063637
+Number of epochs: 35
+Validation Loss: 0.0003341008850838989
+============================================
+Trial Number: 67
+Neural Network Shape: [2, 4, 6]
+Learning Rate: 0.0009366742376544437
+Number of epochs: 38
+Validation Loss: 0.01708911918103695
+============================================
+Trial Number: 68
+Neural Network Shape: [2, 3]
+Learning Rate: 0.000174754971278041
+Number of epochs: 32
+Validation Loss: 0.0006489743245765567
+============================================
+Trial Number: 69
+Neural Network Shape: [8]
+Learning Rate: 0.00043067871829791685
+Number of epochs: 37
+Validation Loss: 0.000360516452929005
+============================================
+Trial Number: 70
+Neural Network Shape: [2, 7]
+Learning Rate: 0.002192436902752936
+Number of epochs: 33
+Validation Loss: 0.0003902602766174823
+============================================
+Trial Number: 71
+Neural Network Shape: [3, 3, 8]
+Learning Rate: 0.0011968825902250132
+Number of epochs: 30
+Validation Loss: 0.0003227747802156955
+============================================
+Trial Number: 72
+Neural Network Shape: [7, 7, 5]
+Learning Rate: 0.00012832104078822288
+Number of epochs: 39
+Validation Loss: 0.00034827750641852617
+============================================
+Trial Number: 73
+Neural Network Shape: [7, 8, 4]
+Learning Rate: 0.0007410525941783953
+Number of epochs: 28
+Validation Loss: 0.00034783530281856656
+============================================
+Trial Number: 74
+Neural Network Shape: [2, 5, 8]
+Learning Rate: 0.0014751816374929416
+Number of epochs: 34
+Validation Loss: 0.0004278761043678969
+============================================
+Trial Number: 75
+Neural Network Shape: [6, 2]
+Learning Rate: 0.000281072979537173
+Number of epochs: 33
+Validation Loss: 0.0003278991498518735
+============================================
+Trial Number: 76
+Neural Network Shape: [4, 6, 8]
+Learning Rate: 0.0009974134267774007
+Number of epochs: 31
+Validation Loss: 0.00035040886723436415
+============================================
+Trial Number: 77
+Neural Network Shape: [3, 4, 8]
+Learning Rate: 0.00021664111480699556
+Number of epochs: 32
+Validation Loss: 0.00033898232504725456
+============================================
+Trial Number: 78
+Neural Network Shape: [4, 4]
+Learning Rate: 0.001697366023147448
+Number of epochs: 36
+Validation Loss: 0.00030293731833808124
+============================================
+Trial Number: 79
+Neural Network Shape: [6, 2]
+Learning Rate: 0.0017224721478637272
+Number of epochs: 36
+Validation Loss: 0.0003378966066520661
+============================================
+Trial Number: 80
+Neural Network Shape: [8, 6]
+Learning Rate: 0.007719755245504165
+Number of epochs: 20
+Validation Loss: 0.0003512731345836073
+============================================
+Trial Number: 81
+Neural Network Shape: [6, 8]
+Learning Rate: 0.0023843497211753642
+Number of epochs: 36
+Validation Loss: 0.000334010343067348
+============================================
+Trial Number: 82
+Neural Network Shape: [4, 3]
+Learning Rate: 0.0003721255572927776
+Number of epochs: 35
+Validation Loss: 0.000457353686215356
+============================================
+Trial Number: 83
+Neural Network Shape: [8]
+Learning Rate: 0.003132188852568129
+Number of epochs: 37
+Validation Loss: 0.0003787736059166491
+============================================
+Trial Number: 84
+Neural Network Shape: [6, 6]
+Learning Rate: 0.0015653094078308333
+Number of epochs: 38
+Validation Loss: 0.00030485790921375155
+============================================
+Trial Number: 85
+Neural Network Shape: [3, 6]
+Learning Rate: 0.003688079495875246
+Number of epochs: 40
+Validation Loss: 0.0003299397067166865
+============================================
+Trial Number: 86
+Neural Network Shape: [2, 4]
+Learning Rate: 0.0016458988102064295
+Number of epochs: 38
+Validation Loss: 0.00036532763624563813
+============================================
+Trial Number: 87
+Neural Network Shape: [8, 3]
+Learning Rate: 0.004667259825499566
+Number of epochs: 39
+Validation Loss: 0.00032119196839630604
+============================================
+Trial Number: 88
+Neural Network Shape: [3, 4]
+Learning Rate: 0.0006415447071060861
+Number of epochs: 37
+Validation Loss: 0.00035347367520444095
+============================================
+Trial Number: 89
+Neural Network Shape: [8, 3]
+Learning Rate: 0.00010622712101325329
+Number of epochs: 35
+Validation Loss: 0.000320482678944245
+============================================
+Trial Number: 90
+Neural Network Shape: [3, 3]
+Learning Rate: 0.00018682291662244945
+Number of epochs: 36
+Validation Loss: 0.00036374671617522836
+============================================
+Trial Number: 91
+Neural Network Shape: [2, 8, 4]
+Learning Rate: 0.0008065473918245924
+Number of epochs: 38
+Validation Loss: 0.0003725886926986277
+============================================
+Trial Number: 92
+Neural Network Shape: [5, 2, 4]
+Learning Rate: 0.002313523214494663
+Number of epochs: 34
+Validation Loss: 0.0003329321334604174
+============================================
+Trial Number: 93
+Neural Network Shape: [3]
+Learning Rate: 0.00026349614198420445
+Number of epochs: 30
+Validation Loss: 0.000507164339069277
+============================================
+Trial Number: 94
+Neural Network Shape: [6, 2]
+Learning Rate: 0.0011494752204226023
+Number of epochs: 29
+Validation Loss: 0.0003276172501500696
+============================================
+Trial Number: 95
+Neural Network Shape: [3, 2]
+Learning Rate: 0.0018421169517023356
+Number of epochs: 37
+Validation Loss: 0.0004133977636229247
+============================================
+Trial Number: 96
+Neural Network Shape: [4, 5, 8]
+Learning Rate: 0.0008914748863762526
+Number of epochs: 30
+Validation Loss: 0.0003475635894574225
+============================================
+Trial Number: 97
+Neural Network Shape: [2, 3, 7]
+Learning Rate: 0.0027561750172273203
+Number of epochs: 33
+Validation Loss: 0.000633660180028528
+============================================
+Trial Number: 98
+Neural Network Shape: [2, 3, 4, 8]
+Learning Rate: 0.001399219154517071
+Number of epochs: 28
+Validation Loss: 0.00033110418007709086
+============================================
+Trial Number: 99
+Neural Network Shape: [8]
+Learning Rate: 0.0001459336316200355
+Number of epochs: 31
+Validation Loss: 0.00033767404966056347
+============================================
+
+Best hyperparameters:
+{'n_layers': 3, 'learning_rate': 0.0022321794360336644, 'n_epochs': 32}
