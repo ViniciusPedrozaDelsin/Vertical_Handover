@@ -86,8 +86,9 @@ class MPMO_RMSE(DMM):
             parm_dict[attribute] = []
             for abs_input in abs_inputs:
                 parm_dict[attribute].append(abs_input[attribute])
+        e = 0.000000001
         for k, v in parm_dict.items():
-            new_value = [(x-min(v))/(max(v)-min(v)) for x in v]
+            new_value = [(x-min(v))/((max(v)-min(v)) + e) for x in v]
             parm_dict[k] = new_value
         # Transpose the dictionary
         transposed = {

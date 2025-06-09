@@ -1,4 +1,5 @@
-import time
+#import time
+
 class Device:
     
     def __init__(self, device_id, x_position, y_position):

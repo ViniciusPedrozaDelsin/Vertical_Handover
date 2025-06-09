@@ -1,8 +1,10 @@
+import numpy as np
+from scipy.stats import rice
 import math
 import random
 
 class WirelessNetworkSystem:
-    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, predef_ber=None, predef_fec=None, predef_config=True, corrections_real_world_applications=False):
+    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, predef_ber=None, predef_fec=None, predef_config=True, corrections_real_world_applications=False, fading=None):
         self.system_name = system_name
         self.connected_devices = set()
         
@@ -18,6 +20,7 @@ class WirelessNetworkSystem:
         self.monetary_cost = monetary_cost
         self.corrections_real_world_applications = corrections_real_world_applications
         self.predef_config = predef_config
+        self.fading = fading
         if self.predef_config == True:
             self.maximum_radius = maximum_radius
         else:
@@ -55,10 +58,25 @@ class WirelessNetworkSystem:
             transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20))
         return transmission_range_radius
     
+    def update_transmission_range(self, fading):
+        # Boltzmann's Constant (J/K)
+        k = 1.38 * (10**-23)
+        # Temperature 290 Kelvin
+        T = 290
+        # Speed of Light
+        c = 300000000
+        if self.corrections_real_world_applications == True:
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20) - (1) - (0.5*math.log10(2)) + (fading/20))
+        else:
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/300000000)) - (0.5*(math.log10(k*290*self.bandwidth))) - (1.5) - (self.minimum_snr/20) + (fading/20))
+            
+        self.maximum_radius = transmission_range_radius
+    
     def calculateDeviceDistance(self, device):
         distance = (((device.x_position - self.x_position)**2) + ((device.y_position - self.y_position))**2)**(1/2)
         return distance
-        
+    
+    # Free Space Path Loss
     def calculateFSPL_db(self, d):
         # Distance correction if d = 0
         if d == 0: d = d + 0.00001
@@ -75,7 +93,22 @@ class WirelessNetworkSystem:
             # FSPL correction if it is less then zero
             if free_space_path_loss_db < 0: free_space_path_loss_db = 0
         return free_space_path_loss_db
-        
+    
+    # Rayleigh Fading (for NLOS, no dominant path)
+    def calculateRayleighFading_db(self):
+        rayleigh_fading = np.random.rayleigh(scale=1, size=1000)
+        fading_db = 20 * np.log10(rayleigh_fading)
+        mean_rayleigh_samples = sum(fading_db) / len(fading_db)
+        return mean_rayleigh_samples
+    
+    # Rician Fading (for LOS + multipath)
+    def calculateRicianFading_db(self, K_dB, sigma=1, num_samples=10):
+        K = 10 ** (K_dB / 10)       # Convert K-factor to linear scale
+        nu = np.sqrt(2 * K * sigma**2)  # LOS component amplitude
+        rician_samples = rice.rvs(b=nu / sigma, scale=sigma, size=num_samples)
+        mean_rician_samples = sum(rician_samples) / len(rician_samples)
+        return mean_rician_samples
+
     def calculateCOST231HataModel(self, d):
         pass
         
@@ -153,6 +186,15 @@ class WirelessNetworkSystem:
         fspl = self.calculateFSPL_db(distance)
         #QoS_Parameters['FSPL'] = round(fspl, 3)
         
+        # Calculate Rayleigh Fading dB
+        if self.fading == "Rayleigh": fading_value = self.calculateRayleighFading_db()
+        
+        # Calculate Rayleigh Fading dB
+        if self.fading == "Rician": fading_value = -self.calculateRicianFading_db(5)
+        
+        # Add Fading Loss into FSPL
+        if self.fading != None: fspl = fspl-fading_value
+        
         # Calculate Received Signal Strength Indicator
         rssi = self.calculateRSSI_dbm(fspl)
         QoS_Parameters['RSSI'] = round(rssi, 3)
@@ -172,6 +214,10 @@ class WirelessNetworkSystem:
         
         # Verify Status
         network_status = self.calculateMinimumSNR_db(snr_db)
+        
+        # Update Max Radius Range
+        if self.fading != None: self.update_transmission_range(fading_value)
+        
         if network_status == "Offline":
             QoS_Parameters = {}
             QoS_Parameters['Status'] = "Offline"

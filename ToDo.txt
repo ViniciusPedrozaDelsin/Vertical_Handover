@@ -9,6 +9,7 @@ calcolari i pesi
 grafici n-handover x n-ttt e n-handover x percent-hyst
 fix and understand fuzzy
 nn unsupervised
+definir o artigo
 
 colocar normal em 1 quadrado 1x1 para fazer MC
 testar o lançamento de moeda com uma normalização no valor priori e na amostra e depois fazer a probabilidade dos eventos conjuntos
