@@ -60,9 +60,9 @@ class MPMO_Fuzzy(DMM):
     
     def definePresetConfigs(self):
         # Set Membership Degree
-        self.membership['RSSI'] = {'Low': [-120, -80], 'Medium': [-90, -60], 'High': [-65, -35]}
+        self.membership['RSSI'] = {'Low': [-150, -80], 'Medium': [-90, -60], 'High': [-65, -35]}
         self.membership['SNR'] = {'Low': [0, 15], 'High': [13, 30]}
-        self.membership['Throughput'] = {'Low': [2, 30], 'Medium': [20, 100], 'High': [80, 1500]}
+        self.membership['Throughput'] = {'Low': [0, 15], 'Medium': [10, 100], 'High': [80, 1500]}
         self.membership['PC'] = {'Low': [0.05, 0.6], 'High': [0.4, 1.05]}
         self.membership['MC'] = {'Low': [1, 2.5], 'High': [2, 4]}
         self.membership['BER'] = {'Low': [0.00000001, 0.00001], 'High': [0.000001, 0.01]}
@@ -74,9 +74,11 @@ class MPMO_Fuzzy(DMM):
         self.rules.append({'Handoff': 'YES', 'Conjunction': 'OR', 'Rules': {'Throughput': 'High', 'SNR': 'High'}})
         self.rules.append({'Handoff': 'YES', 'Conjunction': 'AND', 'Rules': {'RSSI': 'High', 'SNR': 'High', 'FEC': 'High'}})
         self.rules.append({'Handoff': 'YES', 'Conjunction': 'AND', 'Rules': {'Throughput': 'High', 'PC': 'Low', 'MC': 'Low'}})
+        self.rules.append({'Handoff': 'YES', 'Conjunction': 'OR', 'Rules': {'SNR': 'High', 'BER': 'Low'}})
+        self.rules.append({'Handoff': 'NO', 'Conjunction': 'AND', 'Rules': {'Throughput': 'Low', 'BER': 'High'}})
         self.rules.append({'Handoff': 'NO', 'Conjunction': 'OR', 'Rules': {'Throughput': 'Low', 'PC': 'High'}})
         self.rules.append({'Handoff': 'NO', 'Conjunction': 'AND', 'Rules': {'RSSI': 'Low', 'PC': 'High', 'FEC': 'Low'}})
-        self.rules.append({'Handoff': 'NO', 'Conjunction': 'AND', 'Rules': {'Throughput': 'Low', 'SNR': 'Low'}})
+        self.rules.append({'Handoff': 'NO', 'Conjunction': 'OR', 'Rules': {'Throughput': 'Low', 'SNR': 'Low'}})
         self.rules.append({'Handoff': 'NO', 'Conjunction': 'AND', 'Rules': {'RSSI': 'Low', 'SNR': 'Low'}})
         
         self.calculateTrianglesPeak()

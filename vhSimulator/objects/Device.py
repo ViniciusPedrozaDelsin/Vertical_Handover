@@ -1,5 +1,3 @@
-#import time
-
 class Device:
     
     def __init__(self, device_id, x_position, y_position):
@@ -11,6 +9,7 @@ class Device:
         self.available_networks = []
         #self.decision_maker_methods = set()
         
+        '''
         dict_now = {}
         dict_now['MPMO-Fuzzy'] = 0
         dict_now['MPMO-TOPSIS'] = 0
@@ -18,6 +17,7 @@ class Device:
         dict_now['MPMO-SAW'] = 0
         
         self.dict_now = dict_now
+        '''
     
     def updatePosition(self, x, y):
         self.x_position = x

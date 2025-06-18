@@ -102,12 +102,17 @@ class WirelessNetworkSystem:
         return mean_rayleigh_samples
     
     # Rician Fading (for LOS + multipath)
-    def calculateRicianFading_db(self, K_dB, sigma=1, num_samples=10):
+    def calculateRicianFading_db(self, K_dB, sigma=1, num_samples=1000):
         K = 10 ** (K_dB / 10)       # Convert K-factor to linear scale
         nu = np.sqrt(2 * K * sigma**2)  # LOS component amplitude
         rician_samples = rice.rvs(b=nu / sigma, scale=sigma, size=num_samples)
         mean_rician_samples = sum(rician_samples) / len(rician_samples)
         return mean_rician_samples
+    
+    # Calculate Shadowing
+    def calculateShadowing(self, sigma=0.5):
+        shadowing = np.random.normal(loc=0.0, scale=sigma)
+        return shadowing
 
     def calculateCOST231HataModel(self, d):
         pass
@@ -116,13 +121,13 @@ class WirelessNetworkSystem:
         rssi_dbm = self.transmission_power_dbm - fspl
         return rssi_dbm
         
-    def calculateThermalNoise_dbm(self):
+    def calculateThermalNoise_dbm(self, NF=0):
         # Boltzmann's Constant (J/K)
         k = 1.38 * (10**-23)
         # Temperature 290 Kelvin
         T = 290
         # Thermal Noise Formula
-        thermal_noise_power_dbm = 10 * math.log10(k*T*self.bandwidth) + 30
+        thermal_noise_power_dbm = 10 * math.log10(k*T*self.bandwidth) + 30 + NF
         return thermal_noise_power_dbm
        
     def calculateSNR_db(self, rssi_dbm, thermal_noise_power_dbm):
@@ -195,12 +200,16 @@ class WirelessNetworkSystem:
         # Add Fading Loss into FSPL
         if self.fading != None: fspl = fspl-fading_value
         
+        # Add Shadowing into FSPL
+        shadowing = self.calculateShadowing()
+        fspl = fspl-shadowing
+        
         # Calculate Received Signal Strength Indicator
         rssi = self.calculateRSSI_dbm(fspl)
         QoS_Parameters['RSSI'] = round(rssi, 3)
         
         # Calculate Signal Noise Ratio
-        thermal_noise_dbm = self.calculateThermalNoise_dbm()
+        thermal_noise_dbm = self.calculateThermalNoise_dbm(5)
         snr_db = self.calculateSNR_db(rssi, thermal_noise_dbm)
         QoS_Parameters['SNR'] = round(snr_db, 3)
         
@@ -216,7 +225,7 @@ class WirelessNetworkSystem:
         network_status = self.calculateMinimumSNR_db(snr_db)
         
         # Update Max Radius Range
-        if self.fading != None: self.update_transmission_range(fading_value)
+        if self.fading != None: self.update_transmission_range(fading_value+shadowing)
         
         if network_status == "Offline":
             QoS_Parameters = {}

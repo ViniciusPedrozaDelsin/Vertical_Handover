@@ -25,15 +25,18 @@ x_max, y_max = 1000, 1000
 # Start position
 x, y = x_max/2, y_max/2
 
+# Device Average Velocity
+device_velocity = 10
+
 # Interval between iterations
 iter_interval = 1
 
-# Distance for iteration
-dist_iter = 10
+# Distance for iteration, 0.1 because the iter_interval is 100ms
+dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 200
+n = 3000
 
 # Activate Graphical Interface
 GUI = False
@@ -42,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 30
+n_simulations = 2000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -69,7 +72,36 @@ tt_trigger = 2
 # Results
 final_results = []
 indicators_results = []
+
+# Random Walk
+random_walk_times = 20
+
+# DO NOT CHANGE
+random_direction_counter = 0
+old_dx = 0
+old_dy = 0
+
+# To delete
+count_nn = 0
 # ============================================================================================
+
+
+
+
+# ===================================== MADM Algorithms ======================================
+SAW = True
+
+WPM = True
+
+TOPSIS = True
+
+Fuzzy = True
+
+RMSE = False
+
+TOPSIS_NN = False
+# ============================================================================================
+
 
 
 # Wireless Network Systems
@@ -123,7 +155,7 @@ def generate_random_WNS(predef):
 
     # NB-IoT 5G
     global nbiot_5g_1
-    nbiot_5g_1 = WNS("NBIoT-5g-1", random.uniform(-10*x_max, 10*x_max), random.uniform(-7*y_max, 7*y_max), 30, 800000000, 1400000, 2, "NB-IoT-5G", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nbiot_5g_1 = WNS("NBIoT-5g-1", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 30, 800000000, 1400000, 2, "NB-IoT-5G", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nbiot_5g_1, 'blue', 0.03])
 
 
@@ -139,13 +171,13 @@ def generate_random_WNS(predef):
 
     # LTE 4G
     global LTE_4g
-    LTE_4g = WNS("LTE-4g-1", random.uniform(-20*x_max, 20*x_max), random.uniform(-14*y_max, 14*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    LTE_4g = WNS("LTE-4g-1", random.uniform(-14*x_max, 14*x_max), random.uniform(-14*y_max, 14*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([LTE_4g, 'red', 0.03])
 
 
     # WiFi Max
     global wifi_max_1
-    wifi_max_1 = WNS("WiFi-Max-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-3*y_max, 3*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_max_1 = WNS("WiFi-Max-1", random.uniform(-3*x_max, 3*x_max), random.uniform(-3*y_max, 3*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_max_1, 'purple', 0.03])
     
     # Print for DEBBUG
@@ -183,10 +215,16 @@ def random_direction():
 
 
 def update_position(device):
-    global x, y, j, n, iter_interval, WNS_list, n_simulations, x_max, y_max, predef_conf
-    dx, dy = random_direction()
+    global x, y, j, n, iter_interval, WNS_list, n_simulations, x_max, y_max, predef_conf, random_direction_counter, random_walk_times, old_dx, old_dy
+    if random_direction_counter == 0 or (random_direction_counter%random_walk_times) == 0:
+        dx, dy = random_direction()
+        old_dx = dx
+        old_dy = dy
+    else:
+        dx, dy = old_dx, old_dy
     x = min(max(x + dx, 0), x_max)
     y = min(max(y + dy, 0), y_max)
+    random_direction_counter += 1
     
     calculate_parameters(device, x, y)
     
@@ -194,7 +232,6 @@ def update_position(device):
     
     j += 1
     if j < n:
-        # Call again after 1 second
         root.after(iter_interval, lambda: update_position(device))
     else:
         performe_analysis()
@@ -221,10 +258,12 @@ def update_position(device):
             p_mpmo_fuzzy.clean_storaged_QoS()
             p_mpmo_fuzzy_hyst.clean_storaged_QoS()
             p_mpmo_fuzzy_ttt.clean_storaged_QoS()
-            p_mpmo_rmse.clean_storaged_QoS()
-            p_mpmo_rmse_hyst.clean_storaged_QoS()
-            p_mpmo_rmse_ttt.clean_storaged_QoS()
-            p_nn_topsis.clean_storaged_QoS()
+            if RMSE == True:
+                p_mpmo_rmse.clean_storaged_QoS()
+                p_mpmo_rmse_hyst.clean_storaged_QoS()
+                p_mpmo_rmse_ttt.clean_storaged_QoS()
+            if TOPSIS_NN == True:
+                p_nn_topsis.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             p_worst_scenario.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
@@ -243,10 +282,12 @@ def update_position(device):
             p_mpmo_fuzzy.clean_Benchmark_storaged_QoS()
             p_mpmo_fuzzy_hyst.clean_Benchmark_storaged_QoS()
             p_mpmo_fuzzy_ttt.clean_Benchmark_storaged_QoS()
-            p_mpmo_rmse.clean_Benchmark_storaged_QoS()
-            p_mpmo_rmse_hyst.clean_Benchmark_storaged_QoS()
-            p_mpmo_rmse_ttt.clean_Benchmark_storaged_QoS()
-            p_nn_topsis.clean_Benchmark_storaged_QoS()
+            if RMSE == True:
+                p_mpmo_rmse.clean_Benchmark_storaged_QoS()
+                p_mpmo_rmse_hyst.clean_Benchmark_storaged_QoS()
+                p_mpmo_rmse_ttt.clean_Benchmark_storaged_QoS()
+            if TOPSIS_NN == True:
+                p_nn_topsis.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             p_worst_scenario.clean_Benchmark_storaged_QoS()
             j = 0
@@ -356,25 +397,32 @@ def calculate_parameters(device, x_position, y_position):
     p_mpmo_fuzzy_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Decision MPMO Fuzzy Time to Trigger: {decision_mpmo_fuzzy_ttt}")
     
-    decision_mpmo_rmse = device.makeDecision(mpmo_rmse, available_networks)
-    p_mpmo_rmse.store_QoS_parameters(decision_mpmo_rmse)
-    p_mpmo_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
-    if verbose == True: print(f"Decision MPMO RMSE: {decision_mpmo_rmse}")
+    if RMSE == True:
+        decision_mpmo_rmse = device.makeDecision(mpmo_rmse, available_networks)
+        p_mpmo_rmse.store_QoS_parameters(decision_mpmo_rmse)
+        p_mpmo_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision MPMO RMSE: {decision_mpmo_rmse}")
+        
+        decision_mpmo_rmse_hyst = device.makeDecision(mpmo_rmse_hyst, available_networks)
+        p_mpmo_rmse_hyst.store_QoS_parameters(decision_mpmo_rmse_hyst)
+        p_mpmo_rmse_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision MPMO RMSE Hysteresis: {decision_mpmo_rmse_hyst}")
+        
+        decision_mpmo_rmse_ttt = device.makeDecision(mpmo_rmse_ttt, available_networks)
+        p_mpmo_rmse_ttt.store_QoS_parameters(decision_mpmo_rmse_ttt)
+        p_mpmo_rmse_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision MPMO RMSE Time to Trigger: {decision_mpmo_rmse_ttt}")
     
-    decision_mpmo_rmse_hyst = device.makeDecision(mpmo_rmse_hyst, available_networks)
-    p_mpmo_rmse_hyst.store_QoS_parameters(decision_mpmo_rmse_hyst)
-    p_mpmo_rmse_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
-    if verbose == True: print(f"Decision MPMO RMSE Hysteresis: {decision_mpmo_rmse_hyst}")
+    if TOPSIS_NN == True:
+        decision_nn_topsis = device.makeDecision(nn_topsis, available_networks)
+        p_nn_topsis.store_QoS_parameters(decision_nn_topsis)
+        p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
     
-    decision_mpmo_rmse_ttt = device.makeDecision(mpmo_rmse_ttt, available_networks)
-    p_mpmo_rmse_ttt.store_QoS_parameters(decision_mpmo_rmse_ttt)
-    p_mpmo_rmse_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
-    if verbose == True: print(f"Decision MPMO RMSE Time to Trigger: {decision_mpmo_rmse_ttt}")
+    '''global count_nn
+    if decision_nn_topsis == decision_mpmo_topsis: count_nn = count_nn + 1
+    print(count_nn)'''
     
-    decision_nn_topsis = device.makeDecision(nn_topsis, available_networks)
-    p_nn_topsis.store_QoS_parameters(decision_nn_topsis)
-    p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
-    if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
     
     if verbose == True: print("===================================================")
 
@@ -506,37 +554,39 @@ def performe_analysis():
     indicators_list.append(indicators_mpmo_fuzzy_ttt)
     results_list.append(results_mpmo_fuzzy_ttt)
     
-    results_mpmo_rmse = p_mpmo_rmse.calculate_average_QoS_parameters(analyzed_parameters)
-    results_mpmo_rmse['Handover'] = p_mpmo_rmse.count_number_of_handovers()
-    results_mpmo_rmse['Algorithm'] = p_mpmo_rmse.algorithm
-    indicators_mpmo_rsme = p_mpmo_rmse.calculate_Abs_error_QoS_parameters(analyzed_parameters)
-    indicators_mpmo_rsme['Algorithm'] = results_mpmo_rmse['Algorithm']
-    indicators_list.append(indicators_mpmo_rsme)
-    results_list.append(results_mpmo_rmse)
+    if RMSE == True:
+        results_mpmo_rmse = p_mpmo_rmse.calculate_average_QoS_parameters(analyzed_parameters)
+        results_mpmo_rmse['Handover'] = p_mpmo_rmse.count_number_of_handovers()
+        results_mpmo_rmse['Algorithm'] = p_mpmo_rmse.algorithm
+        indicators_mpmo_rsme = p_mpmo_rmse.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_mpmo_rsme['Algorithm'] = results_mpmo_rmse['Algorithm']
+        indicators_list.append(indicators_mpmo_rsme)
+        results_list.append(results_mpmo_rmse)
+        
+        results_mpmo_rmse_hyst = p_mpmo_rmse_hyst.calculate_average_QoS_parameters(analyzed_parameters)
+        results_mpmo_rmse_hyst['Handover'] = p_mpmo_rmse_hyst.count_number_of_handovers()
+        results_mpmo_rmse_hyst['Algorithm'] = p_mpmo_rmse_hyst.algorithm
+        indicators_mpmo_rsme_hyst = p_mpmo_rmse_hyst.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_mpmo_rsme_hyst['Algorithm'] = results_mpmo_rmse_hyst['Algorithm']
+        indicators_list.append(indicators_mpmo_rsme_hyst)
+        results_list.append(results_mpmo_rmse_hyst)
+        
+        results_mpmo_rmse_ttt = p_mpmo_rmse_ttt.calculate_average_QoS_parameters(analyzed_parameters)
+        results_mpmo_rmse_ttt['Handover'] = p_mpmo_rmse_ttt.count_number_of_handovers()
+        results_mpmo_rmse_ttt['Algorithm'] = p_mpmo_rmse_ttt.algorithm
+        indicators_mpmo_rsme_ttt = p_mpmo_rmse_ttt.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_mpmo_rsme_ttt['Algorithm'] = results_mpmo_rmse_ttt['Algorithm']
+        indicators_list.append(indicators_mpmo_rsme_ttt)
+        results_list.append(results_mpmo_rmse_ttt)
     
-    results_mpmo_rmse_hyst = p_mpmo_rmse_hyst.calculate_average_QoS_parameters(analyzed_parameters)
-    results_mpmo_rmse_hyst['Handover'] = p_mpmo_rmse_hyst.count_number_of_handovers()
-    results_mpmo_rmse_hyst['Algorithm'] = p_mpmo_rmse_hyst.algorithm
-    indicators_mpmo_rsme_hyst = p_mpmo_rmse_hyst.calculate_Abs_error_QoS_parameters(analyzed_parameters)
-    indicators_mpmo_rsme_hyst['Algorithm'] = results_mpmo_rmse_hyst['Algorithm']
-    indicators_list.append(indicators_mpmo_rsme_hyst)
-    results_list.append(results_mpmo_rmse_hyst)
-    
-    results_mpmo_rmse_ttt = p_mpmo_rmse_ttt.calculate_average_QoS_parameters(analyzed_parameters)
-    results_mpmo_rmse_ttt['Handover'] = p_mpmo_rmse_ttt.count_number_of_handovers()
-    results_mpmo_rmse_ttt['Algorithm'] = p_mpmo_rmse_ttt.algorithm
-    indicators_mpmo_rsme_ttt = p_mpmo_rmse_ttt.calculate_Abs_error_QoS_parameters(analyzed_parameters)
-    indicators_mpmo_rsme_ttt['Algorithm'] = results_mpmo_rmse_ttt['Algorithm']
-    indicators_list.append(indicators_mpmo_rsme_ttt)
-    results_list.append(results_mpmo_rmse_ttt)
-    
-    results_nn_topsis = p_nn_topsis.calculate_average_QoS_parameters(analyzed_parameters)
-    results_nn_topsis['Handover'] = p_nn_topsis.count_number_of_handovers()
-    results_nn_topsis['Algorithm'] = p_nn_topsis.algorithm
-    indicators_nn_topsis = p_nn_topsis.calculate_Abs_error_QoS_parameters(analyzed_parameters)
-    indicators_nn_topsis['Algorithm'] = results_nn_topsis['Algorithm']
-    indicators_list.append(indicators_nn_topsis)
-    results_list.append(results_nn_topsis)
+    if TOPSIS_NN == True: 
+        results_nn_topsis = p_nn_topsis.calculate_average_QoS_parameters(analyzed_parameters)
+        results_nn_topsis['Handover'] = p_nn_topsis.count_number_of_handovers()
+        results_nn_topsis['Algorithm'] = p_nn_topsis.algorithm
+        indicators_nn_topsis = p_nn_topsis.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_nn_topsis['Algorithm'] = results_nn_topsis['Algorithm']
+        indicators_list.append(indicators_nn_topsis)
+        results_list.append(results_nn_topsis)
     
     indicators_worst_scenario = p_worst_scenario.calculate_Abs_error_QoS_parameters(analyzed_parameters)
     indicators_worst_scenario['Algorithm'] = p_worst_scenario.algorithm
@@ -562,10 +612,12 @@ def performe_analysis():
     print(f"{results_mpmo_topsis_hyst}, Handoff: {results_mpmo_topsis_hyst['Handover']}")
     print(f"{results_mpmo_topsis_ttt}, Handoff: {results_mpmo_topsis_ttt['Handover']}")
     print(f"{results_mpmo_fuzzy}, Handoff: {results_mpmo_fuzzy['Handover']}")
-    print(f"{results_mpmo_rmse}, Handoff: {results_mpmo_rmse['Handover']}")
-    print(f"{results_mpmo_rmse_hyst}, Handoff: {results_mpmo_rmse_hyst['Handover']}")
-    print(f"{results_mpmo_rmse_ttt}, Handoff: {results_mpmo_rmse_ttt['Handover']}")
-    print(f"{results_nn_topsis}, Handoff: {results_nn_topsis['Handover']}")
+    if RMSE == True:
+        print(f"{results_mpmo_rmse}, Handoff: {results_mpmo_rmse['Handover']}")
+        print(f"{results_mpmo_rmse_hyst}, Handoff: {results_mpmo_rmse_hyst['Handover']}")
+        print(f"{results_mpmo_rmse_ttt}, Handoff: {results_mpmo_rmse_ttt['Handover']}")
+    if TOPSIS_NN == True: 
+        print(f"{results_nn_topsis}, Handoff: {results_nn_topsis['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("========================================================================================================================")
     
@@ -943,10 +995,12 @@ mpmo_fuzzy_hyst = MPMO_Fuzzy("MPMO-Fuzzy-Hysteresis", analyzed_parameters, direc
 mpmo_fuzzy_hyst.definePresetConfigs()
 mpmo_fuzzy_ttt = MPMO_Fuzzy("MPMO-Fuzzy-TimeToTrigger", time_to_trigger=tt_trigger)
 mpmo_fuzzy_ttt.definePresetConfigs()
-mpmo_rmse = MPMO_RMSE("MPMO-RMSE", analyzed_parameters, weights, directions)
-mpmo_rmse_hyst = MPMO_RMSE("MPMO-RMSE-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
-mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
-nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
+if RMSE == True:
+    mpmo_rmse = MPMO_RMSE("MPMO-RMSE", analyzed_parameters, weights, directions)
+    mpmo_rmse_hyst = MPMO_RMSE("MPMO-RMSE-Hysteresis", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
+    mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
+if TOPSIS_NN == True: 
+    nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
@@ -966,10 +1020,12 @@ p_mpmo_topsis_ttt = PerformanceAnalysis("TOPSIS-TTT")
 p_mpmo_fuzzy = PerformanceAnalysis("Fuzzy")
 p_mpmo_fuzzy_hyst = PerformanceAnalysis("Fuzzy-Hyst")
 p_mpmo_fuzzy_ttt = PerformanceAnalysis("Fuzzy-TTT")
-p_mpmo_rmse = PerformanceAnalysis("RMSE")
-p_mpmo_rmse_hyst = PerformanceAnalysis("RMSE-Hyst")
-p_mpmo_rmse_ttt = PerformanceAnalysis("RMSE-TTT")
-p_nn_topsis = PerformanceAnalysis("NN-TOPSIS")
+if RMSE == True:
+    p_mpmo_rmse = PerformanceAnalysis("RMSE")
+    p_mpmo_rmse_hyst = PerformanceAnalysis("RMSE-Hyst")
+    p_mpmo_rmse_ttt = PerformanceAnalysis("RMSE-TTT")
+if TOPSIS_NN == True: 
+    p_nn_topsis = PerformanceAnalysis("NN-TOPSIS")
 p_benchmark = PerformanceAnalysis("Benchmark")
 p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
 

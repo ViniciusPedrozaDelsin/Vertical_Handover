@@ -39,11 +39,13 @@ def objective(trial):
     print(f"Trial Number: {trial_counter}")
     
     # Suggest hyperparameters
-    n_layers = trial.suggest_int("n_layers", 1, 4)
+    #n_layers = trial.suggest_int("n_layers", 1, 4) # 7,6,2
+    n_layers = trial.suggest_int("n_layers", 1, 2)
     units = []
     for _ in range(n_layers):
         #unit = trial.suggest_int("units", 2, 8)
-        unit = random.randint(2, 8)
+        #unit = random.randint(2, 8) # 7,6,2
+        unit = random.randint(1, 2)
         units.append(unit)
     print(f"Neural Network Shape: {units}")
     

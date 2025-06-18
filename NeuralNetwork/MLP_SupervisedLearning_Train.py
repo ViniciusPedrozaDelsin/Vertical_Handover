@@ -21,14 +21,13 @@ X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test
 
 # Build the model
 model = Sequential([
-    Dense(7, input_shape=(df_features.shape[1],), activation='relu'),
-    Dense(6, activation='relu'),
-    Dense(2, activation='relu'),
+    Dense(2, input_shape=(df_features.shape[1],), activation='relu'),
+    #Dense(2, activation='relu'),
     Dense(1, activation='linear')
 ])
 
 # Compile the model
-model.compile(optimizer=Adam(learning_rate=0.002901195099910745), loss='mean_squared_error', metrics=['mae'])
+model.compile(optimizer=Adam(learning_rate=0.007671796046359949), loss='mean_squared_error', metrics=['mae'])
 
 # Stop the model early if the validation loss start to increase
 early_stop = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
@@ -36,8 +35,8 @@ early_stop = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=
 # Train the model
 history = model.fit(
     X_train, y_train,
-    epochs=34,
-    batch_size=16,
+    epochs=26,
+    batch_size=8,
     verbose=1,
     validation_split=0.1,
     callbacks=[early_stop]
@@ -59,4 +58,4 @@ print("Predictions vs Actual:")
 for pred, actual in zip(y_pred.flatten(), y_test.to_numpy().flatten()):
     print(f"Predicted: {pred:.4f} | Actual: {actual:.4f}")
 
-model.save("TOPSIS_NN_7_6_2.keras")
+model.save("TOPSIS_NN_2_2.keras")
