@@ -10,6 +10,7 @@ class DecisionMakerMethod:
         self.file_to_save = file_to_save
         self.inputs = None
         self.output = None
+        self.old_decision = None
         
     def send_inputs(self, inputs):
         self.inputs = inputs
@@ -68,13 +69,13 @@ class DecisionMakerMethod:
         df = pd.DataFrame(data)
         df.to_csv(self.file_to_save, mode='a', header=False, index=False)
         
-    # ================================ Hysteresis: Only available for MPMO
-    def check_hysteresis_reference(self):
+    # ================================ LockIn: Only available for MPMO
+    def check_lockin_reference(self):
         network_still_available = False
         actual_network = None
-        if self.hysteresis_reference != None:
+        if self.lockin_reference != None:
             for input in self.inputs:
-                if self.hysteresis_reference['Network'] == input['Network']:
+                if self.lockin_reference['Network'] == input['Network']:
                     # Get new parameters of the actual network
                     actual_network = input
                     network_still_available = True
@@ -84,17 +85,17 @@ class DecisionMakerMethod:
             network_ok = True
             i = 0
             for attribute in self.attributes:
-                if self.directions[i] == 1 and self.hysteresis_reference[attribute] > 0:
-                    if actual_network[attribute] <= self.hysteresis_reference[attribute] * (1 - self.hysterese_percentage):
+                if self.directions[i] == 1 and self.lockin_reference[attribute] > 0:
+                    if actual_network[attribute] <= self.lockin_reference[attribute] * (1 - self.lockin_percentage):
                         network_ok = False
-                elif self.directions[i] == 1 and self.hysteresis_reference[attribute] < 0:
-                    if actual_network[attribute] <= self.hysteresis_reference[attribute] * (1 + self.hysterese_percentage):
+                elif self.directions[i] == 1 and self.lockin_reference[attribute] < 0:
+                    if actual_network[attribute] <= self.lockin_reference[attribute] * (1 + self.lockin_percentage):
                         network_ok = False
-                elif self.directions[i] == 0 and self.hysteresis_reference[attribute] > 0:
-                    if actual_network[attribute] >= self.hysteresis_reference[attribute] * (1 + self.hysterese_percentage):
+                elif self.directions[i] == 0 and self.lockin_reference[attribute] > 0:
+                    if actual_network[attribute] >= self.lockin_reference[attribute] * (1 + self.lockin_percentage):
                         network_ok = False
                 else:
-                    if actual_network[attribute] >= self.hysteresis_reference[attribute] * (1 - self.hysterese_percentage):
+                    if actual_network[attribute] >= self.lockin_reference[attribute] * (1 - self.lockin_percentage):
                         network_ok = False
                 i = i + 1
             if network_ok:

@@ -1,13 +1,15 @@
 - Create a requerimets.txt for the project
-- Rayleigh and Rician
 - Optimization Pareto, Multi object optimization
 - add histerese and ttt in rmse - OK
+- Rayleigh and Rician - OK
 - definir o artigo - Artigo 1 sobre o problema do criterio e o uso do RMSE como criterio e metodo e o uso de Hyst e Time to trigger
 - definir o artigo - Artigo 2 sobre o uso de AI no lugar do DM, quanto mais complex mais interessante a AI, fazer a conta do custo computacional das neuro networks e dos algoritmos utilizados.
 
 cercare simulatore simile
-Rayleigh and Rician
 calcolari i pesi
 grafici n-handover x n-ttt e n-handover x percent-hyst
 fix and understand fuzzy
 nn unsupervised
+
+Artigo 1
+- Numero total de handover em cada metodo em uma simulação grande

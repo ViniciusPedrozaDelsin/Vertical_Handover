@@ -53,9 +53,9 @@ class WirelessNetworkSystem:
         # Speed of Light
         c = 300000000
         if self.corrections_real_world_applications == True:
-            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20) - (1) - (0.5*math.log10(2)))
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (33/20) - (self.minimum_snr/20) - (1) - (0.5*math.log10(2)))
         else:
-            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20))
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (33/20) - (self.minimum_snr/20))
         return transmission_range_radius
     
     def update_transmission_range(self, fading):
@@ -66,9 +66,9 @@ class WirelessNetworkSystem:
         # Speed of Light
         c = 300000000
         if self.corrections_real_world_applications == True:
-            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (1.5) - (self.minimum_snr/20) - (1) - (0.5*math.log10(2)) + (fading/20))
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (33/20) - (self.minimum_snr/20) - (1) - (0.5*math.log10(2)) + (fading/20))
         else:
-            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/300000000)) - (0.5*(math.log10(k*290*self.bandwidth))) - (1.5) - (self.minimum_snr/20) + (fading/20))
+            transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (33/20) - (self.minimum_snr/20) + (fading/20))
             
         self.maximum_radius = transmission_range_radius
     
@@ -134,7 +134,7 @@ class WirelessNetworkSystem:
         snr = (10**(rssi_dbm/10)) / (10**(thermal_noise_power_dbm/10))
         if self.corrections_real_world_applications == True:
             # Correction of 0.7 in the SNR for real world applications
-            snr_db = 10 * math.log10(snr*0.5)
+            snr_db = 10 * math.log10(snr/2)
         else:
             snr_db = 10 * math.log10(snr)
         #return round(snr_db, 3)
@@ -209,7 +209,7 @@ class WirelessNetworkSystem:
         QoS_Parameters['RSSI'] = round(rssi, 3)
         
         # Calculate Signal Noise Ratio
-        thermal_noise_dbm = self.calculateThermalNoise_dbm(5)
+        thermal_noise_dbm = self.calculateThermalNoise_dbm(3)
         snr_db = self.calculateSNR_db(rssi, thermal_noise_dbm)
         QoS_Parameters['SNR'] = round(snr_db, 3)
         
