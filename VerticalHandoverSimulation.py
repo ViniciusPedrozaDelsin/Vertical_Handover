@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 1000
+n_simulations = 1500
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -66,9 +66,9 @@ fading = "Rician"
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
 weights = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
 directions = [1, 1, 1, 0, 0, 0, 1]
-lockin_percentage = 0.1
-tt_trigger = 10
-hyst_percentage = 1
+lockin_percentage = 0
+tt_trigger = 0
+hyst_percentage = 0
 
 # Results
 final_results = []
@@ -100,7 +100,7 @@ TOPSIS = True
 
 Fuzzy = True
 
-RMSE = False
+RMSE = True
 
 TOPSIS_NN = False
 # ============================================================================================
@@ -189,9 +189,9 @@ def generate_random_WNS(predef):
     WNS_list.append([LTE_4g, 'red', 0.03])
 
 
-    # WiFi Max
+    # WiMax
     global wifi_max_1
-    wifi_max_1 = WNS("WiFi-Max-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiFi-Max", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_max_1 = WNS("WiMax-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiMax", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_max_1, 'purple', 0.03])
     
     # Print for DEBBUG
@@ -941,9 +941,14 @@ def plot_results():
 
     # Initialize a dictionary to store the summed values
     aggregated_results_rmse = {}
+    
+    # To use in 3D SSM
+    SSE_3D_Graph = {}
 
     # Loop through each list in the indicators_results
     #print(f"Indicator Results: {indicators_results}")
+    
+    #print(f"Indicators Results: {indicators_results}")
     
     for group in indicators_results:
         for entry in group:
@@ -956,9 +961,9 @@ def plot_results():
                 for param in entry:
                     if param != 'Algorithm':
                         aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
-                        #aggregated_results_rmse[algorithm][param] += sum([x for x in entry[param]])
+
     
-    
+    SSE_3D_Graph = aggregated_results_rmse
     for agg in aggregated_results_rmse:
         for parm in aggregated_results_rmse[agg]:
             aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm] / iter_x_simu)**(1/2)
@@ -1105,17 +1110,17 @@ def plot_results():
     
     # ======================================================= Start - 3D Plot =======================================================
     if plots == True:
-        ordered_algorithms = [algo for algo in aggregated_results_rmse]
+        ordered_algorithms = [algo for algo in SSE_3D_Graph]
 
         # Reorder parameters so 'Throughput' appears last
-        parameters = list(next(iter(aggregated_results_rmse.values())).keys())
+        parameters = list(next(iter(SSE_3D_Graph.values())).keys())
         parameters.remove("Throughput")
         parameters = parameters + ['Throughput']
 
         # Normalize each parameter individually
         param_norms = {}
         for param in parameters:
-            values = [abs(aggregated_results_rmse[algo][param]) for algo in ordered_algorithms]
+            values = [abs(SSE_3D_Graph[algo][param]) for algo in ordered_algorithms]
             param_norms[param] = Normalize(vmin=min(values), vmax=max(values))
 
         # Create the figure and 3D axis
@@ -1129,7 +1134,7 @@ def plot_results():
         # Draw bars with per-parameter normalization
         for i, param in enumerate(parameters):
             for j, algo in enumerate(ordered_algorithms):
-                raw_value = abs(aggregated_results_rmse[algo][param])
+                raw_value = abs(SSE_3D_Graph[algo][param])
                 znorm = param_norms[param](raw_value)
 
                 xpos = j
@@ -1152,7 +1157,7 @@ def plot_results():
         ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
 
         plt.tight_layout()
-    # ======================================================= End - 3D Plot =======================================================
+    # ======================================================= End - 3D Plot ======================================================= 
     
     
     
@@ -1162,6 +1167,7 @@ def plot_results():
     if plots == True:
         # Organize results by algorithm
         r_dict = {r['Algorithm']: r for r in results}
+        print(f"{r_dict}")
 
         num_params = len(analyzed_parameters)
 
@@ -1174,9 +1180,15 @@ def plot_results():
             num_params_group = len(param_group)
             num_cols = 1
             num_rows = math.ceil(num_params_group / num_cols)
-
-            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(20, 6 * num_rows), constrained_layout=True)
-            fig, axes = plt.subplots(num_rows, num_cols, figsize=(10, 3 * num_rows), constrained_layout=True)
+            
+            # 4 METHODS
+            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
+            
+            # SPMO + 4 METHODS
+            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
+            
+            # 4 METHODS + RMSE
+            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
 
             axes = axes.flatten() if num_params_group > 1 else [axes]
 
@@ -1185,10 +1197,23 @@ def plot_results():
                 labels = list(r_dict.keys())
 
                 ax = axes[i]
-                hatches = ['', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                
+                # 4 METHODS
+                #hatches = ['', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                
+                # SPMO + 4 METHODS
+                #hatches = ['', '', '', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["grey", "grey", "grey", "blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                
+                # SPMO + 4 METHODS + IMPROVEMENT TECHENIQUES
                 #hatches = ['', '', '', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '']
                 #bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "green", "black"], edgecolor='black', linewidth=1.2)
+                
+                # 4 METHODS + RMSE
+                hatches = ['', '', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                
                 # Apply hatch patterns to each bar
                 for bar, hatch in zip(bars, hatches):
                     bar.set_hatch(hatch)
@@ -1261,7 +1286,7 @@ connect_to_net(device_1)
 if SPMO_Methods == True:
     spmo_max_min_method_rssi = SPMO_MMM("SPMO-MAX-RSSI", "RSSI", True)
     spmo_max_min_method_snr = SPMO_MMM("SPMO-MAX-SNR", "SNR", True)
-    spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', 'WiFi-Max', 'LTE-4G', 'NB-IoT-5G', 'LoRa-868'])
+    spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', 'WiMax', 'LTE-4G', 'NB-IoT-5G', 'LoRa-868'])
 if SAW == True:
     mpmo_saw = MPMO_SAW("MPMO-SAW", analyzed_parameters, weights, directions)
     if impTech_hyst == True:

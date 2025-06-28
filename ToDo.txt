@@ -12,4 +12,8 @@ fix and understand fuzzy
 nn unsupervised
 
 Artigo 1
-- Numero total de handover em cada metodo em uma simulação grande
+- Checar as questoes de seila oque no ns3 relativo ao package loss e levanter exatamente o funcionamento disso.
+- possivelmente implementar no simulador python, possivelmente migrar tudo para o ns3
+- Checar o uso a questão do custo de processamento exato para a rede neural 2x2, e o algoritmo topsis
+- Friis Free Space Propagation Model
+- Checar o calculo de RMSE no verticalHandover
