@@ -39,10 +39,10 @@ j = 0
 n = 3000
 
 # Activate Graphical Interface
-GUI = False
+GUI = True
 
 # Activate Prints for DEBBUG
-verbose = False
+verbose = True
 
 # Number of simulations
 n_simulations = 1500
@@ -167,10 +167,10 @@ def generate_random_WNS(predef):
     WNS_list.append([wifi_10, 'green', 0.3])
 
     
-    # NB-IoT 5G
-    global nbiot_5g_1
-    nbiot_5g_1 = WNS("NBIoT-5g-1", random.uniform(-6*x_max, 6*x_max), random.uniform(-6*y_max, 6*y_max), 30, 800000000, 1400000, 2, "NB-IoT-5G", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
-    WNS_list.append([nbiot_5g_1, 'blue', 0.03])
+    # NB-IoT
+    global nbiot_1
+    nbiot_1 = WNS("NBIoT-1", random.uniform(-6*x_max, 6*x_max), random.uniform(-6*y_max, 6*y_max), 30, 800000000, 1400000, 2, "NB-IoT", 0.25, 5, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    WNS_list.append([nbiot_1, 'blue', 0.03])
 
 
     # LoRa's
@@ -194,6 +194,16 @@ def generate_random_WNS(predef):
     wifi_max_1 = WNS("WiMax-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiMax", 0.80, 2, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_max_1, 'purple', 0.03])
     
+    
+    # 5G NR
+    global nr_5g_1
+    nr_5g_1 = WNS("5G-NR", random.uniform(-2*x_max, 2*x_max), random.uniform(-2*y_max, 2*y_max), 43, 3500000000, 100000000, 10, "5G-NR", 1.5, 15, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-4], predef_fec=[0.9, 0.75], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    WNS_list.append([nr_5g_1, 'brown', 0.03])
+    
+    global nr_5g_2
+    nr_5g_2 = WNS("5G-NR", random.uniform(-2*x_max, 2*x_max), random.uniform(-2*y_max, 2*y_max), 43, 3500000000, 100000000, 10, "5G-NR", 1.5, 15, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-4], predef_fec=[0.9, 0.75], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    WNS_list.append([nr_5g_2, 'brown', 0.03])
+    
     # Print for DEBBUG
     if verbose == True: [print(wns) for wns in WNS_list]
 
@@ -209,11 +219,13 @@ def connect_to_net(device):
     device.connect_to_network(wifi_8)
     device.connect_to_network(wifi_9)
     device.connect_to_network(wifi_10)
-    device.connect_to_network(nbiot_5g_1)
+    device.connect_to_network(nbiot_1)
     device.connect_to_network(LoRa_1)
     device.connect_to_network(LoRa_2)
     device.connect_to_network(LTE_4g)
     device.connect_to_network(wifi_max_1)
+    #device.connect_to_network(nr_5g_1)
+    #device.connect_to_network(nr_5g_2)
 
 
 
@@ -1286,7 +1298,7 @@ connect_to_net(device_1)
 if SPMO_Methods == True:
     spmo_max_min_method_rssi = SPMO_MMM("SPMO-MAX-RSSI", "RSSI", True)
     spmo_max_min_method_snr = SPMO_MMM("SPMO-MAX-SNR", "SNR", True)
-    spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', 'WiMax', 'LTE-4G', 'NB-IoT-5G', 'LoRa-868'])
+    spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', 'WiMax', 'LTE-4G', 'NB-IoT', 'LoRa-868'])
 if SAW == True:
     mpmo_saw = MPMO_SAW("MPMO-SAW", analyzed_parameters, weights, directions)
     if impTech_hyst == True:

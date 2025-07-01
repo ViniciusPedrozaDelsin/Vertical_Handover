@@ -70,7 +70,7 @@ class WirelessNetworkSystem:
         else:
             transmission_range_radius = 10 ** ((self.transmission_power_dbm/20) - (math.log10(self.frequency)) - (math.log10((4*math.pi)/c)) - (0.5*(math.log10(k*T*self.bandwidth))) - (33/20) - (self.minimum_snr/20) + (fading/20))
         
-        #print(f"Network: {self.system_name} | Maximum radio: {transmission_range_radius}")
+        print(f"Network: {self.system_name} | Maximum radio: {transmission_range_radius}")
         self.maximum_radius = transmission_range_radius
     
     def calculateDeviceDistance(self, device):
