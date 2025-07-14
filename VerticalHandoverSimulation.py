@@ -36,16 +36,16 @@ dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 3000
+n = 2000
 
 # Activate Graphical Interface
-GUI = True
+GUI = False
 
 # Activate Prints for DEBBUG
-verbose = True
+verbose = False
 
 # Number of simulations
-n_simulations = 1500
+n_simulations = 50
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -66,9 +66,9 @@ fading = "Rician"
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
 weights = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
 directions = [1, 1, 1, 0, 0, 0, 1]
-lockin_percentage = 0
-tt_trigger = 0
-hyst_percentage = 0
+lockin_percentage = 0.03
+tt_trigger = 3
+hyst_percentage = 0.3
 
 # Results
 final_results = []
@@ -92,17 +92,17 @@ count_nn = 0
 # ===================================== MADM Algorithms ======================================
 SPMO_Methods = False
 
-SAW = True
+SAW = False
 
-WPM = True
+WPM = False
 
 TOPSIS = True
 
-Fuzzy = True
+Fuzzy = False
 
-RMSE = True
+RMSE = False
 
-TOPSIS_NN = False
+TOPSIS_NN = True
 # ============================================================================================
 
 
@@ -622,9 +622,9 @@ def calculate_parameters(device, x_position, y_position):
         p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
     
-    '''global count_nn
+    global count_nn
     if decision_nn_topsis == decision_mpmo_topsis: count_nn = count_nn + 1
-    print(count_nn)'''
+    print(count_nn)
     
     
     if verbose == True: print("===================================================")
@@ -1193,14 +1193,14 @@ def plot_results():
             num_cols = 1
             num_rows = math.ceil(num_params_group / num_cols)
             
-            # 4 METHODS
+            # 1 - 3 columns
+            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
+            
+            # 4 - 10 columns
             #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
             
-            # SPMO + 4 METHODS
-            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
-            
-            # 4 METHODS + RMSE
-            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
+            # 11 - 17 columns
+            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 3 * num_rows), constrained_layout=True)
 
             axes = axes.flatten() if num_params_group > 1 else [axes]
 
@@ -1222,9 +1222,17 @@ def plot_results():
                 #hatches = ['', '', '', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '']
                 #bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "green", "black"], edgecolor='black', linewidth=1.2)
                 
+                # 4 METHODS + RMSE + IMPROVEMENT TECHENIQUES
+                #hatches = ['', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '']
+                #bars = ax.bar(labels, values, color=["gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
+                
                 # 4 METHODS + RMSE
-                hatches = ['', '', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                
+                # TOPSIS + TOPSIS NN
+                hatches = ['', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "black"], edgecolor='black', linewidth=1.2)
                 
                 # Apply hatch patterns to each bar
                 for bar, hatch in zip(bars, hatches):

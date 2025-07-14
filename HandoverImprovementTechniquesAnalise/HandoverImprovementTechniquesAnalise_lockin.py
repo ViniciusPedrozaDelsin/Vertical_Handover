@@ -46,7 +46,7 @@ for algo in algorithms:
     axes[1].plot(lockin_values[algo], rmse_increase[algo], marker='s', label=algo)
 axes[1].set_title('RMSE Increase vs LockIn')
 axes[1].set_xlabel('LockIn Value')
-axes[1].set_ylabel('RMSE Increase')
+axes[1].set_ylabel('RMSE Increase (%)')
 axes[1].grid(True)
 axes[1].legend()
 

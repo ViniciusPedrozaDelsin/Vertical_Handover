@@ -10,6 +10,9 @@ import numpy as np
 import random
 import sys
 
+# Lower Validation Loss
+lower_val_loss = None
+
 # Counter
 trial_counter = 0
 
@@ -34,18 +37,18 @@ print("============================================")
 def objective(trial):
     
     print("============================================")
+    save_model = False
     
-    global trial_counter
+    global trial_counter, lower_val_loss
     print(f"Trial Number: {trial_counter}")
     
     # Suggest hyperparameters
-    #n_layers = trial.suggest_int("n_layers", 1, 4) # 7,6,2
+    #n_layers = trial.suggest_int("n_layers", 1, 4)
     n_layers = trial.suggest_int("n_layers", 1, 2)
     units = []
     for _ in range(n_layers):
         #unit = trial.suggest_int("units", 2, 8)
-        #unit = random.randint(2, 8) # 7,6,2
-        unit = random.randint(1, 2)
+        unit = trial.suggest_int("units", 1, 2)
         units.append(unit)
     print(f"Neural Network Shape: {units}")
     
@@ -55,7 +58,8 @@ def objective(trial):
     n_epochs = trial.suggest_int("n_epochs", 20, 40)
     print(f"Number of epochs: {n_epochs}")
     
-    n_batch_size = random.choice([2, 4, 8, 16, 32, 64, 128])
+    #n_batch_size = random.choice([2, 4, 8, 16, 32, 64, 128])
+    n_batch_size = trial.suggest_categorical("n_batch_size", [2, 4, 8, 16, 32, 64, 128])
     print(f"Batch size: {n_batch_size}")
 
     model = Sequential()
@@ -78,12 +82,27 @@ def objective(trial):
         validation_split=0.1,
         epochs=n_epochs,
         batch_size=n_batch_size,
-        verbose=0,
-        callbacks=[early_stop]
+        shuffle=True,
+        callbacks=[early_stop],
+        verbose=0
     )
 
     val_loss = history.history['val_loss'][-1]
     print(f"Validation Loss: {val_loss}")
+    
+    # Set the first Validation Loss as the lower_val_loss
+    if trial_counter == 0:
+        lower_val_loss = val_loss
+        save_model = True
+        
+    # Check if the val_loss is lower than the lower_val_loss
+    if val_loss < lower_val_loss:
+        lower_val_loss = val_loss
+        save_model = True
+        
+    # Save the model   
+    if save_model == True:
+        model.save(f"TOPSIS_NN_OUTPUT.keras")
     
     trial_counter += 1
     

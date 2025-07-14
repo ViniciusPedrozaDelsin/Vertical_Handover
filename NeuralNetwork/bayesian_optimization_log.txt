@@ -1,0 +1,7 @@
+============================================
+============================================
+Trial Number: 0
+Neural Network Shape: [2, 2]
+Learning Rate: 2.190207340950521e-05
+Number of epochs: 33
+Batch size: 2

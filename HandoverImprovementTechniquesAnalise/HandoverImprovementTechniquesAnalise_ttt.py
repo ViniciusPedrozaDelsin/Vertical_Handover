@@ -36,7 +36,7 @@ fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharex=True)
 for algo in algorithms:
     axes[0].plot(TTT_values[algo], handover_reduction[algo], marker='o', label=algo)
 axes[0].set_title('Handover Reduction vs TTT')
-axes[0].set_xlabel('TTT Value')
+axes[0].set_xlabel('Time-to-Trigger Value (s)')
 axes[0].set_ylabel('Handover Reduction (%)')
 axes[0].grid(True)
 axes[0].legend()
@@ -44,9 +44,9 @@ axes[0].legend()
 # Second Graph: RMSE Increase
 for algo in algorithms:
     axes[1].plot(TTT_values[algo], rmse_increase[algo], marker='s', label=algo)
-axes[1].set_title('RMSE Increase vs TTT')
-axes[1].set_xlabel('TTT Value')
-axes[1].set_ylabel('RMSE Increase')
+axes[1].set_title('RMSE Increase vs Time-to-Trigger')
+axes[1].set_xlabel('Time-to-Trigger Value (s)')
+axes[1].set_ylabel('RMSE Increase(%)')
 axes[1].grid(True)
 axes[1].legend()
 
