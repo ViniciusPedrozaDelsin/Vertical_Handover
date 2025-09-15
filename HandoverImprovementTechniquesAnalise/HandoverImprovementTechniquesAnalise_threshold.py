@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 algorithms = ['SAW', 'WPM', 'TOPSIS', 'FUZZY', 'RMSE-Based', 'AVERAGE']
 
 lockin_values = {
-    'SAW': [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1],
-    'WPM': [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1],
-    'TOPSIS': [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1],
-    'FUZZY': [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1],
-    'RMSE-Based': [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1],
-    'AVERAGE': [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
+    'SAW': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'WPM': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'TOPSIS': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'FUZZY': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'RMSE-Based': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'AVERAGE': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 }
 
 rmse_increase = {
@@ -35,18 +35,18 @@ fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharex=True)
 # First Graph: Handover Reduction
 for algo in algorithms:
     axes[0].plot(lockin_values[algo], handover_reduction[algo], marker='o', label=algo)
-axes[0].set_title('Handover Reduction vs LockIn')
-axes[0].set_xlabel('LockIn Value')
-axes[0].set_ylabel('Handover Reduction (%)')
+axes[0].set_title('Handover Reduction vs Threshold Margin')
+axes[0].set_xlabel('Threshold Margin (%)')
+axes[0].set_ylabel('Handover Reduction')
 axes[0].grid(True)
 axes[0].legend()
 
 # Second Graph: RMSE Increase
 for algo in algorithms:
     axes[1].plot(lockin_values[algo], rmse_increase[algo], marker='s', label=algo)
-axes[1].set_title('RMSE Increase vs LockIn')
-axes[1].set_xlabel('LockIn Value')
-axes[1].set_ylabel('RMSE Increase (%)')
+axes[1].set_title('RMSE Increase vs Threshold Margin')
+axes[1].set_xlabel('Threshold Margin (%)')
+axes[1].set_ylabel('RMSE Increase')
 axes[1].grid(True)
 axes[1].legend()
 

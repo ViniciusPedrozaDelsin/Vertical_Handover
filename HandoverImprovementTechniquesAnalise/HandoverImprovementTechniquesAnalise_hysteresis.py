@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 algorithms = ['SAW', 'WPM', 'TOPSIS', 'FUZZY', 'RMSE-Based', 'AVERAGE']
 
 hysteresis_values = {
-    'SAW': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    'WPM': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    'TOPSIS': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    'FUZZY': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    'RMSE-Based': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    'AVERAGE': [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    'SAW': [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+    'WPM': [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+    'TOPSIS': [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+    'FUZZY': [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+    'RMSE-Based': [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+    'AVERAGE': [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 }
 
 rmse_increase = {
@@ -35,18 +35,18 @@ fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharex=True)
 # First Graph: Handover Reduction
 for algo in algorithms:
     axes[0].plot(hysteresis_values[algo], handover_reduction[algo], marker='o', label=algo)
-axes[0].set_title('Handover Reduction vs Hysteresis')
-axes[0].set_xlabel('Hysteresis Value')
-axes[0].set_ylabel('Handover Reduction (%)')
+axes[0].set_title('Handover Reduction vs Hysteresis Margin')
+axes[0].set_xlabel('Hysteresis Margin (%)')
+axes[0].set_ylabel('Handover Reduction')
 axes[0].grid(True)
 axes[0].legend()
 
 # Second Graph: RMSE Increase
 for algo in algorithms:
     axes[1].plot(hysteresis_values[algo], rmse_increase[algo], marker='s', label=algo)
-axes[1].set_title('RMSE Increase vs Hysteresis')
-axes[1].set_xlabel('Hysteresis Value')
-axes[1].set_ylabel('RMSE Increase (%)')
+axes[1].set_title('RMSE Increase vs Hysteresis Margin')
+axes[1].set_xlabel('Hysteresis Margin (%)')
+axes[1].set_ylabel('RMSE Increase')
 axes[1].grid(True)
 axes[1].legend()
 

@@ -29,17 +29,17 @@ x, y = x_max/2, y_max/2
 device_velocity = 10
 
 # Interval between iterations
-iter_interval = 1
+iter_interval = 1000
 
 # Distance for iteration, 0.1 because the iter_interval is 100ms
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 2000
+n = 100
 
 # Activate Graphical Interface
-GUI = False
+GUI = True
 
 # Activate Prints for DEBBUG
 verbose = False
@@ -96,13 +96,13 @@ SAW = False
 
 WPM = False
 
-TOPSIS = True
+TOPSIS = False
 
-Fuzzy = False
+Fuzzy = True
 
 RMSE = False
 
-TOPSIS_NN = True
+TOPSIS_NN = False
 # ============================================================================================
 
 
@@ -196,6 +196,7 @@ def generate_random_WNS(predef):
     
     
     # 5G NR
+    '''
     global nr_5g_1
     nr_5g_1 = WNS("5G-NR", random.uniform(-2*x_max, 2*x_max), random.uniform(-2*y_max, 2*y_max), 43, 3500000000, 100000000, 10, "5G-NR", 1.5, 15, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-4], predef_fec=[0.9, 0.75], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_1, 'brown', 0.03])
@@ -203,6 +204,7 @@ def generate_random_WNS(predef):
     global nr_5g_2
     nr_5g_2 = WNS("5G-NR", random.uniform(-2*x_max, 2*x_max), random.uniform(-2*y_max, 2*y_max), 43, 3500000000, 100000000, 10, "5G-NR", 1.5, 15, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-4], predef_fec=[0.9, 0.75], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_2, 'brown', 0.03])
+    '''
     
     # Print for DEBBUG
     if verbose == True: [print(wns) for wns in WNS_list]
@@ -622,9 +624,9 @@ def calculate_parameters(device, x_position, y_position):
         p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
     
-    global count_nn
-    if decision_nn_topsis == decision_mpmo_topsis: count_nn = count_nn + 1
-    print(count_nn)
+    #global count_nn
+    #if decision_nn_topsis == decision_mpmo_topsis: count_nn = count_nn + 1
+    #print(count_nn)
     
     
     if verbose == True: print("===================================================")
