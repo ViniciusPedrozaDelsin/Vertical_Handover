@@ -50,7 +50,7 @@ class NN_TOPSIS(DMM):
         
     def normalizeInputs(self):
         # Fields to Normalize
-        fields = ['RSSI', 'SNR', 'BER', 'FEC', 'Throughput', 'PC', 'MC']
+        fields = ['RSSI', 'SNR', 'BER', 'FEC', 'Throughput', 'PC', 'MC', 'Delay', 'Jitter']
 
         # Compute min and max for each field
         mins = {field: min(d[field] for d in self.inputs) for field in fields}
@@ -90,7 +90,9 @@ class NN_TOPSIS(DMM):
                 'BER': inp['BER'],
                 'FEC': inp['FEC'],
                 'PC': inp['PC'],
-                'MC': inp['MC']
+                'MC': inp['MC'],
+                'Delay': inp['Delay'],
+                'Jitter': inp['Jitter']
             }
             
             inp = reordered

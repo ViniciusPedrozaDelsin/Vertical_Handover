@@ -31,7 +31,9 @@ class MPMO_TOPSIS(DMM):
             self.makeDecisionTimeToTrigger()
         else:
             self.output = self.decisionProcedure()
+            
         self.old_decision = self.output['Network']
+        self.output = self.return_output()
         return self.output
     
     
@@ -74,7 +76,7 @@ class MPMO_TOPSIS(DMM):
             input_list = []
             for attribute in self.attributes:
                 input_list.append(input[attribute])
-            attributes_matrix.append(input_list)  
+            attributes_matrix.append(input_list)
         return np.array(attributes_matrix, dtype=float)
     
     

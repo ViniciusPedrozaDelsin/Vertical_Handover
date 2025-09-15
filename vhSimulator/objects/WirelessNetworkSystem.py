@@ -1,10 +1,10 @@
 import numpy as np
-from scipy.stats import rice
+from scipy.stats import rice, beta
 import math
 import random
 
 class WirelessNetworkSystem:
-    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, predef_ber=None, predef_fec=None, predef_config=True, corrections_real_world_applications=False, fading=None):
+    def __init__(self, system_name, x_position, y_position, transmission_power_dbm, frequency, bandwidth, minimum_snr, protocol, power_consumption, monetary_cost, delay_mean, jitter_mean, maximum_radius=None, predef_throughput=None, predef_snr=None, predef_rssi=None, predef_ber=None, predef_fec=None, predef_config=True, corrections_real_world_applications=False, fading=None):
         self.system_name = system_name
         self.connected_devices = set()
         
@@ -18,6 +18,8 @@ class WirelessNetworkSystem:
         self.protocol = protocol
         self.power_consumption = power_consumption
         self.monetary_cost = monetary_cost
+        self.delay_mean = delay_mean
+        self.jitter_mean = jitter_mean
         self.corrections_real_world_applications = corrections_real_world_applications
         self.predef_config = predef_config
         self.fading = fading
@@ -180,6 +182,16 @@ class WirelessNetworkSystem:
         if dist < self.maximum_radius:
             fec = self.predef_fec[0] - (((self.predef_fec[0] - self.predef_fec[1])/self.maximum_radius) * dist)
         return random.uniform(fec*0.9, fec*1.1)
+        
+    def calculateDelay(self, mean, alfa_param=5, beta_param=5):
+        dist = beta(alfa_param, beta_param)
+        sample = dist.rvs(1)[0] * (mean/0.5)
+        return sample
+    
+    def calculateJitter(self, mean, alfa_param=5, beta_param=5):
+        dist = beta(alfa_param, beta_param)
+        sample = dist.rvs(1)[0] * (mean/0.5)
+        return sample
     
     def calculateQoSParameters(self, device):
         QoS_Parameters = {}
@@ -247,6 +259,9 @@ class WirelessNetworkSystem:
             QoS_Parameters['PC'] = self.power_consumption
             QoS_Parameters['MC'] = self.monetary_cost
             
+            # Hidden Parameters Delay and Jitter
+            QoS_Parameters['Delay'] = self.calculateDelay(self.delay_mean)
+            QoS_Parameters['Jitter'] = self.calculateJitter(self.jitter_mean)
         
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
             QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}
