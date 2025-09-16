@@ -25,11 +25,15 @@ class DecisionMakerMethod:
         self.hp = hp
         if self.hp:
             self.inputs_bkp = copy.deepcopy(inputs) 
+            #print("==================== INP BKP 1 ====================")
+            #print(self.inputs_bkp)
+            #print("=================================================")
             if self.old_decision != None:
                 for input in inputs:
                     if input['Network'] != self.old_decision:
                         input['Delay'] = 1.2
                         input['Jitter'] = 0.6
+                        input['HC'] = 1
                     #print(input)
                     #print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
                 #print("==================================== '' ====================================")        
@@ -45,8 +49,15 @@ class DecisionMakerMethod:
     def return_output(self):
         if self.hp:
             final_output = next((inp for inp in self.inputs_bkp if inp['Network'] == self.output['Network']), None)
+            #print("==================== INP BKP 2 ====================")
+            #print(self.inputs_bkp)
+            #print("=================================================")
+            if self.old_decision != None:
+                if final_output['Network'] != self.old_decision:
+                    final_output['HC'] = 1
         else:
             final_output = self.output
+        self.inputs = self.inputs_bkp
         return final_output
     
     def create_unique_id(*args):

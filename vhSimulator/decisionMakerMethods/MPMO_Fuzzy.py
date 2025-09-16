@@ -31,8 +31,8 @@ class MPMO_Fuzzy(DMM):
         else:
             self.output = self.decisionProcedure()
             
-        self.old_decision = self.output['Network']
         self.output = self.return_output()
+        self.old_decision = self.output['Network']
         return self.output
     
     

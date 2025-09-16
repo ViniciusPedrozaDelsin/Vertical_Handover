@@ -262,6 +262,10 @@ class WirelessNetworkSystem:
             # Hidden Parameters Delay and Jitter
             QoS_Parameters['Delay'] = self.calculateDelay(self.delay_mean)
             QoS_Parameters['Jitter'] = self.calculateJitter(self.jitter_mean)
+            
+            # Outside the system variables
+            QoS_Parameters['HC'] = 0
+            
         
             QoS_Parameters = {**{'Status': 'Online'}, **QoS_Parameters}
             QoS_Parameters = {**{'Network': self.system_name}, **QoS_Parameters}

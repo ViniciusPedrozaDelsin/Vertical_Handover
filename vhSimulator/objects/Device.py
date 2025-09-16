@@ -1,3 +1,5 @@
+import copy
+
 class Device:
     
     def __init__(self, device_id, x_position, y_position):
@@ -65,7 +67,7 @@ class Device:
         return self.available_networks
         
     def makeDecision(self, decision_maker_method, inputs, hidden_parameters=False):
-        decision_maker_method.send_inputs(inputs, hp=hidden_parameters)
+        decision_maker_method.send_inputs(copy.deepcopy(inputs), hp=hidden_parameters)
         '''if decision_maker_method.method_name == "MPMO-Fuzzy" or decision_maker_method.method_name == "MPMO-TOPSIS" or decision_maker_method.method_name == "MPMO-WPM" or decision_maker_method.method_name == "MPMO-SAW":
             #print(f"DM Method: {decision_maker_method.method_name}")
             start_time = time.perf_counter()

@@ -35,8 +35,8 @@ iter_interval = 5
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
+n = 1000
 j = 0
-n = 500
 
 # Activate Graphical Interface
 GUI = False
@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 200
+n_simulations = 10
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -63,9 +63,9 @@ corrections_real_world = True
 fading = "Rician"
 
 # Performance Analysis
-analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC', 'Delay', 'Jitter']
-weights = [1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9, 1/9]
-directions = [1, 1, 1, 0, 0, 0, 1, 0, 0]
+analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC', 'Delay', 'Jitter', 'HC']
+weights = [1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]
+directions = [1, 1, 1, 0, 0, 0, 1, 0, 0, 0]
 lockin_percentage = 0.03
 tt_trigger = 3
 hyst_percentage = 0.3
@@ -418,7 +418,7 @@ def calculate_parameters(device, x_position, y_position):
     if available_networks != []:
         decision_benchmark = device.makeDecision(benchmark, available_networks)
     else:
-        decision_benchmark = {'Network': 'Benchmark', 'Status': 'Offline', 'Protocol': 'Benchmark', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+        decision_benchmark = {'Network': 'Benchmark', 'Status': 'Offline', 'Protocol': 'Benchmark', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
     p_benchmark.store_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Benchmark {decision_benchmark}")
         
@@ -426,7 +426,7 @@ def calculate_parameters(device, x_position, y_position):
     if available_networks != []:
         decision_worst_scenario = device.makeDecision(worst_scenario, available_networks)
     else:
-        decision_worst_scenario = {'Network': 'WorstScenario', 'Status': 'Offline', 'Protocol': 'WorstScenario', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+        decision_worst_scenario = {'Network': 'WorstScenario', 'Status': 'Offline', 'Protocol': 'WorstScenario', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
     p_worst_scenario.store_QoS_parameters(decision_worst_scenario)
     p_worst_scenario.store_Benchmark_QoS_parameters(decision_benchmark)
     if verbose == True: print(f"Worst Scenario: {decision_worst_scenario}")
@@ -435,7 +435,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_spmo_mmm_rssi = device.makeDecision(spmo_max_min_method_rssi, available_networks, hidden_parameters=True)
         else:
-            decision_spmo_mmm_rssi = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_spmo_mmm_rssi = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_spmo_max_min_rssi.store_QoS_parameters(decision_spmo_mmm_rssi)
         p_spmo_max_min_rssi.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision SPMO MAX MIN RSSI: {decision_spmo_mmm_rssi}")
@@ -443,7 +443,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_spmo_mmm_snr = device.makeDecision(spmo_max_min_method_snr, available_networks, hidden_parameters=True)
         else:
-            decision_spmo_mmm_snr = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_spmo_mmm_snr = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_spmo_max_min_snr.store_QoS_parameters(decision_spmo_mmm_snr)
         p_spmo_max_min_snr.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision SPMO MAX MIN SNR: {decision_spmo_mmm_snr}")
@@ -451,7 +451,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_spmo_pref = device.makeDecision(spmo_pref, available_networks, hidden_parameters=True)
         else:
-            decision_spmo_pref = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_spmo_pref = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_spmo_pref.store_QoS_parameters(decision_spmo_pref)
         p_spmo_pref.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision SPMO Preference: {decision_spmo_pref}")
@@ -460,7 +460,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_mpmo_saw = device.makeDecision(mpmo_saw, available_networks, hidden_parameters=True)
         else:
-            decision_mpmo_saw = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_mpmo_saw = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_mpmo_saw.store_QoS_parameters(decision_mpmo_saw)
         p_mpmo_saw.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO SAW: {decision_mpmo_saw}")
@@ -469,7 +469,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_saw_hyst = device.makeDecision(mpmo_saw_hyst, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_saw_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_saw_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_saw_hyst.store_QoS_parameters(decision_mpmo_saw_hyst)
             p_mpmo_saw_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO SAW Hysteresis: {decision_mpmo_saw_hyst}")
@@ -478,7 +478,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_saw_lockin = device.makeDecision(mpmo_saw_lockin, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_saw_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_saw_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_saw_lockin.store_QoS_parameters(decision_mpmo_saw_lockin)
             p_mpmo_saw_lockin.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO SAW LockIn: {decision_mpmo_saw_lockin}")
@@ -487,7 +487,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_saw_ttt = device.makeDecision(mpmo_saw_ttt, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_saw_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_saw_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_saw_ttt.store_QoS_parameters(decision_mpmo_saw_ttt)
             p_mpmo_saw_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO SAW Time to Trigger: {decision_mpmo_saw_ttt}")
@@ -496,7 +496,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_mpmo_wpm = device.makeDecision(mpmo_wpm, available_networks, hidden_parameters=True)
         else:
-            decision_mpmo_wpm = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_mpmo_wpm = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_mpmo_wpm.store_QoS_parameters(decision_mpmo_wpm)
         p_mpmo_wpm.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO WPM: {decision_mpmo_wpm}")
@@ -505,7 +505,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_wpm_hyst = device.makeDecision(mpmo_wpm_hyst, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_wpm_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_wpm_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_wpm_hyst.store_QoS_parameters(decision_mpmo_wpm_hyst)
             p_mpmo_wpm_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO WPM Hyst: {decision_mpmo_wpm_hyst}")
@@ -514,7 +514,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_wpm_lockin = device.makeDecision(mpmo_wpm_lockin, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_wpm_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_wpm_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_wpm_lockin.store_QoS_parameters(decision_mpmo_wpm_lockin)
             p_mpmo_wpm_lockin.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO WPM LockIn: {decision_mpmo_wpm_lockin}")
@@ -523,7 +523,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_wpm_ttt = device.makeDecision(mpmo_wpm_ttt, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_wpm_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_wpm_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_wpm_ttt.store_QoS_parameters(decision_mpmo_wpm_ttt)
             p_mpmo_wpm_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO WPM Time to Trigger: {decision_mpmo_wpm_ttt}")
@@ -532,7 +532,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_mpmo_topsis = device.makeDecision(mpmo_topsis, available_networks, hidden_parameters=True)
         else:
-            decision_mpmo_topsis = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_mpmo_topsis = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_mpmo_topsis.store_QoS_parameters(decision_mpmo_topsis)
         p_mpmo_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO TOPSIS: {decision_mpmo_topsis}")
@@ -541,7 +541,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_topsis_hyst = device.makeDecision(mpmo_topsis_hyst, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_topsis_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_topsis_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_topsis_hyst.store_QoS_parameters(decision_mpmo_topsis_hyst)
             p_mpmo_topsis_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO TOPSIS Hyst: {decision_mpmo_topsis_hyst}")
@@ -550,7 +550,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_topsis_lockin = device.makeDecision(mpmo_topsis_lockin, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_topsis_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_topsis_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_topsis_lockin.store_QoS_parameters(decision_mpmo_topsis_lockin)
             p_mpmo_topsis_lockin.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO TOPSIS LockIn: {decision_mpmo_topsis_lockin}")
@@ -559,7 +559,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_topsis_ttt = device.makeDecision(mpmo_topsis_ttt, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_topsis_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_topsis_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_topsis_ttt.store_QoS_parameters(decision_mpmo_topsis_ttt)
             p_mpmo_topsis_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO TOPSIS Time to Trigger: {decision_mpmo_topsis_ttt}")
@@ -569,7 +569,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_mpmo_fuzzy = device.makeDecision(mpmo_fuzzy, available_networks, hidden_parameters=True)
         else:
-            decision_mpmo_fuzzy = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_mpmo_fuzzy = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_mpmo_fuzzy.store_QoS_parameters(decision_mpmo_fuzzy)
         p_mpmo_fuzzy.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy}")
@@ -578,7 +578,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_fuzzy_hyst = device.makeDecision(mpmo_fuzzy_hyst, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_fuzzy_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_fuzzy_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_fuzzy_hyst.store_QoS_parameters(decision_mpmo_fuzzy_hyst)
             p_mpmo_fuzzy_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO Fuzzy Hyst: {decision_mpmo_fuzzy_hyst}")
@@ -587,7 +587,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_fuzzy_lockin = device.makeDecision(mpmo_fuzzy_lockin, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_fuzzy_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_fuzzy_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_fuzzy_lockin.store_QoS_parameters(decision_mpmo_fuzzy_lockin)
             p_mpmo_fuzzy_lockin.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO Fuzzy LockIn: {decision_mpmo_fuzzy_lockin}")
@@ -596,7 +596,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_fuzzy_ttt = device.makeDecision(mpmo_fuzzy_ttt, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_fuzzy_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_fuzzy_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_fuzzy_ttt.store_QoS_parameters(decision_mpmo_fuzzy_ttt)
             p_mpmo_fuzzy_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO Fuzzy Time to Trigger: {decision_mpmo_fuzzy_ttt}")
@@ -606,7 +606,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_mpmo_rmse = device.makeDecision(mpmo_rmse, available_networks, hidden_parameters=True)
         else:
-            decision_mpmo_rmse = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_mpmo_rmse = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_mpmo_rmse.store_QoS_parameters(decision_mpmo_rmse)
         p_mpmo_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO RMSE: {decision_mpmo_rmse}")
@@ -615,7 +615,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_rmse_hyst = device.makeDecision(mpmo_rmse_hyst, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_rmse_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_rmse_hyst = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_rmse_hyst.store_QoS_parameters(decision_mpmo_rmse_hyst)
             p_mpmo_rmse_hyst.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO RMSE Hyst: {decision_mpmo_rmse_hyst}")
@@ -624,7 +624,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_rmse_lockin = device.makeDecision(mpmo_rmse_lockin, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_rmse_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_rmse_lockin = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_rmse_lockin.store_QoS_parameters(decision_mpmo_rmse_lockin)
             p_mpmo_rmse_lockin.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO RMSE LockIn: {decision_mpmo_rmse_lockin}")
@@ -633,7 +633,7 @@ def calculate_parameters(device, x_position, y_position):
             if available_networks != []:
                 decision_mpmo_rmse_ttt = device.makeDecision(mpmo_rmse_ttt, available_networks, hidden_parameters=True)
             else:
-                decision_mpmo_rmse_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+                decision_mpmo_rmse_ttt = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
             p_mpmo_rmse_ttt.store_QoS_parameters(decision_mpmo_rmse_ttt)
             p_mpmo_rmse_ttt.store_Benchmark_QoS_parameters(decision_benchmark)
             if verbose == True: print(f"Decision MPMO RMSE Time to Trigger: {decision_mpmo_rmse_ttt}")
@@ -643,7 +643,7 @@ def calculate_parameters(device, x_position, y_position):
         if available_networks != []:
             decision_nn_topsis = device.makeDecision(nn_topsis, available_networks, hidden_parameters=True)
         else:
-            decision_nn_topsis = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0}
+            decision_nn_topsis = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
         p_nn_topsis.store_QoS_parameters(decision_nn_topsis)
         p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
