@@ -94,8 +94,13 @@ class MPMO_WPM(DMM):
                     if value < max_min_parameter:
                         max_min_parameter = value
                 j = j + 1
+            
+            e = 0.1
+            if max_min_parameter == 0:
+                max_min_parameter += e
                 
             for value in attribute_dict[parameter]:
+                if value == 0: value += e
                 new_value = value/max_min_parameter
                 if new_value > 1: new_value = 1/new_value
                 absolute_value = abs(new_value)

@@ -7,7 +7,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 
-df = pd.read_csv('./data/TOPSIS.csv', index_col=False)
+df = pd.read_csv('./data/TOPSIS_10inps.csv', index_col=False)
 df = df.drop('Hash', axis=1)
 
 # All columns except the last
@@ -21,13 +21,14 @@ X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test
 
 # Build the model
 model = Sequential([
-    Dense(1, input_shape=(df_features.shape[1],), activation='relu'),
-    Dense(1, activation='relu'),
+    Dense(10, input_shape=(df_features.shape[1],), activation='relu'),
+    Dense(20, activation='relu'),
+    Dense(10, activation='relu'),
     Dense(1, activation='linear')
 ])
 
 # Compile the model
-model.compile(optimizer=Adam(learning_rate=0.00013499688839335256), loss='mean_squared_error', metrics=['mae'])
+model.compile(optimizer=Adam(learning_rate=0.0002), loss='mean_squared_error', metrics=['mae'])
 
 # Stop the model early if the validation loss start to increase
 early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
@@ -36,8 +37,8 @@ early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=
 history = model.fit(
     X_train, y_train,
     validation_split=0.1,
-    epochs=27,
-    batch_size=4,
+    epochs=20,
+    batch_size=32,
     shuffle=True,
     callbacks=[early_stop],
     verbose=1

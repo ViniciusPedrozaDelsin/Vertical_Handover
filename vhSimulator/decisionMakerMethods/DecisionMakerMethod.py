@@ -34,9 +34,7 @@ class DecisionMakerMethod:
                         input['Delay'] = 1.2
                         input['Jitter'] = 0.6
                         input['HC'] = 1
-                    #print(input)
-                    #print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-                #print("==================================== '' ====================================")        
+                #print("==================================== Inputs ====================================")        
                 self.inputs = inputs
                 #print(self.inputs)
                 #print("==================================== '' ====================================")
@@ -44,14 +42,15 @@ class DecisionMakerMethod:
                 self.inputs = inputs
         else:
             self.inputs = inputs
-            #print(self.inputs)
     
     def return_output(self):
         if self.hp:
             final_output = next((inp for inp in self.inputs_bkp if inp['Network'] == self.output['Network']), None)
-            #print("==================== INP BKP 2 ====================")
-            #print(self.inputs_bkp)
-            #print("=================================================")
+            '''
+            print("==================== INP BKP 2 ====================")
+            print(self.inputs_bkp)
+            print("=================================================")
+            '''
             if self.old_decision != None:
                 if final_output['Network'] != self.old_decision:
                     final_output['HC'] = 1
@@ -70,7 +69,7 @@ class DecisionMakerMethod:
         #print(outputs)
         
         # Fields to normalize
-        fields = ['RSSI', 'SNR', 'BER', 'FEC', 'Throughput', 'PC', 'MC', 'Delay', 'Jitter']
+        fields = ['RSSI', 'SNR', 'BER', 'FEC', 'Throughput', 'PC', 'MC', 'Delay', 'Jitter', 'HC']
 
         # Compute min and max for each field
         mins = {field: min(d[field] for d in self.inputs) for field in fields}
@@ -109,6 +108,7 @@ class DecisionMakerMethod:
                     input_network['MC'], 
                     input_network['Delay'],
                     input_network['Jitter'],
+                    input_network['HC'],
                     outputs[i]
                 ]
             )

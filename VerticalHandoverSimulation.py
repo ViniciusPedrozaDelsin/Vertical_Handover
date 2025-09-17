@@ -29,13 +29,13 @@ x, y = x_max/2, y_max/2
 device_velocity = 10
 
 # Interval between iterations
-iter_interval = 5
+iter_interval = 1
 
 # Distance for iteration, 0.1 because the iter_interval is 100ms
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 1000
+n = 2000
 j = 0
 
 # Activate Graphical Interface
@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 10
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -66,6 +66,8 @@ fading = "Rician"
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC', 'Delay', 'Jitter', 'HC']
 weights = [1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]
 directions = [1, 1, 1, 0, 0, 0, 1, 0, 0, 0]
+
+# Improvement Techniques
 lockin_percentage = 0.03
 tt_trigger = 3
 hyst_percentage = 0.3
@@ -90,15 +92,15 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = False
+SPMO_Methods = True
 
-SAW = False
+SAW = True
 
-WPM = False
+WPM = True
 
 TOPSIS = True
 
-Fuzzy = False
+Fuzzy = True
 
 RMSE = True
 
@@ -425,6 +427,8 @@ def calculate_parameters(device, x_position, y_position):
     # ============================== Worst Scenario ==============================
     if available_networks != []:
         decision_worst_scenario = device.makeDecision(worst_scenario, available_networks)
+        if len(available_networks) >= 1:
+            decision_worst_scenario['HC'] = 1
     else:
         decision_worst_scenario = {'Network': 'WorstScenario', 'Status': 'Offline', 'Protocol': 'WorstScenario', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
     p_worst_scenario.store_QoS_parameters(decision_worst_scenario)
@@ -1350,7 +1354,7 @@ if WPM == True:
     if impTech_TTT == True:
         mpmo_wpm_ttt = MPMO_WPM("MPMO-WPM-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 if TOPSIS == True:
-    mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", analyzed_parameters, weights, directions)
+    mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", analyzed_parameters, weights, directions, file_to_save='TOPSIS_10inps.csv')
     if impTech_hyst == True:
         mpmo_topsis_hyst = MPMO_TOPSIS("MPMO-TOPSIS-Hyst", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
     if impTech_lockin == True:
