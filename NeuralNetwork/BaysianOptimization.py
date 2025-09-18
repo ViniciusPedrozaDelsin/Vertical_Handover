@@ -21,15 +21,15 @@ log_file = open("bayesian_optimization_log.txt", "w")
 sys.stdout = log_file
 
 # Load and preprocess data
-df = pd.read_csv('./data/TOPSIS_10inps.csv', index_col=False)
-df = df.drop('Hash', axis=1)
+df = pd.read_csv('./data/RMSE_10inps.csv', index_col=False)
+#df = df.drop('Hash', axis=1)
 X = df.iloc[:, :-1]
 y = df.iloc[:, -1]
 
 #scaler = StandardScaler()
 #X_scaled = scaler.fit_transform(X)
 
-X_train, _, y_train, _ = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train, _, y_train, _ = train_test_split(X, y, test_size=0.1, random_state=42)
 
 print("============================================")
 
@@ -47,19 +47,20 @@ def objective(trial):
     #n_layers = trial.suggest_int("n_layers", 1, 2)
     units = []
     for _ in range(n_layers):
-        unit = trial.suggest_int("units", 1, 16)
+        #unit = trial.suggest_int("units", 1, 16)
         #unit = trial.suggest_int("units", 1, 2)
+        unit = random.randint(1, 16)
         units.append(unit)
     print(f"Neural Network Shape: {units}")
     
     learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-2, log=True)
     print(f"Learning Rate: {learning_rate}")
     
-    n_epochs = trial.suggest_int("n_epochs", 10, 40)
+    n_epochs = trial.suggest_int("n_epochs", 10, 50)
     print(f"Number of epochs: {n_epochs}")
     
     #n_batch_size = random.choice([2, 4, 8, 16, 32, 64, 128])
-    n_batch_size = trial.suggest_categorical("n_batch_size", [32, 64, 128, 256, 512])
+    n_batch_size = trial.suggest_categorical("n_batch_size", [8, 16, 32, 64, 128, 256])
     print(f"Batch size: {n_batch_size}")
 
     model = Sequential()
@@ -112,7 +113,7 @@ def objective(trial):
 
 # Run Bayesian Optimization
 study = optuna.create_study(direction='minimize')
-study.optimize(objective, n_trials=2)
+study.optimize(objective, n_trials=100)
 
 print("\nBest hyperparameters:")
 print(study.best_params)

@@ -2,8 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras import layers
+from tensorflow.keras import layers, models
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 
@@ -20,15 +19,23 @@ df_target = df.iloc[:, -1]
 X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test_size=0.1, random_state=42)
 
 # Build the model
-model = Sequential([
-    layers.Dense(10, input_shape=(df_features.shape[1],), activation='relu'),
-    layers.Dropout(0.2),
-    layers.Dense(20, activation='relu'),
-    layers.Dropout(0.5),
-    layers.Dense(20, activation='relu'),
-    layers.Dropout(0.5),
+model = models.Sequential([
+    layers.Conv1D(filters=20, kernel_size=2, strides=(1), padding='same', activation='relu', input_shape=(X_train.shape[1], 1)),
+    layers.MaxPooling1D(2),
+    
+    layers.Conv1D(filters=40, kernel_size=2, activation='relu'),
+    layers.Conv1D(filters=40, kernel_size=2, activation='relu'),
+    layers.MaxPooling1D(2),
+    
+    # Flatten
+    layers.Flatten(),
+
+    # Fully Connected Layers
     layers.Dense(10, activation='relu'),
-    layers.Dropout(0.2),
+    layers.Dropout(0.5), 
+    layers.Dense(20, activation='relu'),
+    layers.Dropout(0.25),
+    
     layers.Dense(1, activation='linear')
 ])
 
@@ -42,8 +49,8 @@ early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=
 history = model.fit(
     X_train, y_train,
     validation_split=0.1,
-    epochs=50,
-    batch_size=32,
+    epochs=10,
+    batch_size=128,
     shuffle=True,
     callbacks=[early_stop],
     verbose=1
