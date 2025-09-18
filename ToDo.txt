@@ -1,19 +1,9 @@
-- Create a requerimets.txt for the project
-- Optimization Pareto, Multi object optimization
-- add histerese and ttt in rmse - OK
-- Rayleigh and Rician - OK
 - definir o artigo - Artigo 2 sobre o uso de AI no lugar do DM, quanto mais complex mais interessante a AI, fazer a conta do custo computacional das neuro networks e dos algoritmos utilizados. E também sobre a utilização e IA com RL para melhorar atributos que estão fora do Sistema de decisão como, QoS durante o processo de Handover.
 
-cercare simulatore simile
-calcolari i pesi
 nn unsupervised
 
 Artigo 1
-- Checar as questoes de seila oque no ns3 relativo ao package loss e levanter exatamente o funcionamento disso.
 - Checar o uso a questão do custo de processamento exato para a rede neural 2x2, e o algoritmo topsis:
 - https://www.youtube.com/watch?v=o7_2bk6qQFE&list=PLgPbN3w-ia_MzatWGASfuPg9hon_Fsz1V
 - Checar o calculo de RMSE no verticalHandover
-- Adicionar a parte de LockIn utilizado nos resultados
-- Adicionar comentario da imagem de SSE
-- Escrever a conclusão
 - fix and understand fuzzy, checar o uso de fuzzy mais topsis ecc verificar se esta sendo unsado um saw la dentro.

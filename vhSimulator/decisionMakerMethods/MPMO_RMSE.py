@@ -72,9 +72,7 @@ class MPMO_RMSE(DMM):
             j = j + 1
 
         return benchmark_dict
-    
-    def normalizeInputs(self):
-        pass
+        
     
     def calculateRMSE(self):
         benchmark_parameters = self.getBenchmarkParameters()

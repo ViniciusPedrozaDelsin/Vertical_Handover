@@ -35,23 +35,23 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 2000
+n = 10
 j = 0
 
 # Activate Graphical Interface
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = False
+verbose = True
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 3
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
 
 # Plot Results
-plots = True
+plots = False
 
 # Predef Configs
 predef_conf = False
@@ -92,15 +92,15 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = True
+SPMO_Methods = False
 
-SAW = True
+SAW = False
 
-WPM = True
+WPM = False
 
 TOPSIS = True
 
-Fuzzy = True
+Fuzzy = False
 
 RMSE = True
 
@@ -978,60 +978,6 @@ def plot_results():
     
     
     # ==================================================== Start - RMSE Analisys ====================================================
-    print("========================================================================================================================")
-    print("Indicators to Measure Deviation from a Benchmark")
-
-    # Initialize a dictionary to store the summed values
-    aggregated_results_rmse = {}
-    
-    # To use in 3D SSM
-    SSE_3D_Graph = {}
-
-    # Loop through each list in the indicators_results
-    #print(f"Indicator Results: {indicators_results}")
-    
-    #print(f"Indicators Results: {indicators_results}")
-    
-    for group in indicators_results:
-        for entry in group:
-            algorithm = entry['Algorithm']
-
-            if algorithm != 'Worst-Scenario':
-                if algorithm not in aggregated_results_rmse:
-                    aggregated_results_rmse[algorithm] = {param: 0 for param in entry if param != 'Algorithm'}
-                
-                for param in entry:
-                    if param != 'Algorithm':
-                        aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
-
-    
-    SSE_3D_Graph = aggregated_results_rmse
-    for agg in aggregated_results_rmse:
-        for parm in aggregated_results_rmse[agg]:
-            aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm] / iter_x_simu)**(1/2)
-    
-    
-    print(f"Aggregated results: {aggregated_results_rmse}")
-    
-    # Print the aggregated results
-    ind_dict = {}
-    for algorithm, values in aggregated_results_rmse.items():
-        for param, value in values.items():
-            ind_dict[param] = []
-            
-    for algorithm, values in aggregated_results_rmse.items():
-        print(f"Algorithm: {algorithm}")
-        for param, value in values.items():
-            ind_dict[param].append(value)
-            print(f"RMSE: {param}: {value}")
-        print("-" * 50)
-    
-    print("RMSE of the Normalized Results")
-    normalized_rsme = {
-        k: [(v_i-min(v)) / (max(v)-min(v)) for v_i in v]
-        for k, v in ind_dict.items()
-    }
-    print(normalized_rsme)
     
     simulations = indicators_results
     simulations_aux_max = []
@@ -1066,7 +1012,8 @@ def plot_results():
                     i = 0
                     for value in values_list:
                         if value < algo_aux_min[param][i]:
-                            algo_aux_min[param][i] = 0
+                            algo_aux_min[param][i] = value
+                            #algo_aux_min[param][i] = 0
                         i = i + 1
                     
         simulations_aux_max.append(algo_aux_max)
@@ -1117,7 +1064,11 @@ def plot_results():
             rsme_list_results.append(rmse_results)
             
         rsme_final_results.append(rsme_list_results)
-        
+    
+    print("========================================================================================================================")
+    print(rsme_final_results)
+    print("========================================================================================================================")
+
     i = 0
     for sum_result_list in rsme_final_results:
         j = 0
@@ -1125,7 +1076,12 @@ def plot_results():
             rsme_final_results[i][j] = sum(rsme_final_results[i][j])
             j = j + 1
         i = i + 1
-
+        
+    print("========================================================================================================================")
+    print(rsme_final_results)
+    print("========================================================================================================================")
+    
+    
     results_sim_sum = [0] * len(rsme_final_results[0])
     for simu_sum in rsme_final_results:
         j = 0
@@ -1134,14 +1090,14 @@ def plot_results():
             j = j + 1
     
     print("========================================================================================================================")
-    print(results_sim_sum)
+    print(f"RMSE of each Decision Maker: {results_sim_sum}")
 
     x_min = min(results_sim_sum)
     x_max = max(results_sim_sum)
     rmse_per_index = [(x - x_min) / (x_max - x_min) for x in results_sim_sum]
 
     print("========================================================================================================================")
-    print(f"RMSE of each Decision Maker: {rmse_per_index}")
+    print(f"RMSE of each Decision Maker Normalized: {rmse_per_index}")
     print("========================================================================================================================")
     print(f"Best option using RMSE: {rmse_per_index.index(min(rmse_per_index))}")
     print("========================================================================================================================")
@@ -1354,7 +1310,7 @@ if WPM == True:
     if impTech_TTT == True:
         mpmo_wpm_ttt = MPMO_WPM("MPMO-WPM-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 if TOPSIS == True:
-    mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", analyzed_parameters, weights, directions, file_to_save='TOPSIS_10inps.csv')
+    mpmo_topsis = MPMO_TOPSIS("MPMO-TOPSIS", analyzed_parameters, weights, directions)
     if impTech_hyst == True:
         mpmo_topsis_hyst = MPMO_TOPSIS("MPMO-TOPSIS-Hyst", analyzed_parameters, weights, directions, hysterese_percentage=hyst_percentage)
     if impTech_lockin == True:
