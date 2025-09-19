@@ -29,23 +29,23 @@ x, y = x_max/2, y_max/2
 device_velocity = 10
 
 # Interval between iterations
-iter_interval = 1000
+iter_interval = 1
 
 # Distance for iteration, 0.1 because the iter_interval is 100ms
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 100
+n = 1000
 
 # Activate Graphical Interface
-GUI = True
+GUI = False
 
 # Activate Prints for DEBBUG
 verbose = False
 
 # Number of simulations
-n_simulations = 50
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -90,17 +90,17 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = False
+SPMO_Methods = True
 
-SAW = False
+SAW = True
 
-WPM = False
+WPM = True
 
-TOPSIS = False
+TOPSIS = True
 
 Fuzzy = True
 
-RMSE = False
+RMSE = True
 
 TOPSIS_NN = False
 # ============================================================================================
@@ -1038,7 +1038,7 @@ def plot_results():
                     i = 0
                     for value in values_list:
                         if value < algo_aux_min[param][i]:
-                            algo_aux_min[param][i] = 0
+                            algo_aux_min[param][i] = value
                         i = i + 1
                     
         simulations_aux_max.append(algo_aux_max)
