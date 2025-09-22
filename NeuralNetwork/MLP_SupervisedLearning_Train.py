@@ -7,8 +7,8 @@ from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 
-df = pd.read_csv('./data/RMSE_10inps.csv', index_col=False)
-#df = df.drop('Hash', axis=1)
+df = pd.read_csv('./data/TOPSIS_10inps.csv', index_col=False)
+df = df.drop('Hash', axis=1)
 
 # All columns except the last
 df_features = df.iloc[:, :-1]
@@ -22,13 +22,12 @@ X_train, X_test, y_train, y_test = train_test_split(df_features, df_target, test
 # Build the model
 model = Sequential([
     layers.Dense(10, input_shape=(df_features.shape[1],), activation='relu'),
-    layers.Dropout(0.2),
+    #layers.Dropout(0.2),
+    #layers.Dropout(0.5),
     layers.Dense(20, activation='relu'),
-    layers.Dropout(0.5),
-    layers.Dense(20, activation='relu'),
-    layers.Dropout(0.5),
+    #layers.Dropout(0.5),
     layers.Dense(10, activation='relu'),
-    layers.Dropout(0.2),
+    #layers.Dropout(0.2),
     layers.Dense(1, activation='linear')
 ])
 
@@ -42,7 +41,7 @@ early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=
 history = model.fit(
     X_train, y_train,
     validation_split=0.1,
-    epochs=50,
+    epochs=20,
     batch_size=32,
     shuffle=True,
     callbacks=[early_stop],

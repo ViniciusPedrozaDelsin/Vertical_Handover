@@ -46,14 +46,19 @@ class DecisionMakerMethod:
     def return_output(self):
         if self.hp:
             final_output = next((inp for inp in self.inputs_bkp if inp['Network'] == self.output['Network']), None)
-            '''
-            print("==================== INP BKP 2 ====================")
-            print(self.inputs_bkp)
-            print("=================================================")
-            '''
+            
+            #print("==================== INP BKP 1 ====================")
+            #print(self.inputs_bkp)
+            #print("=================================================")
+            
             if self.old_decision != None:
                 if final_output['Network'] != self.old_decision:
                     final_output['HC'] = 1
+                    
+            #print("==================== INP BKP 2 ====================")
+            #print(self.old_decision)
+            #print(final_output)
+            #print("=================================================")
         else:
             final_output = self.output
         self.inputs = self.inputs_bkp

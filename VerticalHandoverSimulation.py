@@ -15,7 +15,7 @@ from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
 from vhSimulator import SPMO_Preference as SPMO_Pref
-from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, NN_TOPSIS, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
+from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, NN_TOPSIS, NN_RL_RMSE, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
 
 
 # ==================================== Initial Parameters ====================================
@@ -35,17 +35,17 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 10
+n = 200
 j = 0
 
 # Activate Graphical Interface
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = True
+verbose = False
 
 # Number of simulations
-n_simulations = 3
+n_simulations = 50
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -98,13 +98,15 @@ SAW = False
 
 WPM = False
 
-TOPSIS = True
+TOPSIS = False
 
 Fuzzy = False
 
 RMSE = True
 
 TOPSIS_NN = False
+
+RMSE_RL_NN = True
 # ============================================================================================
 
 
@@ -343,6 +345,10 @@ def update_position(device):
             if TOPSIS_NN == True:
                 nn_topsis.resetParameters()
                 p_nn_topsis.clean_storaged_QoS()
+            if RMSE_RL_NN == True:
+                nn_rl_rmse.resetParameters()
+                #nn_rl_rmse.resetMemory()
+                p_nn_rl_rmse.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             p_worst_scenario.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
@@ -392,6 +398,8 @@ def update_position(device):
                     p_mpmo_rmse_ttt.clean_Benchmark_storaged_QoS()
             if TOPSIS_NN == True:
                 p_nn_topsis.clean_Benchmark_storaged_QoS()
+            if RMSE_RL_NN == True:
+                p_nn_rl_rmse.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             p_worst_scenario.clean_Benchmark_storaged_QoS()
             j = 0
@@ -428,7 +436,7 @@ def calculate_parameters(device, x_position, y_position):
     if available_networks != []:
         decision_worst_scenario = device.makeDecision(worst_scenario, available_networks)
         if len(available_networks) >= 1:
-            decision_worst_scenario['HC'] = 1
+            decision_worst_scenario['HC'] = 0
     else:
         decision_worst_scenario = {'Network': 'WorstScenario', 'Status': 'Offline', 'Protocol': 'WorstScenario', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
     p_worst_scenario.store_QoS_parameters(decision_worst_scenario)
@@ -651,6 +659,16 @@ def calculate_parameters(device, x_position, y_position):
         p_nn_topsis.store_QoS_parameters(decision_nn_topsis)
         p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
+    
+    if RMSE_RL_NN == True:
+    
+        if available_networks != []:
+            decision_nn_rl_rmse = device.makeDecision(nn_rl_rmse, available_networks, hidden_parameters=True)
+        else:
+            decision_nn_rl_rmse = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        p_nn_rl_rmse.store_QoS_parameters(decision_nn_rl_rmse)
+        p_nn_rl_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision NN RL RMSE: {decision_nn_rl_rmse}")
     
     #global count_nn
     #if decision_nn_topsis == decision_mpmo_topsis: count_nn = count_nn + 1
@@ -881,6 +899,15 @@ def performe_analysis():
         indicators_list.append(indicators_nn_topsis)
         results_list.append(results_nn_topsis)
     
+    if RMSE_RL_NN == True: 
+        results_nn_rl_rmse = p_nn_rl_rmse.calculate_average_QoS_parameters(analyzed_parameters)
+        results_nn_rl_rmse['Handover'] = p_nn_rl_rmse.count_number_of_handovers()
+        results_nn_rl_rmse['Algorithm'] = p_nn_rl_rmse.algorithm
+        indicators_nn_rl_rmse = p_nn_rl_rmse.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_nn_rl_rmse['Algorithm'] = results_nn_rl_rmse['Algorithm']
+        indicators_list.append(indicators_nn_rl_rmse)
+        results_list.append(results_nn_rl_rmse)
+    
     indicators_worst_scenario = p_worst_scenario.calculate_Abs_error_QoS_parameters(analyzed_parameters)
     indicators_worst_scenario['Algorithm'] = p_worst_scenario.algorithm
     indicators_list.append(indicators_worst_scenario)
@@ -938,6 +965,8 @@ def performe_analysis():
             print(f"{results_mpmo_rmse_ttt}, Handoff: {results_mpmo_rmse_ttt['Handover']}")
     if TOPSIS_NN == True: 
         print(f"{results_nn_topsis}, Handoff: {results_nn_topsis['Handover']}")
+    if RMSE_RL_NN == True: 
+        print(f"{results_nn_rl_rmse}, Handoff: {results_nn_rl_rmse['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("========================================================================================================================")
     
@@ -977,6 +1006,9 @@ def plot_results():
     
     
     
+    # Safe RMSE RL Model
+    nn_rl_rmse.saveModel()
+    
     # ==================================================== Start - RMSE Analisys ====================================================
     
     simulations = indicators_results
@@ -1013,7 +1045,6 @@ def plot_results():
                     for value in values_list:
                         if value < algo_aux_min[param][i]:
                             algo_aux_min[param][i] = value
-                            #algo_aux_min[param][i] = 0
                         i = i + 1
                     
         simulations_aux_max.append(algo_aux_max)
@@ -1065,9 +1096,9 @@ def plot_results():
             
         rsme_final_results.append(rsme_list_results)
     
-    print("========================================================================================================================")
-    print(rsme_final_results)
-    print("========================================================================================================================")
+    #print("========================================================================================================================")
+    #print(rsme_final_results)
+    #print("========================================================================================================================")
 
     i = 0
     for sum_result_list in rsme_final_results:
@@ -1077,9 +1108,9 @@ def plot_results():
             j = j + 1
         i = i + 1
         
-    print("========================================================================================================================")
-    print(rsme_final_results)
-    print("========================================================================================================================")
+    #print("========================================================================================================================")
+    #print(rsme_final_results)
+    #print("========================================================================================================================")
     
     
     results_sim_sum = [0] * len(rsme_final_results[0])
@@ -1339,6 +1370,8 @@ if RMSE == True:
         mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
+if RMSE_RL_NN == True: 
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, model_name="RMSE_RL_14inps_32_16.keras") # model_name="RMSE_RL_14inps_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
@@ -1389,6 +1422,8 @@ if RMSE == True:
         p_mpmo_rmse_ttt = PerformanceAnalysis("RMSE-TTT")
 if TOPSIS_NN == True: 
     p_nn_topsis = PerformanceAnalysis("NN-TOPSIS")
+if RMSE_RL_NN == True: 
+    p_nn_rl_rmse = PerformanceAnalysis("NN-RL-RMSE")
 p_benchmark = PerformanceAnalysis("Benchmark")
 p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
 

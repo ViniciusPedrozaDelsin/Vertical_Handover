@@ -23,12 +23,12 @@ class PerformanceAnalysis:
     
     def count_number_of_handovers(self):
         count = 0
-        old_protocol = None
+        old_network = None
         for QoS_parameters in self.stack_QoS_parameters:
-            if QoS_parameters['Protocol'] != old_protocol:
-                if old_protocol != None:
+            if QoS_parameters['Network'] != old_network:
+                if old_network != None:
                     count = count + 1
-                old_protocol = QoS_parameters['Protocol']
+                old_network = QoS_parameters['Network']
                     
         self.handover_count = count
         return self.handover_count

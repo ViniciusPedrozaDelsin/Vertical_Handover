@@ -122,8 +122,8 @@ class DQNAgent:
                 #print("===== '' =====")
                 target = r + (self.gamma * r)
                 if not done:
-                    #q_next = np.max(self.model.predict(s_next[np.newaxis], verbose=0)[0])
-                    q_next = self.model.predict(s_next[np.newaxis], verbose=0)[0][a]
+                    q_next = np.max(self.model.predict(s_next[np.newaxis], verbose=0)[0])
+                    #q_next = self.model.predict(s_next[np.newaxis], verbose=0)[0][a]
                     target = r + (self.gamma * q_next)
                 #print(f"Target: {target}")
                 #print("===== '' =====")
