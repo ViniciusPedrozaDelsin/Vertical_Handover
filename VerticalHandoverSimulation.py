@@ -35,7 +35,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 200
+n = 50
 j = 0
 
 # Activate Graphical Interface
@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 50
+n_simulations = 250
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -436,7 +436,7 @@ def calculate_parameters(device, x_position, y_position):
     if available_networks != []:
         decision_worst_scenario = device.makeDecision(worst_scenario, available_networks)
         if len(available_networks) >= 1:
-            decision_worst_scenario['HC'] = 0
+            decision_worst_scenario['HC'] = 1
     else:
         decision_worst_scenario = {'Network': 'WorstScenario', 'Status': 'Offline', 'Protocol': 'WorstScenario', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
     p_worst_scenario.store_QoS_parameters(decision_worst_scenario)

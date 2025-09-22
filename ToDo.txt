@@ -1,6 +1,7 @@
 - definir o artigo - Artigo 2 sobre o uso de AI no lugar do DM, quanto mais complex mais interessante a AI, fazer a conta do custo computacional das neuro networks e dos algoritmos utilizados. E também sobre a utilização e IA com RL para melhorar atributos que estão fora do Sistema de decisão como, QoS durante o processo de Handover.
 
 nn unsupervised
+Check the calculus of RMSE if its using the worst scenario
 
 Artigo 1
 - Checar o uso a questão do custo de processamento exato para a rede neural 2x2, e o algoritmo topsis:
