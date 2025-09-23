@@ -6,24 +6,39 @@ import random
 import numpy as np
 
 class NN_RL_RMSE(DMM):
-    def __init__(self, method_name, attributes, lockin_percentage=None, time_to_trigger=None, model_name=None, **kwargs):
+    def __init__(self, method_name, attributes, lockin_percentage=None, time_to_trigger=None, simulation_length=100, model_name=None, **kwargs):
         super().__init__(method_name, **kwargs)
         self.attributes = attributes
         
         # NN RL Variables
-        self.gamma = 0.2
+        self.gamma = 0.9
         self.epsilon = 1
-        self.epsilon_min = 0
-        self.epsilon_decay = 0.98
+        self.epsilon_min = 0.01
+        self.epsilon_decay = 0.999
         self.batch_size = 32
-        self.memory_lenght = 2000
+        self.window_size = 5
+        self.memory_lenght = 8192
         self.memory = deque(maxlen=self.memory_lenght)
+        self.mem_warmup_steps = 1024
         self.train_counter = 0
         if model_name == None:
             self.model = self.modelBuild(14, 1)
         else:
             self.model = tf.keras.models.load_model(model_name)
+
+        '''# --- Target network (same architecture) ---
+        self.target_model = tf.keras.models.clone_model(self.model)
+        self.target_model.set_weights(self.model.get_weights())
+
+        # update frequency
+        self.target_update_freq = 1000'''
         
+
+        # Episode tracking to avoid cross-simulation windows
+        self.simulation_length = simulation_length   # default 50 (you can change)
+        self.sim_step_counter = 0
+        self.episode_id = 0
+
         # LockIn values
         self.lockin_reference = None
         self.lockin_percentage = lockin_percentage
@@ -42,6 +57,12 @@ class NN_RL_RMSE(DMM):
         else:
             self.output = self.decisionProcedure()
         
+        # Track step inside simulation; increment episode id if we reached the end of the simulation
+        self.sim_step_counter += 1
+        if self.sim_step_counter >= self.simulation_length:
+            self.episode_id += 1
+            self.sim_step_counter = 0
+
         self.output = self.return_output()
         self.old_decision = self.output['Network']
         return self.output
@@ -154,7 +175,7 @@ class NN_RL_RMSE(DMM):
         del new_inp['Jitter']
         
         self.memory.append((new_inp, reward))
-        if np.random.rand() > 0.50:
+        if np.random.rand() > 0.75:
             self.modelTrain()
         
         return self.inputs[max_index]
@@ -162,11 +183,24 @@ class NN_RL_RMSE(DMM):
     def modelBuild(self, n_inputs=1, n_outputs=1):
         model = tf.keras.Sequential([
             layers.Input(shape=(n_inputs,)),
-            layers.Dense(28, activation='relu'),
-            layers.Dense(14, activation='relu'),
+
+            layers.Dense(64, activation='relu'),
+            layers.BatchNormalization(),
+
+            layers.Dense(128, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.25),
+
+            layers.Dense(64, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.25),
+
+            layers.Dense(32, activation='relu'),
+            layers.BatchNormalization(),
+
             layers.Dense(n_outputs, activation='linear')
         ])
-        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005), loss='mse')
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003), loss='mse')
         return model
     
     def modelPrediction(self, model_inputs):
@@ -177,46 +211,35 @@ class NN_RL_RMSE(DMM):
             prediction = self.model.predict(X, verbose=0)
         return prediction
     
-    def modelTrain_bkp(self):
-        # Return if Memory < Batch_Size
-        if len(self.memory) < self.batch_size:
-            return
-        
-        target = 0
-        for men in self.memory:
-            target += men[1]
-        
-        self.model.fit(np.array([list(self.memory[0][0].values())]), np.array([target]), epochs=1, verbose=0)
-
-        # Decay epsilon
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
-    
     def modelTrain(self):
         # Return if Memory < Batch_Size
-        if len(self.memory) < self.batch_size:
+        if len(self.memory) < (self.batch_size + self.window_size):
             return
-            
+        
+        # Return util memory warmup
+        if len(self.memory) < self.mem_warmup_steps:
+            return
+
         if self.train_counter < 100:
             times = 1
         elif self.train_counter >= 100 and self.train_counter < 200:
-            times = 2
+            times = 1
         elif self.train_counter >= 200 and self.train_counter < 250:
-            times = 3
+            times = 1
         else:
-            times = 5
+            times = 2
             
         for _ in range(times):
-            minibatch = random.sample(self.memory, self.batch_size)
+            minibatch = random.sample(list(self.memory)[:-self.window_size], self.batch_size)
             
             X = []
             y = []
             for sample_choice in minibatch:
                 target = 0
                 index = next((i for i, sc in enumerate(self.memory) if sc == sample_choice), None)
-                if (len(self.memory) - 10) > index:
-                    for i in range(10):
-                        target += self.memory[index+i][1]
+                if (index % self.simulation_length) <= (self.simulation_length - self.window_size):
+                    for i in range(self.window_size):
+                        target += (self.memory[index+i][1]) * (self.gamma**i)
                     X.append(list(self.memory[index][0].values()))
                     y.append(target)
             
@@ -227,6 +250,10 @@ class NN_RL_RMSE(DMM):
                 self.epsilon *= self.epsilon_decay
         
         self.train_counter += 1
+
+        '''# update target model every N updates
+        if self.train_counter % self.target_update_freq == 0:
+            self.target_model.set_weights(self.model.get_weights())'''
     
     def saveModel(self):
         #self.model.save(self.model_name)

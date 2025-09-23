@@ -35,7 +35,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 50
+n = 100
 j = 0
 
 # Activate Graphical Interface
@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 250
+n_simulations = 600
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -1370,8 +1370,8 @@ if RMSE == True:
         mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
-if RMSE_RL_NN == True: 
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, model_name="RMSE_RL_14inps_32_16.keras") # model_name="RMSE_RL_14inps_32_16.keras"
+if RMSE_RL_NN == True:
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n) # model_name="RMSE_RL_14inps_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
