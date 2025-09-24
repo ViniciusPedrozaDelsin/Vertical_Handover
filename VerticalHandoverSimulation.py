@@ -36,7 +36,7 @@ dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 50
+n = 3
 
 # Activate Graphical Interface
 GUI = False
@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 25
+n_simulations = 2
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -90,7 +90,7 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = True
+SPMO_Methods = False
 
 SAW = True
 
@@ -98,7 +98,7 @@ WPM = True
 
 TOPSIS = True
 
-Fuzzy = True
+Fuzzy = False
 
 RMSE = True
 
