@@ -42,7 +42,7 @@ n = 3
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = False
+verbose = True
 
 # Number of simulations
 n_simulations = 2
@@ -1051,6 +1051,10 @@ def plot_results():
         cleaned_data.append(new_group)   
     simulations = cleaned_data
     
+    print("================= Simulations ==================")
+    print(simulations)
+    print("================================================")
+
     i = 0
     for sim in simulations:
         j = 0
@@ -1062,10 +1066,15 @@ def plot_results():
                         if simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k] == 0:
                             simulations[i][j][param][k] = 0
                         else:
-                            simulations[i][j][param][k] = (simulations[i][j][param][k] - simulations_aux_min[i][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
+                            #simulations[i][j][param][k] = (simulations[i][j][param][k] - simulations_aux_min[i][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
+                            simulations[i][j][param][k] = (simulations[i][j][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
                         k = k + 1
             j = j + 1
         i = i + 1
+
+    print("=============== Simulations - 2 ================")
+    print(simulations)
+    print("================================================")
     
     rmse_simulations = []
     for sim in simulations:
