@@ -35,17 +35,17 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 10
+n = 100
 j = 0
 
 # Activate Graphical Interface
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = True
+verbose = False
 
 # Number of simulations
-n_simulations = 5
+n_simulations = 50
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -92,11 +92,11 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = True
+SPMO_Methods = False
 
-SAW = True
+SAW = False
 
-WPM = True
+WPM = False
 
 TOPSIS = True
 
