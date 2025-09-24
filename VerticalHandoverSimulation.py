@@ -35,17 +35,17 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 100
+n = 10
 j = 0
 
 # Activate Graphical Interface
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = False
+verbose = True
 
 # Number of simulations
-n_simulations = 600
+n_simulations = 5
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -92,13 +92,13 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = False
+SPMO_Methods = True
 
-SAW = False
+SAW = True
 
-WPM = False
+WPM = True
 
-TOPSIS = False
+TOPSIS = True
 
 Fuzzy = False
 
@@ -106,7 +106,7 @@ RMSE = True
 
 TOPSIS_NN = False
 
-RMSE_RL_NN = True
+RMSE_RL_NN = False
 # ============================================================================================
 
 
@@ -1007,7 +1007,9 @@ def plot_results():
     
     
     # Safe RMSE RL Model
-    nn_rl_rmse.saveModel()
+    if RMSE_RL_NN == True: 
+        nn_rl_rmse.saveModel()
+        nn_rl_rmse.saveData()
     
     # ==================================================== Start - RMSE Analisys ====================================================
     
@@ -1096,9 +1098,9 @@ def plot_results():
             
         rsme_final_results.append(rsme_list_results)
     
-    #print("========================================================================================================================")
-    #print(rsme_final_results)
-    #print("========================================================================================================================")
+    print("========================================================================================================================")
+    print(rsme_final_results)
+    print("========================================================================================================================")
 
     i = 0
     for sum_result_list in rsme_final_results:
@@ -1108,9 +1110,9 @@ def plot_results():
             j = j + 1
         i = i + 1
         
-    #print("========================================================================================================================")
-    #print(rsme_final_results)
-    #print("========================================================================================================================")
+    print("========================================================================================================================")
+    print(rsme_final_results)
+    print("========================================================================================================================")
     
     
     results_sim_sum = [0] * len(rsme_final_results[0])
@@ -1371,7 +1373,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n) # model_name="RMSE_RL_14inps_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, save_records=True, csv_file_name="NN_RL_RMESE_8inps.csv", model_name="RMSE_RL_14inps_32_16.keras") # model_name="RMSE_RL_14inps_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 

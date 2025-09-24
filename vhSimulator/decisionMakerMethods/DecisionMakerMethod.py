@@ -39,6 +39,9 @@ class DecisionMakerMethod:
                 #print(self.inputs)
                 #print("==================================== '' ====================================")
             else:
+                for input in inputs:
+                    input['Delay'] = 1.2
+                    input['Jitter'] = 0.6
                 self.inputs = inputs
         else:
             self.inputs = inputs
