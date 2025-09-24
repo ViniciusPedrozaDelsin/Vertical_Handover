@@ -28,6 +28,7 @@ class MPMO_RMSE(DMM):
             self.output = self.makeDecisionTimeToTrigger()
         else:
             self.output = self.decisionProcedure()
+            
         self.old_decision = self.output['Network']
         return self.output
     
@@ -70,9 +71,7 @@ class MPMO_RMSE(DMM):
             j = j + 1
 
         return benchmark_dict
-    
-    def normalizeInputs(self):
-        pass
+        
     
     def calculateRMSE(self):
         benchmark_parameters = self.getBenchmarkParameters()
@@ -90,15 +89,22 @@ class MPMO_RMSE(DMM):
             parm_dict[attribute] = []
             for abs_input in abs_inputs:
                 parm_dict[attribute].append(abs_input[attribute])
-        e = 0.000000001
+
         for k, v in parm_dict.items():
-            new_value = [(x-min(v))/((max(v)-min(v)) + e) for x in v]
+            if max(v) != min(v):
+                new_value = [((x)/(max(v)-min(v))) for x in v]
+                #print(new_value)
+            else:
+                new_value = [0] * len(v)
+                #print(f"Else: {new_value}")
             parm_dict[k] = new_value
+
         # Transpose the dictionary
         transposed = {
             str(i): [parm_dict[key][i] for key in parm_dict]
             for i in range(len(next(iter(parm_dict.values()))))
         }
+
         rmse_list = []
         n_parm = 0
         for k, v in transposed.items():
@@ -108,10 +114,14 @@ class MPMO_RMSE(DMM):
                 sum_value = sum_value + (self.weights[i] * (value**2))
                 i = i + 1
             rmse_list.append(sum_value)
-            n_parm = len(v)
-        final_rmse_list = [(x/n_parm)**(1/2) for x in rmse_list]
+
+        final_rmse_list = [(x)**(1/2) for x in rmse_list]
         
+        #print("============ MPMO RMSE =============")
+        #print(f"- MPMO RMSE List: {final_rmse_list}")
         min_index = final_rmse_list.index(min(final_rmse_list))
+        #print(f"- MPMO RMSE Output: {min_index}")
+        #print("====================================")
         output = self.inputs[min_index]
         
         # Hysteresis
