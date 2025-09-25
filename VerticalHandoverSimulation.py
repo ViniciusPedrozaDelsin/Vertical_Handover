@@ -36,16 +36,16 @@ dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 3
+n = 500
 
 # Activate Graphical Interface
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = True
+verbose = False
 
 # Number of simulations
-n_simulations = 2
+n_simulations = 50
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -65,6 +65,7 @@ fading = "Rician"
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
 weights = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
+weights_total_sum = 1
 directions = [1, 1, 1, 0, 0, 0, 1]
 lockin_percentage = 0.03
 tt_trigger = 3
@@ -90,7 +91,7 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = False
+SPMO_Methods = True
 
 SAW = True
 
@@ -98,7 +99,7 @@ WPM = True
 
 TOPSIS = True
 
-Fuzzy = False
+Fuzzy = True
 
 RMSE = True
 
@@ -919,7 +920,7 @@ def performe_analysis():
 
 
 def plot_results():
-    global final_results, analyzed_parameters, indicators_results, iter_x_simu
+    global final_results, analyzed_parameters, weights_total_sum, indicators_results, iter_x_simu
     analyzed_parameters.append("Handover")
     
     # Initialize aggregation storage
@@ -1051,9 +1052,6 @@ def plot_results():
         cleaned_data.append(new_group)   
     simulations = cleaned_data
     
-    print("================= Simulations ==================")
-    print(simulations)
-    print("================================================")
 
     i = 0
     for sim in simulations:
@@ -1063,18 +1061,14 @@ def plot_results():
                 if param != 'Algorithm':
                     k = 0
                     for value in values_list:
-                        if simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k] == 0:
+                        if simulations_aux_max[i][param][k] == 0:
                             simulations[i][j][param][k] = 0
                         else:
-                            #simulations[i][j][param][k] = (simulations[i][j][param][k] - simulations_aux_min[i][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
-                            simulations[i][j][param][k] = (simulations[i][j][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
+                            simulations[i][j][param][k] = (simulations[i][j][param][k]) / (simulations_aux_max[i][param][k])
                         k = k + 1
             j = j + 1
         i = i + 1
 
-    print("=============== Simulations - 2 ================")
-    print(simulations)
-    print("================================================")
     
     rmse_simulations = []
     for sim in simulations:
@@ -1094,7 +1088,7 @@ def plot_results():
     for rmse_simu in rmse_simulations:
         rsme_list_results = []
         for algo in rmse_simu:
-            rmse_results = [(x / (len(simulations[0][0])-1))**(1/2) for x in algo]
+            rmse_results = [(x / weights_total_sum)**(1/2) for x in algo]
             rsme_list_results.append(rmse_results)
             
         rsme_final_results.append(rsme_list_results)
