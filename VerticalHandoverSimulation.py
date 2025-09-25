@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 50
+n_simulations = 80
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -106,7 +106,7 @@ RMSE = True
 
 TOPSIS_NN = False
 
-RMSE_RL_NN = False
+RMSE_RL_NN = True
 # ============================================================================================
 
 
@@ -1070,7 +1070,8 @@ def plot_results():
                         if simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k] == 0:
                             simulations[i][j][param][k] = 0
                         else:
-                            simulations[i][j][param][k] = (simulations[i][j][param][k] - simulations_aux_min[i][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
+                            #simulations[i][j][param][k] = (simulations[i][j][param][k] - simulations_aux_min[i][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
+                            simulations[i][j][param][k] = (simulations[i][j][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
                         k = k + 1
             j = j + 1
         i = i + 1
@@ -1098,9 +1099,9 @@ def plot_results():
             
         rsme_final_results.append(rsme_list_results)
     
-    print("========================================================================================================================")
-    print(rsme_final_results)
-    print("========================================================================================================================")
+    #print("========================================================================================================================")
+    #print(rsme_final_results)
+    #print("========================================================================================================================")
 
     i = 0
     for sum_result_list in rsme_final_results:
@@ -1110,9 +1111,9 @@ def plot_results():
             j = j + 1
         i = i + 1
         
-    print("========================================================================================================================")
-    print(rsme_final_results)
-    print("========================================================================================================================")
+    #print("========================================================================================================================")
+    #print(rsme_final_results)
+    #print("========================================================================================================================")
     
     
     results_sim_sum = [0] * len(rsme_final_results[0])
@@ -1373,7 +1374,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, save_records=True, csv_file_name="NN_RL_RMESE_8inps.csv", model_name="RMSE_RL_14inps_32_16.keras") # model_name="RMSE_RL_14inps_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, save_records=True, csv_file_name="NN_RL_RMESE_8inps.csv", model_name="RMSE_RL_14inps_32_64_32_16.keras") # model_name="RMSE_RL_14inps_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 

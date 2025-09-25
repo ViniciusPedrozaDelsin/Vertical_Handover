@@ -12,15 +12,15 @@ class NN_RL_RMSE(DMM):
         self.attributes = attributes
         
         # NN RL Variables
-        self.gamma = 0.9
+        self.gamma = 1
         self.epsilon = 0
         self.epsilon_min = 0
         self.epsilon_decay = 0.995
         self.batch_size = 32
-        self.window_size = 5
+        self.window_size = 10
         self.memory_lenght = 8192
         self.memory = deque(maxlen=self.memory_lenght)
-        self.mem_warmup_steps = 1024
+        self.mem_warmup_steps = 2048
         self.train_counter = 0
         if model_name == None:
             self.model = self.modelBuild(14, 1)
@@ -113,9 +113,9 @@ class NN_RL_RMSE(DMM):
     def calculateReward(self, normalized_choice):
         reward = (((normalized_choice['RSSI']**2) + (normalized_choice['SNR']**2) + (normalized_choice['BER']**2) + (normalized_choice['FEC']**2) + (normalized_choice['Throughput']**2) + (normalized_choice['PC']**2) + (normalized_choice['MC']**2) + (normalized_choice['HC']**2) + (normalized_choice['Delay']**2) + (normalized_choice['Jitter']**2))/10)**(1/2)
         self.reward_sum += reward
-        print("========= NN RL RMSE ========")
-        print(f"- NN RL RMSE Reward {reward}")
-        print("=============================")
+        #print("========= NN RL RMSE ========")
+        #print(f"- NN RL RMSE Reward {reward}")
+        #print("=============================")
         return -reward
         
     def normalizeInputs(self):
@@ -213,7 +213,8 @@ class NN_RL_RMSE(DMM):
             self.recordData(inpt_list[max_index], reward)
 
         self.memory.append((inpt_list[max_index], reward))
-        if np.random.rand() > 0.50:
+
+        if np.random.rand() > 0.5:
             self.modelTrain()
         
         return self.inputs[max_index]
@@ -222,18 +223,18 @@ class NN_RL_RMSE(DMM):
         model = tf.keras.Sequential([
             layers.Input(shape=(n_inputs,)),
 
-            layers.Dense(16, activation='relu'),
+            layers.Dense(32, activation='relu'),
             layers.BatchNormalization(),
+
+            layers.Dense(64, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.25),
 
             layers.Dense(32, activation='relu'),
             layers.BatchNormalization(),
             layers.Dropout(0.25),
 
             layers.Dense(16, activation='relu'),
-            layers.BatchNormalization(),
-            #layers.Dropout(0.25),
-
-            layers.Dense(8, activation='relu'),
             layers.BatchNormalization(),
 
             layers.Dense(n_outputs, activation='linear')
@@ -258,12 +259,12 @@ class NN_RL_RMSE(DMM):
         if len(self.memory) < self.mem_warmup_steps:
             return
 
-        if self.train_counter < 100:
+        if self.train_counter < 150:
             times = 1
-        elif self.train_counter >= 100 and self.train_counter < 200:
-            times = 1
+        elif self.train_counter >= 150 and self.train_counter < 200:
+            times = 2
         elif self.train_counter >= 200 and self.train_counter < 250:
-            times = 1
+            times = 2
         else:
             times = 2
             
@@ -295,5 +296,5 @@ class NN_RL_RMSE(DMM):
     
     def saveModel(self):
         #self.model.save(self.model_name)
-        self.model.save("RMSE_RL_14inps_32_16.keras")
+        self.model.save("RMSE_RL_14inps_32_64_32_16.keras")
         print(f"Reward Sum: {self.reward_sum}")
