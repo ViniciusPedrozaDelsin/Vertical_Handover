@@ -1,6 +1,6 @@
 from .DecisionMakerMethod import DecisionMakerMethod as DMM
 import tensorflow as tf
-from tensorflow.keras import layers, Model, Input
+from tensorflow.keras import layers
 from collections import deque
 import random
 import numpy as np
@@ -12,18 +12,18 @@ class NN_RL_RMSE(DMM):
         self.attributes = attributes
         
         # NN RL Variables
-        self.gamma = 0.9
+        self.gamma = 1
         self.epsilon = 0
         self.epsilon_min = 0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
-        self.window_size = 15
+        self.window_size = 10
         self.memory_lenght = 8192
         self.memory = deque(maxlen=self.memory_lenght)
         self.mem_warmup_steps = 2048
         self.train_counter = 0
         if model_name == None:
-            self.model = self.modelBuild(8, 6, 1)
+            self.model = self.modelBuild(14, 1)
         else:
             self.model = tf.keras.models.load_model(model_name)
         self.reward_sum = 0
@@ -162,7 +162,7 @@ class NN_RL_RMSE(DMM):
     def RMSE_RL(self, normalized_inputs):
         
         # Encode Network Protocol
-        protocol_list_dict = {'WiFi-2.4GHz': 1, 'WiFi-5GHz': 2, 'NB-IoT': 3, 'LoRa-868': 4, 'LTE-4G': 5, 'WiMax': 6}
+        protocol_list = ['WiFi-2.4GHz', 'WiFi-5GHz', 'NB-IoT', 'LoRa-868', 'LTE-4G', 'WiMax']
         inpt_list = []
 
         predict_list = []
@@ -175,11 +175,13 @@ class NN_RL_RMSE(DMM):
             del inp['Jitter']
             del inp['Distance']
             
-            # Encoding Networks Protocol - Embedding Vector
+            # Encoding Networks Protocol
             protocol_encoded_dict = {}
-            for prot, number in protocol_list_dict.items():
-                if inp['Protocol'] == prot:
-                    protocol_encoded_dict['Protocol'] = number
+            for protocol_type in protocol_list:
+                if protocol_type == inp['Protocol']:
+                    protocol_encoded_dict[protocol_type] = 1
+                else:
+                    protocol_encoded_dict[protocol_type] = 0
             del inp['Protocol']
             
            
@@ -202,7 +204,7 @@ class NN_RL_RMSE(DMM):
             for key, value in new_inp.items():
                 params.append(value)
             
-            prediction = self.modelPrediction(params[0], params[1:])
+            prediction = self.modelPrediction(params)
             predict_list.append(prediction)
         
         #print("====================")
@@ -224,61 +226,39 @@ class NN_RL_RMSE(DMM):
         
         self.memory.append((inpt_list[max_index], reward))
 
-        if np.random.rand() > 0.50:
+        if np.random.rand() > 0.5:
             self.modelTrain()
         
         return self.inputs[max_index]
     
-    def modelBuild(self, n_inputs=1, n_protocols=1, n_outputs=1):
+    def modelBuild(self, n_inputs=1, n_outputs=1):
+        model = tf.keras.Sequential([
+            layers.Input(shape=(n_inputs,)),
 
-        embedding_dim = 4
+            layers.Dense(32, activation='relu'),
+            layers.BatchNormalization(),
 
-        protocol = Input(shape=(1,), dtype='int32', name='protocol')
+            layers.Dense(64, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.25),
 
-        # numeric input: e.g. 8 measured features + 2 protocol stats = 10 numeric features
-        inputs = Input(shape=(n_inputs,), dtype='float32', name='inputs')
+            layers.Dense(32, activation='relu'),
+            layers.BatchNormalization(),
+            layers.Dropout(0.25),
 
-        # embedding layer (learnable)
-        emb = layers.Embedding(input_dim=n_protocols + 1,  # +1 for possible unknown index 0
-                               output_dim=embedding_dim,
-                               embeddings_initializer='glorot_uniform',
-                               name='protocol_embedding')(protocol)
-        emb = layers.Flatten()(emb)
+            layers.Dense(16, activation='relu'),
+            layers.BatchNormalization(),
 
-        # combine
-        x = layers.Concatenate()([emb, inputs])   # shape = embedding_dim + n_numeric
-
-        # MLP head (64 -> 128 -> 64 -> 32)
-        x = layers.Dense(32, activation=None)(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Activation('relu')(x)
-
-        x = layers.Dense(64, activation=None)(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Activation('relu')(x)
-        x = layers.Dropout(0.25)(x)
-
-        x = layers.Dense(32, activation=None)(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Activation('relu')(x)
-        x = layers.Dropout(0.25)(x)
-
-        x = layers.Dense(16, activation=None)(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Activation('relu')(x)
-
-        out = layers.Dense(1, activation='linear', name='q_out')(x)
-
-        model = Model(inputs=[protocol, inputs], outputs=out)
-        optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4, clipnorm=1.0)
-        model.compile(optimizer=optimizer, loss=tf.keras.losses.Huber())
+            layers.Dense(n_outputs, activation='linear')
+        ])
+        model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0003), loss='mse')
         return model
     
-    def modelPrediction(self, protocol_inputs, model_inputs):
+    def modelPrediction(self, model_inputs):
         if np.random.rand() < self.epsilon:
             prediction = [[np.random.rand()]]
         else:
-            X = [np.array([protocol_inputs]), np.array([model_inputs])]
+            X = np.array([model_inputs])
             prediction = self.model.predict(X, verbose=0)
         return prediction
     
@@ -313,17 +293,8 @@ class NN_RL_RMSE(DMM):
                         target += (self.memory[index+i][1]) * (self.gamma**i)
                     X.append(list(self.memory[index][0].values()))
                     y.append(target)
-
-            # List of the Protocols
-            protocol_num_list = [sublist[0] for sublist in X]
-
-            # List of the Parameters
-            parameters_list = [sublist[1:] for sublist in X]
-
-            # Set the learning rate to 0.00001
-            self.model.optimizer.learning_rate.assign(1e-5)
-
-            self.model.fit([np.array(protocol_num_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
+            
+            self.model.fit(np.array(X), np.array(y), epochs=1, verbose=0)
 
             # Decay epsilon
             if self.epsilon > self.epsilon_min:
@@ -337,5 +308,5 @@ class NN_RL_RMSE(DMM):
     
     def saveModel(self):
         #self.model.save(self.model_name)
-        self.model.save("RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras")
+        self.model.save("RMSE_RL_14inps_32_64_32_16.keras")
         print(f"Reward Sum: {self.reward_sum}")

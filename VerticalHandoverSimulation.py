@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 80
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -65,6 +65,7 @@ fading = "Rician"
 # Performance Analysis
 analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC', 'Delay', 'Jitter', 'HC']
 weights = [1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]
+weights_total_sum = 1
 directions = [1, 1, 1, 0, 0, 0, 1, 0, 0, 0]
 
 # Improvement Techniques
@@ -976,7 +977,7 @@ def performe_analysis():
 
 
 def plot_results():
-    global final_results, analyzed_parameters, indicators_results, iter_x_simu
+    global final_results, analyzed_parameters, weights_total_sum, indicators_results, iter_x_simu
     analyzed_parameters.append("Handover")
     
     # Initialize aggregation storage
@@ -1009,10 +1010,9 @@ def plot_results():
     # Safe RMSE RL Model
     if RMSE_RL_NN == True: 
         nn_rl_rmse.saveModel()
-        nn_rl_rmse.saveData()
     
     # ==================================================== Start - RMSE Analisys ====================================================
-    
+
     simulations = indicators_results
     simulations_aux_max = []
     simulations_aux_min = []
@@ -1059,6 +1059,7 @@ def plot_results():
         cleaned_data.append(new_group)   
     simulations = cleaned_data
     
+
     i = 0
     for sim in simulations:
         j = 0
@@ -1067,14 +1068,14 @@ def plot_results():
                 if param != 'Algorithm':
                     k = 0
                     for value in values_list:
-                        if simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k] == 0:
+                        if simulations_aux_max[i][param][k] == 0:
                             simulations[i][j][param][k] = 0
                         else:
-                            #simulations[i][j][param][k] = (simulations[i][j][param][k] - simulations_aux_min[i][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
-                            simulations[i][j][param][k] = (simulations[i][j][param][k]) / (simulations_aux_max[i][param][k] - simulations_aux_min[i][param][k])
+                            simulations[i][j][param][k] = (simulations[i][j][param][k]) / (simulations_aux_max[i][param][k])
                         k = k + 1
             j = j + 1
         i = i + 1
+
     
     rmse_simulations = []
     for sim in simulations:
@@ -1094,15 +1095,11 @@ def plot_results():
     for rmse_simu in rmse_simulations:
         rsme_list_results = []
         for algo in rmse_simu:
-            rmse_results = [(x / (len(simulations[0][0])-1))**(1/2) for x in algo]
+            rmse_results = [(x / weights_total_sum)**(1/2) for x in algo]
             rsme_list_results.append(rmse_results)
             
         rsme_final_results.append(rsme_list_results)
-    
-    #print("========================================================================================================================")
-    #print(rsme_final_results)
-    #print("========================================================================================================================")
-
+        
     i = 0
     for sum_result_list in rsme_final_results:
         j = 0
@@ -1110,12 +1107,7 @@ def plot_results():
             rsme_final_results[i][j] = sum(rsme_final_results[i][j])
             j = j + 1
         i = i + 1
-        
-    #print("========================================================================================================================")
-    #print(rsme_final_results)
-    #print("========================================================================================================================")
-    
-    
+
     results_sim_sum = [0] * len(rsme_final_results[0])
     for simu_sum in rsme_final_results:
         j = 0
@@ -1124,17 +1116,18 @@ def plot_results():
             j = j + 1
     
     print("========================================================================================================================")
-    print(f"RMSE of each Decision Maker: {results_sim_sum}")
+    print(results_sim_sum)
 
     x_min = min(results_sim_sum)
     x_max = max(results_sim_sum)
     rmse_per_index = [(x - x_min) / (x_max - x_min) for x in results_sim_sum]
 
     print("========================================================================================================================")
-    print(f"RMSE of each Decision Maker Normalized: {rmse_per_index}")
+    print(f"RMSE of each Decision Maker: {rmse_per_index}")
     print("========================================================================================================================")
     print(f"Best option using RMSE: {rmse_per_index.index(min(rmse_per_index))}")
     print("========================================================================================================================")
+
     # ===================================================== End - RMSE Analisys =====================================================
     
     
@@ -1374,7 +1367,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, save_records=True, csv_file_name="NN_RL_RMESE_8inps.csv", model_name="RMSE_RL_14inps_32_64_32_16.keras") # model_name="RMSE_RL_14inps_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras") # model_name="RMSE_RL_14inps_32_64_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
