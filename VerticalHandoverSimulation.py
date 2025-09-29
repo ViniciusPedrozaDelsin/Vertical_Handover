@@ -36,7 +36,7 @@ dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 500
+n = 3000
 
 # Activate Graphical Interface
 GUI = False
@@ -45,7 +45,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 50
+n_simulations = 500
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -67,9 +67,9 @@ analyzed_parameters = ['RSSI', 'SNR', 'Throughput', 'PC', 'MC', 'BER', 'FEC']
 weights = [1/7, 1/7, 1/7, 1/7, 1/7, 1/7, 1/7]
 weights_total_sum = 1
 directions = [1, 1, 1, 0, 0, 0, 1]
-lockin_percentage = 0.03
-tt_trigger = 3
-hyst_percentage = 0.3
+lockin_percentage = 0.05
+tt_trigger = 5
+hyst_percentage = 0.5
 
 # Results
 final_results = []
@@ -91,7 +91,7 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = True
+SPMO_Methods = False
 
 SAW = True
 
@@ -101,7 +101,7 @@ TOPSIS = True
 
 Fuzzy = True
 
-RMSE = True
+RMSE = False
 
 TOPSIS_NN = False
 # ============================================================================================
@@ -110,11 +110,11 @@ TOPSIS_NN = False
 
 
 # ===================================== Improviment Techniques ======================================
-impTech_hyst = False
+impTech_hyst = True
 
-impTech_lockin = False
+impTech_lockin = True
 
-impTech_TTT = False
+impTech_TTT = True
 # ============================================================================================
 
 
@@ -1004,7 +1004,7 @@ def plot_results():
         k: [(v_i-min(v)) / (max(v)-min(v)) for v_i in v]
         for k, v in ind_dict.items()
     }
-    print(normalized_rsme)
+    #print(normalized_rsme)
     
     simulations = indicators_results
     simulations_aux_max = []
@@ -1184,7 +1184,7 @@ def plot_results():
     if plots == True:
         # Organize results by algorithm
         r_dict = {r['Algorithm']: r for r in results}
-        print(f"{r_dict}")
+        #print(f"{r_dict}")
 
         num_params = len(analyzed_parameters)
 
@@ -1199,13 +1199,13 @@ def plot_results():
             num_rows = math.ceil(num_params_group / num_cols)
             
             # 1 - 3 columns
-            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
+            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
             
             # 4 - 10 columns
             #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
             
             # 11 - 17 columns
-            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 3 * num_rows), constrained_layout=True)
+            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 3 * num_rows), constrained_layout=True)
 
             axes = axes.flatten() if num_params_group > 1 else [axes]
 
@@ -1224,20 +1224,24 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["grey", "grey", "grey", "blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS + IMPROVEMENT TECHENIQUES
-                #hatches = ['', '', '', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '']
+                #hatches = ['', '', '', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '']
                 #bars = ax.bar(labels, values, color=["silver", "silver", "silver", "gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "green", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE + IMPROVEMENT TECHENIQUES
-                #hatches = ['', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '']
+                #hatches = ['', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '']
                 #bars = ax.bar(labels, values, color=["gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
+                
+                # 4 METHODS + IMPROVEMENT TECHENIQUES
+                hatches = ['', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '', '|', '+', 'x', '']
+                bars = ax.bar(labels, values, color=["gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE
                 #hatches = ['', '', '', '', '', '']
                 #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # TOPSIS + TOPSIS NN
-                hatches = ['', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "black"], edgecolor='black', linewidth=1.2)
                 
                 # Apply hatch patterns to each bar
                 for bar, hatch in zip(bars, hatches):
