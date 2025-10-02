@@ -26,7 +26,8 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Device Average Velocity
-device_velocity = 10
+#device_velocity = random.randint(10, 20) 
+device_velocity = 15 #10
 
 # Interval between iterations
 iter_interval = 1
@@ -45,7 +46,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 20
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -78,7 +79,8 @@ final_results = []
 indicators_results = []
 
 # Random Walk
-random_walk_times = 20
+#random_walk_times = random.randint(15, 30)
+random_walk_times = 30
 
 # DO NOT CHANGE
 random_direction_counter = 0
@@ -348,7 +350,7 @@ def update_position(device):
                 p_nn_topsis.clean_storaged_QoS()
             if RMSE_RL_NN == True:
                 nn_rl_rmse.resetParameters()
-                #nn_rl_rmse.resetMemory()
+                nn_rl_rmse.resetMemoryVelocity()
                 p_nn_rl_rmse.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             p_worst_scenario.clean_storaged_QoS()
@@ -1008,7 +1010,7 @@ def plot_results():
     
     
     # Safe RMSE RL Model
-    if RMSE_RL_NN == True: 
+    if RMSE_RL_NN == True:
         nn_rl_rmse.saveModel()
     
     # ==================================================== Start - RMSE Analisys ====================================================
@@ -1367,7 +1369,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras") # model_name="RMSE_RL_14inps_32_64_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_19inps_VELOCITY_EMBEDDING_W15_G09_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 

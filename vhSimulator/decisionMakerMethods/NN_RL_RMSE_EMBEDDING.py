@@ -14,7 +14,7 @@ class NN_RL_RMSE(DMM):
         # NN RL Variables
         self.gamma = 0.9
         self.epsilon = 0
-        self.epsilon_min = 0.0
+        self.epsilon_min = 0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
         self.window_size = 15
@@ -23,12 +23,10 @@ class NN_RL_RMSE(DMM):
         self.mem_warmup_steps = 2048
         self.train_counter = 0
         if model_name == None:
-            self.model = self.modelBuild(8, 1, 5, 1)
+            self.model = self.modelBuild(8, 6, 1)
         else:
             self.model = tf.keras.models.load_model(model_name)
         self.reward_sum = 0
-        self.memory_velocity = {}
-
 
         '''# --- Target network (same architecture) ---
         self.target_model = tf.keras.models.clone_model(self.model)
@@ -94,9 +92,6 @@ class NN_RL_RMSE(DMM):
     
     def resetMemory(self):
         self.memory.clear()
-
-    def resetMemoryVelocity(self):
-        self.memory_velocity.clear()
     
     def calculateReward(self, normalized_choice):
         reward = (((normalized_choice['RSSI']**2) + (normalized_choice['SNR']**2) + (normalized_choice['BER']**2) + (normalized_choice['FEC']**2) + (normalized_choice['Throughput']**2) + (normalized_choice['PC']**2) + (normalized_choice['MC']**2) + (normalized_choice['HC']**2) + (normalized_choice['Delay']**2) + (normalized_choice['Jitter']**2))/10)**(1/2)
@@ -172,30 +167,13 @@ class NN_RL_RMSE(DMM):
 
         predict_list = []
         for inp in normalized_inputs:
-
+            
             # Deleting useless informations
+            del inp['Network']
             del inp['Status']
             del inp['Delay']
             del inp['Jitter']
-
-            if inp['Network'] not in self.memory_velocity:
-                self.memory_velocity[inp['Network']] = deque(maxlen=6)
-
-            # Add Distance into memory
-            self.memory_velocity[inp['Network']].append(inp['Distance'])
-
-            # Calculate Velocity
-            if len(self.memory_velocity[inp['Network']]) == 6:
-                velocity_dict = {f'VEL_{i+1}': ((self.memory_velocity[inp['Network']][i+1] - self.memory_velocity[inp['Network']][i]) / self.memory_velocity[inp['Network']][i+1]) * (1000) for i in range(len(self.memory_velocity[inp['Network']])-1)}
-            else:
-                velocity_dict = {'VEL_1': 0, 'VEL_2': 0, 'VEL_3': 0, 'VEL_4': 0, 'VEL_5': 0}
-            #print("==========================================")
-            #print(self.memory_velocity)
-            #print(velocity_dict)
-            #print("==========================================")
-
             del inp['Distance']
-            del inp['Network']
             
             # Encoding Networks Protocol - Embedding Vector
             protocol_encoded_dict = {}
@@ -216,17 +194,15 @@ class NN_RL_RMSE(DMM):
                 'MC': inp['MC'],
                 'HC': inp['HC']
             }
-
-
-            new_inp = protocol_encoded_dict | velocity_dict
-            new_inp = new_inp | reordered
+            
+            new_inp = protocol_encoded_dict | reordered
             inpt_list.append(new_inp)
 
             params = []
             for key, value in new_inp.items():
                 params.append(value)
             
-            prediction = self.modelPrediction(params[0], params[1:6], params[6:])
+            prediction = self.modelPrediction(params[0], params[1:])
             predict_list.append(prediction)
         
         #print("====================")
@@ -253,22 +229,21 @@ class NN_RL_RMSE(DMM):
         
         return self.inputs[max_index]
     
-    def modelBuild(self, n_inputs=1, n_protocols=1, n_velocities=1, n_outputs=1):
+    def modelBuild(self, n_inputs=1, n_protocols=1, n_outputs=1):
 
-        protocol = Input(shape=(n_protocols,), dtype='int32', name='protocol')
-        velocities = Input(shape=(n_velocities,), dtype='float32', name='velocities')
+        embedding_dim = 4
+
+        protocol = Input(shape=(1,), dtype='int32', name='protocol')
+
+        # numeric input: e.g. 8 measured features + 2 protocol stats = 10 numeric features
         inputs = Input(shape=(n_inputs,), dtype='float32', name='inputs')
 
-        # Embedding layer
-        emb = layers.Embedding(input_dim=6, output_dim=4, embeddings_initializer='glorot_uniform', name='protocol_embedding')(protocol)
+        # embedding layer (learnable)
+        emb = layers.Embedding(input_dim=n_protocols + 1, output_dim=embedding_dim, embeddings_initializer='glorot_uniform', name='protocol_embedding')(protocol)
         emb = layers.Flatten()(emb)
 
-        vel_seq = layers.Reshape((n_velocities, 1))(velocities)
-        lstm_out = layers.LSTM(32, activation='tanh')(vel_seq)
-        lstm_scalar = layers.Dense(1, activation='tanh', name='lstm_scalar')(lstm_out)  
-
-        # Combine Inputs
-        x = layers.Concatenate()([emb, lstm_scalar, inputs])
+        # combine
+        x = layers.Concatenate()([emb, inputs])
 
         # MLP head (64 -> 128 -> 64 -> 32)
         x = layers.Dense(32, activation=None)(x)
@@ -291,16 +266,16 @@ class NN_RL_RMSE(DMM):
 
         out = layers.Dense(1, activation='linear', name='q_out')(x)
 
-        model = Model(inputs=[protocol, velocities, inputs], outputs=out)
+        model = Model(inputs=[protocol, inputs], outputs=out)
         optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4, clipnorm=1.0)
         model.compile(optimizer=optimizer, loss=tf.keras.losses.Huber())
         return model
     
-    def modelPrediction(self, protocol_inputs, velocity_inputs, model_inputs):
+    def modelPrediction(self, protocol_inputs, model_inputs):
         if np.random.rand() < self.epsilon:
             prediction = [[np.random.rand()]]
         else:
-            X = [np.array([protocol_inputs]), np.array([velocity_inputs]), np.array([model_inputs])]
+            X = [np.array([protocol_inputs]), np.array([model_inputs])]
             prediction = self.model.predict(X, verbose=0)
         return prediction
     
@@ -316,11 +291,11 @@ class NN_RL_RMSE(DMM):
         if self.train_counter < 150:
             times = 1
         elif self.train_counter >= 150 and self.train_counter < 200:
-            times = 2
+            times = 1
         elif self.train_counter >= 200 and self.train_counter < 250:
-            times = 3
+            times = 2
         else:
-            times = 5
+            times = 3
             
         for _ in range(times):
             minibatch = random.sample(list(self.memory)[:-self.window_size], self.batch_size)
@@ -339,17 +314,13 @@ class NN_RL_RMSE(DMM):
             # List of the Protocols
             protocol_num_list = [sublist[0] for sublist in X]
 
-            # List of the Velocities
-            velocities_list = [sublist[1:6] for sublist in X]
-
             # List of the Parameters
-            parameters_list = [sublist[6:] for sublist in X]
+            parameters_list = [sublist[1:] for sublist in X]
 
             # Set the learning rate to 0.00001
-            if self.train_counter > 100:
-                self.model.optimizer.learning_rate.assign(1e-5)
+            self.model.optimizer.learning_rate.assign(1e-5)
 
-            self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
+            self.model.fit([np.array(protocol_num_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
 
             # Decay epsilon
             if self.epsilon > self.epsilon_min:
@@ -363,5 +334,5 @@ class NN_RL_RMSE(DMM):
     
     def saveModel(self):
         #self.model.save(self.model_name)
-        self.model.save("RMSE_RL_19inps_VELOCITY_EMBEDDING_W15_G09_32_64_32_16.keras")
+        self.model.save("RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras")
         print(f"Reward Sum: {self.reward_sum}")
