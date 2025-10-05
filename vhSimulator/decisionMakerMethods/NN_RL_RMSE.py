@@ -227,7 +227,7 @@ class NN_RL_RMSE(DMM):
             for key, value in new_inp.items():
                 params.append(value)
             
-            prediction = self.modelPrediction(params[0], params[1:6], params[6:])
+            prediction = self.modelPrediction(params[0], params[1:self.memory_velocity_len], params[self.memory_velocity_len:])
             predict_list.append(prediction)
         
         #print("====================")
@@ -341,10 +341,10 @@ class NN_RL_RMSE(DMM):
             protocol_num_list = [sublist[0] for sublist in X]
 
             # List of the Velocities
-            velocities_list = [sublist[1:6] for sublist in X]
+            velocities_list = [sublist[1:self.memory_velocity_len] for sublist in X]
 
             # List of the Parameters
-            parameters_list = [sublist[6:] for sublist in X]
+            parameters_list = [sublist[self.memory_velocity_len:] for sublist in X]
 
             # Set the learning rate to 0.00001
             if self.train_counter > 100:
@@ -364,5 +364,5 @@ class NN_RL_RMSE(DMM):
     
     def saveModel(self):
         #self.model.save(self.model_name)
-        self.model.save("RMSE_RL_19inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras")
+        self.model.save("RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras")
         print(f"Reward Sum: {self.reward_sum}")

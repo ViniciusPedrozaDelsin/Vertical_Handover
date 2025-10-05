@@ -1369,7 +1369,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_19inps_VELOCITY_EMBEDDING_W15_G09_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_17inps_EMBEDDING_W10_G09_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
