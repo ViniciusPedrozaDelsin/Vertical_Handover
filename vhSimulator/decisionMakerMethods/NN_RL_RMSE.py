@@ -17,17 +17,18 @@ class NN_RL_RMSE(DMM):
         self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
-        self.window_size = 15
+        self.window_size = 10
         self.memory_lenght = 8192
         self.memory = deque(maxlen=self.memory_lenght)
         self.mem_warmup_steps = 2048
         self.train_counter = 0
+        self.memory_velocity = {}
+        self.memory_velocity_len = 4
         if model_name == None:
-            self.model = self.modelBuild(8, 1, 5, 1)
+            self.model = self.modelBuild(8, 1, self.memory_velocity_len-1, 1)
         else:
             self.model = tf.keras.models.load_model(model_name)
         self.reward_sum = 0
-        self.memory_velocity = {}
 
 
         '''# --- Target network (same architecture) ---
@@ -179,16 +180,16 @@ class NN_RL_RMSE(DMM):
             del inp['Jitter']
 
             if inp['Network'] not in self.memory_velocity:
-                self.memory_velocity[inp['Network']] = deque(maxlen=6)
+                self.memory_velocity[inp['Network']] = deque(maxlen=self.memory_velocity_len)
 
             # Add Distance into memory
             self.memory_velocity[inp['Network']].append(inp['Distance'])
 
             # Calculate Velocity
-            if len(self.memory_velocity[inp['Network']]) == 6:
-                velocity_dict = {f'VEL_{i+1}': ((self.memory_velocity[inp['Network']][i+1] - self.memory_velocity[inp['Network']][i]) / self.memory_velocity[inp['Network']][i+1]) * (1000) for i in range(len(self.memory_velocity[inp['Network']])-1)}
+            if len(self.memory_velocity[inp['Network']]) == self.memory_velocity_len:
+                velocity_dict = {f'VEL_{i+1}': ((self.memory_velocity[inp['Network']][i+1] - self.memory_velocity[inp['Network']][i]) / self.memory_velocity[inp['Network']][i+1]) * (100) for i in range(len(self.memory_velocity[inp['Network']])-1)}
             else:
-                velocity_dict = {'VEL_1': 0, 'VEL_2': 0, 'VEL_3': 0, 'VEL_4': 0, 'VEL_5': 0}
+                velocity_dict = {'VEL_1': 0, 'VEL_2': 0, 'VEL_3': 0}
             #print("==========================================")
             #print(self.memory_velocity)
             #print(velocity_dict)
@@ -264,7 +265,7 @@ class NN_RL_RMSE(DMM):
         emb = layers.Flatten()(emb)
 
         vel_seq = layers.Reshape((n_velocities, 1))(velocities)
-        lstm_out = layers.LSTM(32, activation='tanh')(vel_seq)
+        lstm_out = layers.LSTM(16, activation='tanh')(vel_seq)
         lstm_scalar = layers.Dense(1, activation='tanh', name='lstm_scalar')(lstm_out)  
 
         # Combine Inputs
@@ -363,5 +364,5 @@ class NN_RL_RMSE(DMM):
     
     def saveModel(self):
         #self.model.save(self.model_name)
-        self.model.save("RMSE_RL_19inps_VELOCITY_EMBEDDING_W15_G09_32_64_32_16.keras")
+        self.model.save("RMSE_RL_19inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras")
         print(f"Reward Sum: {self.reward_sum}")
