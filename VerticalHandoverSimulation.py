@@ -27,7 +27,7 @@ x, y = x_max/2, y_max/2
 
 # Device Average Velocity
 #device_velocity = random.randint(10, 20) 
-device_velocity = 15 #10
+device_velocity = 10 #10
 
 # Interval between iterations
 iter_interval = 1
@@ -80,7 +80,7 @@ indicators_results = []
 
 # Random Walk
 #random_walk_times = random.randint(15, 30)
-random_walk_times = 30
+random_walk_times = 20
 
 # DO NOT CHANGE
 random_direction_counter = 0
@@ -101,7 +101,7 @@ SAW = False
 
 WPM = False
 
-TOPSIS = True
+TOPSIS = False
 
 Fuzzy = False
 
@@ -1369,7 +1369,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_17inps_EMBEDDING_W10_G09_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 

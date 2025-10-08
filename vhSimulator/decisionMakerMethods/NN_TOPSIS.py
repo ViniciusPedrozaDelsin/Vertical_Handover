@@ -6,7 +6,7 @@ class NN_TOPSIS(DMM):
     def __init__(self, method_name, attributes, lockin_percentage=None, time_to_trigger=None, **kwargs):
         super().__init__(method_name, **kwargs)
         self.attributes = attributes
-        self.model = tf.keras.models.load_model("TOPSIS_NN_2.keras")
+        self.model = tf.keras.models.load_model("TOPSIS_NN_10inps.keras")
         
         # LockIn values
         self.lockin_reference = None

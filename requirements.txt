@@ -47,6 +47,7 @@ packaging==25.0
 pandas==2.3.1
 pillow==11.3.0
 protobuf==6.32.0
+pydot==4.0.1
 Pygments==2.19.2
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
