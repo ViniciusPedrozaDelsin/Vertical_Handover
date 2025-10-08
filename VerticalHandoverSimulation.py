@@ -27,7 +27,7 @@ x, y = x_max/2, y_max/2
 
 # Device Average Velocity
 #device_velocity = random.randint(10, 20) 
-device_velocity = 10 #10
+device_velocity = 10
 
 # Interval between iterations
 iter_interval = 1
@@ -36,7 +36,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 100
+n = 200
 j = 0
 
 # Activate Graphical Interface
@@ -46,13 +46,13 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 20
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
 
 # Plot Results
-plots = False
+plots = True
 
 # Predef Configs
 predef_conf = False
@@ -101,11 +101,11 @@ SAW = False
 
 WPM = False
 
-TOPSIS = False
+TOPSIS = True
 
 Fuzzy = False
 
-RMSE = True
+RMSE = False
 
 TOPSIS_NN = False
 
@@ -1011,7 +1011,8 @@ def plot_results():
     
     # Safe RMSE RL Model
     if RMSE_RL_NN == True:
-        nn_rl_rmse.saveModel()
+        pass
+        #nn_rl_rmse.saveModel()
     
     # ==================================================== Start - RMSE Analisys ====================================================
 
@@ -1137,6 +1138,63 @@ def plot_results():
     
     # ======================================================= Start - 3D Plot =======================================================
     if plots == True:
+
+        print("========================================================================================================================")
+        print("Indicators to Measure Deviation from a Benchmark")
+
+        # Initialize a dictionary to store the summed values
+        aggregated_results_rmse = {}
+        
+        # To use in 3D SSM
+        SSE_3D_Graph = {}
+
+        # Loop through each list in the indicators_results
+        #print(f"Indicator Results: {indicators_results}")
+        
+        #print(f"Indicators Results: {indicators_results}")
+        
+        for group in indicators_results:
+            for entry in group:
+                algorithm = entry['Algorithm']
+
+                if algorithm != 'Worst-Scenario':
+                    if algorithm not in aggregated_results_rmse:
+                        aggregated_results_rmse[algorithm] = {param: 0 for param in entry if param != 'Algorithm'}
+                    
+                    for param in entry:
+                        if param != 'Algorithm':
+                            aggregated_results_rmse[algorithm][param] += sum([x**2 for x in entry[param]])
+
+        
+        SSE_3D_Graph = aggregated_results_rmse
+        for agg in aggregated_results_rmse:
+            for parm in aggregated_results_rmse[agg]:
+                aggregated_results_rmse[agg][parm] = (aggregated_results_rmse[agg][parm] / iter_x_simu)**(1/2)
+        
+        
+        print(f"Aggregated results: {aggregated_results_rmse}")
+        
+        # Print the aggregated results
+        ind_dict = {}
+        for algorithm, values in aggregated_results_rmse.items():
+            for param, value in values.items():
+                ind_dict[param] = []
+                
+        for algorithm, values in aggregated_results_rmse.items():
+            print(f"Algorithm: {algorithm}")
+            for param, value in values.items():
+                ind_dict[param].append(value)
+                print(f"RMSE: {param}: {value}")
+            print("-" * 50)
+        
+        print("RMSE of the Normalized Results")
+        normalized_rsme = {
+            k: [(v_i-min(v)) / (max(v)-min(v)) for v_i in v]
+            for k, v in ind_dict.items()
+        }
+        print(normalized_rsme)
+
+
         ordered_algorithms = [algo for algo in SSE_3D_Graph]
 
         # Reorder parameters so 'Throughput' appears last
@@ -1194,7 +1252,7 @@ def plot_results():
     if plots == True:
         # Organize results by algorithm
         r_dict = {r['Algorithm']: r for r in results}
-        print(f"{r_dict}")
+        #print(f"{r_dict}")
 
         num_params = len(analyzed_parameters)
 
