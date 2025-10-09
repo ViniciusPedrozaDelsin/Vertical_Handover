@@ -92,15 +92,16 @@ class MPMO_SAW(DMM):
                     if value < max_min_parameter:
                         max_min_parameter = value
                 j = j + 1
-            
-            e = 0.000001
-            if max_min_parameter == 0:
-                max_min_parameter += e
                 
             for value in attribute_dict[parameter]:
-                new_value = value/max_min_parameter
-                if new_value > 1: new_value = 1/new_value
-                absolute_value = abs(new_value)
+                if max_min_parameter == 0 and value == 0 and self.directions[i] == False:
+                    absolute_value = 1
+                elif max_min_parameter == 0 and value != 0 and self.directions[i] == False:
+                    absolute_value = 0
+                else:
+                    new_value = value/max_min_parameter
+                    if new_value > 1: new_value = 1/new_value
+                    absolute_value = abs(new_value)
                 normalized_dict[parameter].append(absolute_value)
             i = i + 1
               

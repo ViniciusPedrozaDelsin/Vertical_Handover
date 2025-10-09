@@ -249,7 +249,7 @@ class NN_RL_RMSE(DMM):
         
         self.memory.append((inpt_list[max_index], reward))
 
-        if np.random.rand() > 1.0:
+        if np.random.rand() > 0.5:
             self.modelTrain()
         
         return self.inputs[max_index]
