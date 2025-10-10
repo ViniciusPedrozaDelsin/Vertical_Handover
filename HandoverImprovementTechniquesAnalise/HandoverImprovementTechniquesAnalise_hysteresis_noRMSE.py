@@ -26,10 +26,10 @@ rmse_increase = {
     'AVERAGE': average_rmse_values
 }
 
-saw_vh_reduction = [1, 0.5756097561, 0.4675925926, 0.4153846154, 0.3282828283, 0.3179487179, 0.2125603865, 0.1642512077, 0.09359605911, 0.08108108108, 0.0375]
-wpm_vh_reduction = [1, 0.6802030457, 0.6413043478, 0.5841584158, 0.5263157895, 0.5572916667, 0.4639175258, 0.4526315789, 0.3626943005, 0.3785310734, 0.2747747748]
-topsis_vh_reduction = [1, 0.5433789954, 0.4392523364, 0.3470319635, 0.1982758621, 0.1449275362, 0.06511627907, 0.04979253112, 0.0234741784, 0.03414634146, 0.03004291845]
-fuzzy_vh_reduction = [1, 0.5517241379, 0.4470588235, 0.3992395437, 0.3807531381, 0.3204633205, 0.2631578947, 0.258302583, 0.2377358491, 0.203125, 0.1849056604]
+saw_vh_reduction = [x * 100 for x in [1, 0.5756097561, 0.4675925926, 0.4153846154, 0.3282828283, 0.3179487179, 0.2125603865, 0.1642512077, 0.09359605911, 0.08108108108, 0.0375]]
+wpm_vh_reduction = [x * 100 for x in [1, 0.6802030457, 0.6413043478, 0.5841584158, 0.5263157895, 0.5572916667, 0.4639175258, 0.4526315789, 0.3626943005, 0.3785310734, 0.2747747748]]
+topsis_vh_reduction = [x * 100 for x in [1, 0.5433789954, 0.4392523364, 0.3470319635, 0.1982758621, 0.1449275362, 0.06511627907, 0.04979253112, 0.0234741784, 0.03414634146, 0.03004291845]]
+fuzzy_vh_reduction = [x * 100 for x in [1, 0.5517241379, 0.4470588235, 0.3992395437, 0.3807531381, 0.3204633205, 0.2631578947, 0.258302583, 0.2377358491, 0.203125, 0.1849056604]]
 average_vh_reduction = []
 for i in range(11):
     average_vh_reduction.append((saw_vh_reduction[i]+wpm_vh_reduction[i]+topsis_vh_reduction[i]+fuzzy_vh_reduction[i])/4)
@@ -45,12 +45,12 @@ handover_reduction = {
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharex=True)
 
-# First Graph: Handover Reduction
+# First Graph: Total Handover
 for algo in algorithms:
     axes[0].plot(hysteresis_values[algo], handover_reduction[algo], marker='o', label=algo)
-axes[0].set_title('Handover Reduction vs Hysteresis Margin')
+axes[0].set_title('Total Handover vs Hysteresis Margin')
 axes[0].set_xlabel('Hysteresis Margin (%)')
-axes[0].set_ylabel('Handover Reduction')
+axes[0].set_ylabel('Total Handover (%)')
 axes[0].grid(True)
 axes[0].legend()
 

@@ -26,10 +26,10 @@ rmse_increase = {
     'AVERAGE': average_rmse_values
 }
 
-saw_vh_reduction = [1, 0.3756097561, 0.2083333333, 0.1435897436, 0.101010101, 0.09743589744, 0.08212560386, 0.08212560386, 0.06403940887, 0.06486486486, 0.05]
-wpm_vh_reduction = [1, 0.4060913706, 0.2445652174, 0.1534653465, 0.1105263158, 0.109375, 0.09793814433, 0.09473684211, 0.0725388601, 0.06779661017, 0.05855855856]
-topsis_vh_reduction = [1, 0.3789954338, 0.2242990654, 0.1415525114, 0.09051724138, 0.09661835749, 0.08372093023, 0.07053941909, 0.06103286385, 0.05853658537, 0.05579399142]
-fuzzy_vh_reduction = [1, 0.337164751, 0.1882352941, 0.1178707224, 0.08786610879, 0.07722007722, 0.06315789474, 0.06273062731, 0.04905660377, 0.046875, 0.04905660377]
+saw_vh_reduction = [x * 100 for x in [1, 0.3756097561, 0.2083333333, 0.1435897436, 0.101010101, 0.09743589744, 0.08212560386, 0.08212560386, 0.06403940887, 0.06486486486, 0.05]]
+wpm_vh_reduction = [x * 100 for x in [1, 0.4060913706, 0.2445652174, 0.1534653465, 0.1105263158, 0.109375, 0.09793814433, 0.09473684211, 0.0725388601, 0.06779661017, 0.05855855856]]
+topsis_vh_reduction = [x * 100 for x in [1, 0.3789954338, 0.2242990654, 0.1415525114, 0.09051724138, 0.09661835749, 0.08372093023, 0.07053941909, 0.06103286385, 0.05853658537, 0.05579399142]]
+fuzzy_vh_reduction = [x * 100 for x in [1, 0.337164751, 0.1882352941, 0.1178707224, 0.08786610879, 0.07722007722, 0.06315789474, 0.06273062731, 0.04905660377, 0.046875, 0.04905660377]]
 average_vh_reduction = []
 for i in range(11):
     average_vh_reduction.append((saw_vh_reduction[i]+wpm_vh_reduction[i]+topsis_vh_reduction[i]+fuzzy_vh_reduction[i])/4)
@@ -45,12 +45,12 @@ handover_reduction = {
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharex=True)
 
-# First Graph: Handover Reduction
+# First Graph: Total Handover
 for algo in algorithms:
     axes[0].plot(TTT_values[algo], handover_reduction[algo], marker='o', label=algo)
-axes[0].set_title('Handover Reduction vs Time-to-Trigger')
+axes[0].set_title('Total Handover vs Time-to-Trigger')
 axes[0].set_xlabel('Time-to-Trigger Value (s)')
-axes[0].set_ylabel('Handover Reduction')
+axes[0].set_ylabel('Total Handover (%)')
 axes[0].grid(True)
 axes[0].legend()
 

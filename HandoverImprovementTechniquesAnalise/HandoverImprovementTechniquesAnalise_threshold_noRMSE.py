@@ -26,10 +26,10 @@ rmse_increase = {
     'AVERAGE': average_rmse_values
 }
 
-saw_vh_reduction = [1, 0.4390243902, 0.3888888889, 0.2461538462, 0.09595959596, 0.06153846154, 0.07729468599, 0.1062801932, 0.02955665025, 0.02702702703, 0.02083333333]
-wpm_vh_reduction = [1, 0.4517766497, 0.402173913, 0.2227722772, 0.08947368421, 0.05729166667, 0.07216494845, 0.07368421053, 0.0207253886, 0.005649717514, 0.009009009009]
-topsis_vh_reduction = [1, 0.3881278539, 0.3925233645, 0.2237442922, 0.0775862069, 0.06763285024, 0.06976744186, 0.07053941909, 0.02816901408, 0.01951219512, 0.004291845494]
-fuzzy_vh_reduction = [1, 0.2030651341, 0.1215686275, 0.04942965779, 0, 0, 0.00701754386, 0.007380073801, 0, 0.00390625, 0.003773584906]
+saw_vh_reduction = [x * 100 for x in [1, 0.4390243902, 0.3888888889, 0.2461538462, 0.09595959596, 0.06153846154, 0.07729468599, 0.1062801932, 0.02955665025, 0.02702702703, 0.02083333333]]
+wpm_vh_reduction = [x * 100 for x in [1, 0.4517766497, 0.402173913, 0.2227722772, 0.08947368421, 0.05729166667, 0.07216494845, 0.07368421053, 0.0207253886, 0.005649717514, 0.009009009009]]
+topsis_vh_reduction = [x * 100 for x in [1, 0.3881278539, 0.3925233645, 0.2237442922, 0.0775862069, 0.06763285024, 0.06976744186, 0.07053941909, 0.02816901408, 0.01951219512, 0.004291845494]]
+fuzzy_vh_reduction = [x * 100 for x in [1, 0.2030651341, 0.1215686275, 0.04942965779, 0, 0, 0.00701754386, 0.007380073801, 0, 0.00390625, 0.003773584906]]
 average_vh_reduction = []
 for i in range(11):
     average_vh_reduction.append((saw_vh_reduction[i]+wpm_vh_reduction[i]+topsis_vh_reduction[i]+fuzzy_vh_reduction[i])/4)
@@ -45,12 +45,12 @@ handover_reduction = {
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharex=True)
 
-# First Graph: Handover Reduction
+# First Graph: Total Handover
 for algo in algorithms:
     axes[0].plot(lockin_values[algo], handover_reduction[algo], marker='o', label=algo)
-axes[0].set_title('Handover Reduction vs Threshold Margin')
+axes[0].set_title('Total Handover vs Threshold Margin')
 axes[0].set_xlabel('Threshold Margin (%)')
-axes[0].set_ylabel('Handover Reduction')
+axes[0].set_ylabel('Total Handover (%)')
 axes[0].grid(True)
 axes[0].legend()
 
