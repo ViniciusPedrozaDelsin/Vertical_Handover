@@ -36,7 +36,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 200
+n = 1000
 j = 0
 
 # Activate Graphical Interface
@@ -46,7 +46,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 15
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -97,13 +97,13 @@ count_nn = 0
 # ===================================== MADM Algorithms ======================================
 SPMO_Methods = False
 
-SAW = False
+SAW = True
 
-WPM = False
+WPM = True
 
 TOPSIS = True
 
-Fuzzy = False
+Fuzzy = True
 
 RMSE = False
 
@@ -1011,8 +1011,7 @@ def plot_results():
     
     # Safe RMSE RL Model
     if RMSE_RL_NN == True:
-        pass
-        #nn_rl_rmse.saveModel()
+        nn_rl_rmse.saveModel()
     
     # ==================================================== Start - RMSE Analisys ====================================================
 
@@ -1267,10 +1266,10 @@ def plot_results():
             num_rows = math.ceil(num_params_group / num_cols)
             
             # 1 - 3 columns
-            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
+            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
             
             # 4 - 10 columns
-            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
+            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
             
             # 11 - 17 columns
             #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 3 * num_rows), constrained_layout=True)
@@ -1300,12 +1299,12 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE
-                #hatches = ['', '', '', '', '', '']
-                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # TOPSIS + TOPSIS NN
-                hatches = ['', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "black"], edgecolor='black', linewidth=1.2)
                 
                 # Apply hatch patterns to each bar
                 for bar, hatch in zip(bars, hatches):
@@ -1427,7 +1426,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 

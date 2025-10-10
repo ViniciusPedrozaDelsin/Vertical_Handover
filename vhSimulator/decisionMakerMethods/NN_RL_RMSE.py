@@ -12,8 +12,8 @@ class NN_RL_RMSE(DMM):
         self.attributes = attributes
 
         # NN RL Variables
-        self.gamma = 0.9
-        self.epsilon = 0
+        self.gamma = 0.95
+        self.epsilon = 0.0
         self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
@@ -365,5 +365,5 @@ class NN_RL_RMSE(DMM):
 
     def saveModel(self):
         #self.model.save(self.model_name)
-        self.model.save("RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras")
+        self.model.save("RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras")
         print(f"Reward Sum: {self.reward_sum}")
