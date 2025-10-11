@@ -36,7 +36,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 1000
+n = 100
 j = 0
 
 # Activate Graphical Interface
@@ -46,13 +46,13 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 15
+n_simulations = 300
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
 
 # Plot Results
-plots = True
+plots = False
 
 # Predef Configs
 predef_conf = False
@@ -97,13 +97,13 @@ count_nn = 0
 # ===================================== MADM Algorithms ======================================
 SPMO_Methods = False
 
-SAW = True
+SAW = False
 
-WPM = True
+WPM = False
 
 TOPSIS = True
 
-Fuzzy = True
+Fuzzy = False
 
 RMSE = False
 

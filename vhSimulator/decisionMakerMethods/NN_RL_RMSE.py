@@ -13,7 +13,7 @@ class NN_RL_RMSE(DMM):
 
         # NN RL Variables
         self.gamma = 0.95
-        self.epsilon = 0.0
+        self.epsilon = 0
         self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
@@ -24,12 +24,11 @@ class NN_RL_RMSE(DMM):
         self.train_counter = 0
         self.memory_velocity = {}
         self.memory_velocity_len = 4
-        if model_name == None:
+        self.model_name = model_name
+        if self.model_name == None:
             self.model = self.modelBuild(8, 1, self.memory_velocity_len-1, 1)
         else:
             self.model = tf.keras.models.load_model(model_name)
-        self.reward_sum = 0
-
 
         '''# --- Target network (same architecture) ---
         self.target_model = tf.keras.models.clone_model(self.model)
@@ -101,7 +100,6 @@ class NN_RL_RMSE(DMM):
 
     def calculateReward(self, normalized_choice):
         reward = (((normalized_choice['RSSI']**2) + (normalized_choice['SNR']**2) + (normalized_choice['BER']**2) + (normalized_choice['FEC']**2) + (normalized_choice['Throughput']**2) + (normalized_choice['PC']**2) + (normalized_choice['MC']**2) + (normalized_choice['HC']**2) + (normalized_choice['Delay']**2) + (normalized_choice['Jitter']**2))/10)**(1/2)
-        self.reward_sum += reward
         #print("========= NN RL RMSE ========")
         #print(f"- NN RL RMSE Reward {reward}")
         #print("=============================")
@@ -266,21 +264,16 @@ class NN_RL_RMSE(DMM):
         emb = layers.Flatten()(emb)
 
         vel_seq = layers.Reshape((n_velocities, 1))(velocities)
-        lstm_out = layers.LSTM(16, activation='tanh')(vel_seq)
+        lstm_out = layers.LSTM(8, activation='tanh')(vel_seq)
         lstm_scalar = layers.Dense(1, activation='tanh', name='lstm_scalar')(lstm_out)
 
         # Combine Inputs
         x = layers.Concatenate()([emb, lstm_scalar, inputs])
 
         # MLP head (64 -> 128 -> 64 -> 32)
-        x = layers.Dense(32, activation=None)(x)
+        x = layers.Dense(16, activation=None)(x)
         x = layers.BatchNormalization()(x)
         x = layers.Activation('relu')(x)
-
-        x = layers.Dense(64, activation=None)(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Activation('relu')(x)
-        x = layers.Dropout(0.25)(x)
 
         x = layers.Dense(32, activation=None)(x)
         x = layers.BatchNormalization()(x)
@@ -288,6 +281,11 @@ class NN_RL_RMSE(DMM):
         x = layers.Dropout(0.25)(x)
 
         x = layers.Dense(16, activation=None)(x)
+        x = layers.BatchNormalization()(x)
+        x = layers.Activation('relu')(x)
+        x = layers.Dropout(0.25)(x)
+
+        x = layers.Dense(8, activation=None)(x)
         x = layers.BatchNormalization()(x)
         x = layers.Activation('relu')(x)
 
@@ -319,10 +317,10 @@ class NN_RL_RMSE(DMM):
             times = 1
         elif self.train_counter >= 150 and self.train_counter < 200:
             times = 1
-        elif self.train_counter >= 200 and self.train_counter < 250:
+        elif self.train_counter >= 200 and self.train_counter < 1000:
             times = 1
         else:
-            times = 3
+            times = 2
 
         for _ in range(times):
             minibatch = random.sample(list(self.memory)[:-self.window_size], self.batch_size)
@@ -348,7 +346,7 @@ class NN_RL_RMSE(DMM):
             parameters_list = [sublist[self.memory_velocity_len:] for sublist in X]
 
             # Set the learning rate to 0.00001
-            if self.train_counter > 0:
+            if self.train_counter > 1000:
                 self.model.optimizer.learning_rate.assign(1e-5)
 
             self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
@@ -364,6 +362,7 @@ class NN_RL_RMSE(DMM):
             self.target_model.set_weights(self.model.get_weights())'''
 
     def saveModel(self):
-        #self.model.save(self.model_name)
-        self.model.save("RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras")
-        print(f"Reward Sum: {self.reward_sum}")
+        if self.model_name != None:
+            self.model.save(self.model_name)
+        else:
+            self.model.save("RMSE_RL.keras")
