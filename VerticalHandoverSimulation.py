@@ -46,7 +46,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 300
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -105,7 +105,7 @@ TOPSIS = True
 
 Fuzzy = False
 
-RMSE = False
+RMSE = True
 
 TOPSIS_NN = False
 
@@ -134,71 +134,71 @@ def generate_random_WNS(predef):
     
     # WiFi's
     global wifi_1
-    wifi_1 = WNS("WiFi-1", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 0.5, 0.2, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_1 = WNS("WiFi-1", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 110, 30, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_1, 'green', 0.3])
     
     global wifi_2
-    wifi_2 = WNS("WiFi-2", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 0.5, 0.2, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_2 = WNS("WiFi-2", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 50, 10, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_2, 'green', 0.3])
     
     global wifi_3
-    wifi_3 = WNS("WiFi-3", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 0.5, 0.2, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_3 = WNS("WiFi-3", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 50, 10, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_3, 'green', 0.3])
     
     global wifi_4
-    wifi_4 = WNS("WiFi-4", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 0.5, 0.2, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_4 = WNS("WiFi-4", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 50, 10, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_4, 'green', 0.3])
     
     global wifi_5
-    wifi_5 = WNS("WiFi-5", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 0.5, 0.2, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_5 = WNS("WiFi-5", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 50, 10, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_5, 'green', 0.3])
     
     global wifi_6
-    wifi_6 = WNS("WiFi-6", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 0.5, 0.2, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_6 = WNS("WiFi-6", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 110, 30, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_6, 'green', 0.3])
     
     global wifi_7
-    wifi_7 = WNS("WiFi-7", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 0.5, 0.2, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_7 = WNS("WiFi-7", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 110, 30, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_7, 'green', 0.3])
 
     global wifi_8
-    wifi_8 = WNS("WiFi-8", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 0.5, 0.2, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_8 = WNS("WiFi-8", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 110, 30, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_8, 'green', 0.3])
     
     global wifi_9
-    wifi_9 = WNS("WiFi-9", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 0.5, 0.2, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_9 = WNS("WiFi-9", random.uniform(0, x_max), random.uniform(0, y_max), 20, 5000000000, 80000000, 7, "WiFi-5GHz", 0.50, 1, 50, 10, maximum_radius=90, predef_throughput=[1000000000, 150000000], predef_snr=[40, 15], predef_rssi=[-50, -80], predef_ber=[0.00000001, 0.000001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_9, 'green', 0.3])
     
     global wifi_10
-    wifi_10 = WNS("WiFi-10", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 0.5, 0.2, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_10 = WNS("WiFi-10", random.uniform(0, x_max), random.uniform(0, y_max), 20, 2400000000, 20000000, 10, "WiFi-2.4GHz", 0.50, 1, 110, 30, maximum_radius=150, predef_throughput=[200000000, 30000000], predef_snr=[40, 10], predef_rssi=[-50, -80], predef_ber=[0.000001, 0.0001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_10, 'green', 0.3])
 
     
     # NB-IoT
     global nbiot_1
-    nbiot_1 = WNS("NBIoT-1", random.uniform(-6*x_max, 6*x_max), random.uniform(-6*y_max, 6*y_max), 30, 800000000, 1400000, 2, "NB-IoT", 0.25, 5, 1, 0.6, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nbiot_1 = WNS("NBIoT-1", random.uniform(-6*x_max, 6*x_max), random.uniform(-6*y_max, 6*y_max), 30, 800000000, 1400000, 2, "NB-IoT", 0.25, 5, 1500, 600, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nbiot_1, 'blue', 0.03])
 
 
     # LoRa's
     global LoRa_1
-    LoRa_1 = WNS("LoRa-1", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, 2, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    LoRa_1 = WNS("LoRa-1", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, 750, 150, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([LoRa_1, 'yellow', 0.03])
     
     global LoRa_2
-    LoRa_2 = WNS("LoRa-2", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, 2, 1, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    LoRa_2 = WNS("LoRa-2", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, 750, 150, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([LoRa_2, 'yellow', 0.03])
 
 
     # LTE 4G
     global LTE_4g
-    LTE_4g = WNS("LTE-4g-1", random.uniform(-8*x_max, 8*x_max), random.uniform(-8*y_max, 8*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, 1, 0.4, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    LTE_4g = WNS("LTE-4g-1", random.uniform(-8*x_max, 8*x_max), random.uniform(-8*y_max, 8*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, 450, 50, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([LTE_4g, 'red', 0.03])
 
 
     # WiMax
     global wifi_max_1
-    wifi_max_1 = WNS("WiMax-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiMax", 0.80, 2, 1.5, 0.8, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    wifi_max_1 = WNS("WiMax-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 40, 3000000000, 10000000, 10, "WiMax", 0.80, 2, 200, 60, maximum_radius=6000, predef_throughput=[40000000, 2000000], predef_snr=[15, 5], predef_rssi=[-60, -90], predef_ber=[0.0000001, 0.00001], predef_fec=[5/6, 1/2], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([wifi_max_1, 'purple', 0.03])
     
     
@@ -1299,9 +1299,13 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE
-                hatches = ['', '', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
+                # 4 METHODS + RMSE + RL
+                hatches = ['', '', '', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
+
                 # TOPSIS + TOPSIS NN
                 #hatches = ['', '']
                 #bars = ax.bar(labels, values, color=["blue", "orange", "black"], edgecolor='black', linewidth=1.2)
@@ -1423,7 +1427,7 @@ if RMSE == True:
         mpmo_rmse_lockin = MPMO_RMSE("MPMO-RMSE-LockIn", analyzed_parameters, weights, directions, lockin_percentage=lockin_percentage)
     if impTech_TTT == True:
         mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
-if TOPSIS_NN == True: 
+if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
     nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras") #model_name="RMSE_RL_14inps_EMBEDDING_W15_G09_32_64_32_16.keras"

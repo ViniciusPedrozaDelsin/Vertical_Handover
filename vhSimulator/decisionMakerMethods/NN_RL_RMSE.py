@@ -13,7 +13,7 @@ class NN_RL_RMSE(DMM):
 
         # NN RL Variables
         self.gamma = 0.95
-        self.epsilon = 0
+        self.epsilon = 0.0
         self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
@@ -166,7 +166,7 @@ class NN_RL_RMSE(DMM):
     def RMSE_RL(self, normalized_inputs):
 
         # Encode Network Protocol
-        protocol_list_dict = {'WiFi-2.4GHz': 1, 'WiFi-5GHz': 2, 'NB-IoT': 3, 'LoRa-868': 4, 'LTE-4G': 5, 'WiMax': 6}
+        protocol_list_dict = {'WiFi-2.4GHz': 0, 'WiFi-5GHz': 1, 'NB-IoT': 2, 'LoRa-868': 3, 'LTE-4G': 4, 'WiMax': 5}
         inpt_list = []
 
         predict_list = []
@@ -271,9 +271,14 @@ class NN_RL_RMSE(DMM):
         x = layers.Concatenate()([emb, lstm_scalar, inputs])
 
         # MLP head (64 -> 128 -> 64 -> 32)
-        x = layers.Dense(16, activation=None)(x)
+        x = layers.Dense(32, activation=None)(x)
         x = layers.BatchNormalization()(x)
         x = layers.Activation('relu')(x)
+
+        x = layers.Dense(64, activation=None)(x)
+        x = layers.BatchNormalization()(x)
+        x = layers.Activation('relu')(x)
+        x = layers.Dropout(0.25)(x)
 
         x = layers.Dense(32, activation=None)(x)
         x = layers.BatchNormalization()(x)
@@ -281,11 +286,6 @@ class NN_RL_RMSE(DMM):
         x = layers.Dropout(0.25)(x)
 
         x = layers.Dense(16, activation=None)(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Activation('relu')(x)
-        x = layers.Dropout(0.25)(x)
-
-        x = layers.Dense(8, activation=None)(x)
         x = layers.BatchNormalization()(x)
         x = layers.Activation('relu')(x)
 
@@ -346,7 +346,7 @@ class NN_RL_RMSE(DMM):
             parameters_list = [sublist[self.memory_velocity_len:] for sublist in X]
 
             # Set the learning rate to 0.00001
-            if self.train_counter > 1000:
+            if self.train_counter > 100000:
                 self.model.optimizer.learning_rate.assign(1e-5)
 
             self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
