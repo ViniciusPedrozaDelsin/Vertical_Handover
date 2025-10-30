@@ -317,10 +317,10 @@ class NN_RL_RMSE(DMM):
             times = 1
         elif self.train_counter >= 150 and self.train_counter < 200:
             times = 1
-        elif self.train_counter >= 200 and self.train_counter < 1000:
+        elif self.train_counter >= 200 and self.train_counter < 500:
             times = 1
         else:
-            times = 2
+            times = 1
 
         for _ in range(times):
             minibatch = random.sample(list(self.memory)[:-self.window_size], self.batch_size)
@@ -346,7 +346,7 @@ class NN_RL_RMSE(DMM):
             parameters_list = [sublist[self.memory_velocity_len:] for sublist in X]
 
             # Set the learning rate to 0.00001
-            if self.train_counter > 100000:
+            if self.train_counter > 0:
                 self.model.optimizer.learning_rate.assign(1e-5)
 
             self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
