@@ -270,7 +270,7 @@ class NN_RL_RMSE(DMM):
         # Combine Inputs
         x = layers.Concatenate()([emb, lstm_scalar, inputs])
 
-        # MLP head (64 -> 128 -> 64 -> 32)
+        # MLP (32 -> 64 -> 32 -> 16)
         x = layers.Dense(32, activation=None)(x)
         x = layers.BatchNormalization()(x)
         x = layers.Activation('relu')(x)

@@ -36,7 +36,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 1000
+n = 10
 j = 0
 
 # Activate Graphical Interface
@@ -1011,7 +1011,8 @@ def plot_results():
     
     # Safe RMSE RL Model
     if RMSE_RL_NN == True:
-        nn_rl_rmse.saveModel()
+        pass
+        #nn_rl_rmse.saveModel()
     
     # ==================================================== Start - RMSE Analisys ====================================================
 
