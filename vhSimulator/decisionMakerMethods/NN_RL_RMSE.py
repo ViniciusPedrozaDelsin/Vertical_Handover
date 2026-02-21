@@ -166,7 +166,7 @@ class NN_RL_RMSE(DMM):
     def RMSE_RL(self, normalized_inputs):
 
         # Encode Network Protocol
-        protocol_list_dict = {'WiFi-2.4GHz': 0, 'WiFi-5GHz': 1, 'NB-IoT': 2, 'LoRa-868': 3, 'LTE-4G': 4, 'WiMax': 5}
+        protocol_list_dict = {'WiFi-2.4GHz': 0, 'WiFi-5GHz': 1, 'NB-IoT': 2, 'LoRa-868': 3, 'LTE-4G': 4, '5G-N78': 5, '5G-N28': 6}
         inpt_list = []
 
         predict_list = []
@@ -260,7 +260,7 @@ class NN_RL_RMSE(DMM):
         inputs = Input(shape=(n_inputs,), dtype='float32', name='inputs')
 
         # Embedding layer
-        emb = layers.Embedding(input_dim=6, output_dim=4, embeddings_initializer='glorot_uniform', name='protocol_embedding')(protocol)
+        emb = layers.Embedding(input_dim=7, output_dim=4, embeddings_initializer='glorot_uniform', name='protocol_embedding')(protocol)
         emb = layers.Flatten()(emb)
 
         vel_seq = layers.Reshape((n_velocities, 1))(velocities)
@@ -318,9 +318,9 @@ class NN_RL_RMSE(DMM):
         elif self.train_counter >= 150 and self.train_counter < 200:
             times = 1
         elif self.train_counter >= 200 and self.train_counter < 500:
-            times = 1
+            times = 2
         else:
-            times = 1
+            times = 3
 
         for _ in range(times):
             minibatch = random.sample(list(self.memory)[:-self.window_size], self.batch_size)
@@ -346,8 +346,10 @@ class NN_RL_RMSE(DMM):
             parameters_list = [sublist[self.memory_velocity_len:] for sublist in X]
 
             # Set the learning rate to 0.00001
+            '''
             if self.train_counter > 0:
                 self.model.optimizer.learning_rate.assign(1e-5)
+            '''
 
             self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
 
