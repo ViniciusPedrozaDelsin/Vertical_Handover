@@ -13,7 +13,7 @@ class NN_RL_RMSE(DMM):
 
         # NN RL Variables
         self.gamma = 0.95
-        self.epsilon = 0.0
+        self.epsilon = 0.00
         self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32

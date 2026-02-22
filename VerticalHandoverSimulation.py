@@ -46,7 +46,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 10
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -95,15 +95,15 @@ count_nn = 0
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = False
+SPMO_Methods = True
 
-SAW = False
+SAW = True
 
-WPM = False
+WPM = True
 
-TOPSIS = False
+TOPSIS = True
 
-Fuzzy = False
+Fuzzy = True
 
 RMSE = True
 
@@ -176,23 +176,23 @@ def generate_random_WNS(predef):
     
     # NB-IoT
     global nbiot_1
-    nbiot_1 = WNS("NBIoT-1", random.uniform(-10*x_max, 10*x_max), random.uniform(-10*y_max, 10*y_max), 30, 800000000, 1400000, 2, "NB-IoT", 0.25, 5, 1500, 600, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nbiot_1 = WNS("NBIoT-1", random.uniform(-9*x_max, 9*x_max), random.uniform(-9*y_max, 9*y_max), 30, 800000000, 1400000, 2, "NB-IoT", 0.35, 4, 1500, 600, maximum_radius=15000, predef_throughput=[100000, 10000], predef_snr=[10, 2], predef_rssi=[-90, -115], predef_ber=[0.00001, 0.001], predef_fec=[2/3, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nbiot_1, 'blue', 0.03])
 
 
     # LoRa's
     global LoRa_1
-    LoRa_1 = WNS("LoRa-1", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, 750, 150, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    LoRa_1 = WNS("LoRa-1", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.20, 1, 750, 150, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([LoRa_1, 'yellow', 0.03])
     
     global LoRa_2
-    LoRa_2 = WNS("LoRa-2", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.05, 1, 750, 150, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    LoRa_2 = WNS("LoRa-2", random.uniform(-4*x_max, 4*x_max), random.uniform(-4*y_max, 4*y_max), 14, 868000000, 250000, 0, "LoRa-868", 0.20, 1, 750, 150, maximum_radius=10000, predef_throughput=[50000, 1000], predef_snr=[10, 0], predef_rssi=[-80, -120], predef_ber=[0.00001, 0.01], predef_fec=[4/5, 4/8], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([LoRa_2, 'yellow', 0.03])
 
 
     # LTE 4G
     global LTE_4g
-    LTE_4g = WNS("LTE-4g-1", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.05, 3, 450, 50, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    LTE_4g = WNS("LTE-4g-1", random.uniform(-6*x_max, 6*x_max), random.uniform(-6*y_max, 6*y_max), 40, 1900000000, 20000000, 5, "LTE-4G", 1.00, 3, 450, 50, maximum_radius=30000, predef_throughput=[100000000, 5000000], predef_snr=[15, 5], predef_rssi=[-70, -100], predef_ber=[0.000001, 0.0001], predef_fec=[3/4, 1/3], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([LTE_4g, 'red', 0.03])
 
 
@@ -206,18 +206,16 @@ def generate_random_WNS(predef):
     
     # 5G N78
     global nr_5g_n78_cband_1
-    nr_5g_n78_cband_1 = WNS("5G-N78-1", random.uniform(-5*x_max, 5*x_max), random.uniform(-5*y_max, 5*y_max), 50, 3500000000, 100000000, 3, "5G-N78", 1.5, 15, 20, 5, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nr_5g_n78_cband_1 = WNS("5G-N78-1", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 50, 3500000000, 100000000, 3, "5G-N78", 1.50, 5, 20, 5, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_n78_cband_1, 'brown', 0.03])
     
-    '''
     global nr_5g_n78_cband_2
-    nr_5g_n78_cband_2 = WNS("5G-N78-2", random.uniform(-6*x_max, 6*x_max), random.uniform(-6*y_max, 6*y_max), 50, 3500000000, 100000000, 3, "5G-N78", 1.5, 15, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nr_5g_n78_cband_2 = WNS("5G-N78-2", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 50, 3500000000, 100000000, 3, "5G-N78", 1.50, 5, 20, 5, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_n78_cband_2, 'brown', 0.03])
-    '''
     
     # 5G N28
     global nr_5g_n28_cband_1
-    nr_5g_n28_cband_1 = WNS("5G-N28-1", random.uniform(-10*x_max, 10*x_max), random.uniform(-10*y_max, 10*y_max), 43, 700000000, 20000000, 5, "5G-N28", 1.5, 15, 30, 10, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nr_5g_n28_cband_1 = WNS("5G-N28-1", random.uniform(-17*x_max, 17*x_max), random.uniform(-17*y_max, 17*y_max), 43, 700000000, 20000000, 5, "5G-N28", 1.40, 5, 30, 10, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_n28_cband_1, 'purple', 0.03])
     
     # Print for DEBBUG
@@ -241,7 +239,7 @@ def connect_to_net(device):
     device.connect_to_network(LTE_4g)
     #device.connect_to_network(wifi_max_1)
     device.connect_to_network(nr_5g_n78_cband_1)
-    #device.connect_to_network(nr_5g_n78_cband_2)
+    device.connect_to_network(nr_5g_n78_cband_2)
     device.connect_to_network(nr_5g_n28_cband_1)
 
 
@@ -1311,9 +1309,13 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE + RL
-                hatches = ['', '', '', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
-
+                #hatches = ['', '', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
+                
+                # SPMO + 4 METHODS + RMSE + RL
+                hatches = ['', '', '', '', '', '', '', '', '', '']
+                bars = ax.bar(labels, values, color=["grey", "grey", "grey", "blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
+                
                 # TOPSIS + TOPSIS NN
                 #hatches = ['', '']
                 #bars = ax.bar(labels, values, color=["blue", "orange", "black"], edgecolor='black', linewidth=1.2)
@@ -1390,7 +1392,7 @@ connect_to_net(device_1)
 if SPMO_Methods == True:
     spmo_max_min_method_rssi = SPMO_MMM("SPMO-MAX-RSSI", "RSSI", True)
     spmo_max_min_method_snr = SPMO_MMM("SPMO-MAX-SNR", "SNR", True)
-    spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', 'WiMax', 'LTE-4G', 'NB-IoT', 'LoRa-868'])
+    spmo_pref = SPMO_Pref("SPMO-Preference", "Protocol", ['WiFi-5GHz', 'WiFi-2.4GHz', '5G-N78', '5G-N28', 'LTE-4G', 'NB-IoT', 'LoRa-868'])
 if SAW == True:
     mpmo_saw = MPMO_SAW("MPMO-SAW", analyzed_parameters, weights, directions)
     if impTech_hyst == True:
@@ -1438,7 +1440,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n) #, model_name="RMSE_RL_5G_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras")
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
