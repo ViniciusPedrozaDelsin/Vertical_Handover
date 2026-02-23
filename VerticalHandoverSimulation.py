@@ -11,12 +11,13 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 from matplotlib.colors import Normalize
+from scipy.stats import norm
+from collections import Counter
 from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
 from vhSimulator import SPMO_Preference as SPMO_Pref
 from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, NN_TOPSIS, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
-from collections import Counter
 
 
 # ==================================== Initial Parameters ====================================
@@ -37,7 +38,7 @@ dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 250
+n = 100
 
 # Activate Graphical Interface
 GUI = False
@@ -46,7 +47,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 800
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -1064,6 +1065,9 @@ def plot_results():
         cleaned_data.append(new_group)   
     simulations = cleaned_data
     
+    #print("======== Simulation 1: ========")
+    #print(simulations)
+    #print("================================")
 
     i = 0
     for sim in simulations:
@@ -1080,7 +1084,10 @@ def plot_results():
                         k = k + 1
             j = j + 1
         i = i + 1
-
+    
+    #print("======== Simulation 2: ========")
+    #print(simulations)
+    #print("================================")
     
     rmse_simulations = []
     for sim in simulations:
@@ -1095,6 +1102,8 @@ def plot_results():
                     j = j + 1
             rmse_sim.append(rmse_algo)
         rmse_simulations.append(rmse_sim)
+    #print("AHAHAHAHAHAH")
+    #print(rmse_simulations)
 
     rsme_final_results = []
     for rmse_simu in rmse_simulations:
@@ -1104,6 +1113,10 @@ def plot_results():
             rsme_list_results.append(rmse_results)
             
         rsme_final_results.append(rsme_list_results)
+    #print("AHAHAHAHAHAH")
+    #print(rsme_final_results)
+    raw_rmse_values_for_statistical_analysis = copy.deepcopy(rsme_final_results)
+    #print("AHAHAHAHAHAH")
         
     i = 0
     for sum_result_list in rsme_final_results:
@@ -1132,13 +1145,54 @@ def plot_results():
     print("========================================================================================================================")
     print(f"Best option using RMSE: {rmse_per_index.index(min(rmse_per_index))}")
     print("========================================================================================================================")
-    # ===================================================== End - RMSE Analisys =====================================================
+    # ===================================================== End - RMSE Analysis =====================================================
     
-    # TO DELETE
+    
+    # ==================================================== Start - Statistical Analysis ====================================================
+    
+    # Get Mean Values
+    curv_mean = [val/(iter_x_simu) for val in results_sim_sum]
+    print(f"Normal Mean: {curv_mean}")
+    
+    # Get Standard Deviation Values
+    #print(raw_rmse_values_for_statistical_analysis)
+    
+    curv_sd = [0] * 5
+    i = 0
+    for curv_simulation in raw_rmse_values_for_statistical_analysis:
+        j = 0
+        for curv_rmse_list in curv_simulation:
+            k = 0
+            for curv_rmse_value in curv_rmse_list:
+                curv_sd[j] += (((raw_rmse_values_for_statistical_analysis[i][j][k] - curv_mean[j])**2)/iter_x_simu)
+                k += 1
+            j += 1
+        i += 1
+    
+    curv_sd = [(x**(1/2)) for x in curv_sd]
+    print(f"Normal Standard Deviation: {curv_sd}")
+    
+    # X values (range around the mean)
+    x = np.linspace(curv_mean[4] - 4*curv_sd[4], curv_mean[4] + 4*curv_sd[4], 1000)
+
+    # Normal PDF
+    y = norm.pdf(x, curv_mean[4], curv_sd[4])
+
+    # Plot
+    plt.plot(x, y)
+    plt.axvline(curv_mean[4], linestyle='--')
+    plt.title("Normal Distribution")
+    plt.show()
+    
+    # ===================================================== End - Statistical Analysis =====================================================
+    
+    
+    # ==================================================== Start - Time Connected ====================================================
     counts_topsis = Counter(topsis_choices)
     print(f"THIS IS WHAT I'M LOOKING FOR TOPSIS: {counts_topsis}")
     counts_rmse = Counter(rmse_choices)
     print(f"THIS IS WHAT I'M LOOKING FOR RMSE: {counts_rmse}")
+    # ===================================================== End - Time Connected =====================================================
     
     
     
@@ -1259,6 +1313,10 @@ def plot_results():
                 # 4 METHODS + RMSE
                 hatches = ['', '', '', '', '', '']
                 bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                
+                # SPMO + 4 METHODS + RMSE
+                #hatches = ['', '', '', '', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["grey", "grey", "grey", "blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # TOPSIS + TOPSIS NN
                 #hatches = ['', '']
