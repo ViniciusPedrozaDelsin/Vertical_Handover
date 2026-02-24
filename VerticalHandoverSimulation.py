@@ -38,7 +38,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 70
+n = 600
 j = 0
 
 # Activate Graphical Interface
@@ -48,7 +48,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 3
+n_simulations = 4
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -1086,6 +1086,10 @@ def plot_results():
         cleaned_data.append(new_group)   
     simulations = cleaned_data
     
+    #print("=======================================================================================")
+    #print("Simulation 1")
+    #print(simulations)
+    #print("=======================================================================================")
 
     i = 0
     for sim in simulations:
@@ -1103,7 +1107,11 @@ def plot_results():
             j = j + 1
         i = i + 1
 
-    
+    #print("=======================================================================================")
+    #print("Simulation 2")
+    #print(simulations)
+    #print("=======================================================================================")
+
     rmse_simulations = []
     for sim in simulations:
         rmse_sim = []
@@ -1118,6 +1126,11 @@ def plot_results():
             rmse_sim.append(rmse_algo)
         rmse_simulations.append(rmse_sim)
 
+    #print("=======================================================================================")
+    #print("Simulation 3")
+    #print(rmse_simulations)
+    #print("=======================================================================================")
+
     rsme_final_results = []
     for rmse_simu in rmse_simulations:
         rsme_list_results = []
@@ -1126,6 +1139,11 @@ def plot_results():
             rsme_list_results.append(rmse_results)
             
         rsme_final_results.append(rsme_list_results)
+
+    #print("=======================================================================================")
+    #print("Simulation 4")
+    #print(rsme_final_results)
+    #print("=======================================================================================")
     
     raw_rmse_values_for_statistical_analysis = copy.deepcopy(rsme_final_results)
     
@@ -1161,11 +1179,11 @@ def plot_results():
     
     
     
-    # ==================================================== Start - Statistical Analysis ====================================================
+    # ==================================================== Start - Statistical Analysis 1 ====================================================
     
     # Get Mean Values
     curv_mean = [val/(iter_x_simu) for val in results_sim_sum]
-    print(f"Normal Mean: {curv_mean}")
+    print(f"Normal Mean 1: {curv_mean}")
     
     # Get Standard Deviation Values
     #print(raw_rmse_values_for_statistical_analysis)
@@ -1183,7 +1201,7 @@ def plot_results():
         i += 1
     
     curv_sd = [(x**(1/2)) for x in curv_sd]
-    print(f"Normal Standard Deviation: {curv_sd}")
+    print(f"Normal Standard Deviation 1: {curv_sd}")
     
     # X values (range around the mean)
     x = np.linspace(curv_mean[1] - 4*curv_sd[1], curv_mean[1] + 4*curv_sd[1], 1000)
@@ -1196,11 +1214,44 @@ def plot_results():
     plt.axvline(curv_mean[1], linestyle='--')
     plt.title("Normal Distribution")
     plt.show()
-    
-    # ===================================================== End - Statistical Analysis =====================================================
+    # ===================================================== End - Statistical Analysis 1 =====================================================
 
+
+
+    # ==================================================== Start - Statistical Analysis 2 ====================================================
+    
+    # Get Mean Values
+    curv_mean = [(val/(iter_x_simu/n)) for val in results_sim_sum]
+    print(f"Normal Mean 2: {curv_mean}")
+
+    # Get Standard Deviation Values
+    #print(raw_rmse_values_for_statistical_analysis)
+
+    curv_sd = [0] * 4
+    for curv_simulation in raw_rmse_values_for_statistical_analysis:
+        j = 0
+        for curv_rmse_list in curv_simulation:
+            curv_sd[j] += (((sum(curv_rmse_list) - curv_mean[j])**2)/(iter_x_simu/n))
+            j += 1
+    
+    curv_sd = [(x**(1/2)) for x in curv_sd]
+    print(f"Normal Standard Deviation 2: {curv_sd}")
+    
+    # X values (range around the mean)
+    x = np.linspace(curv_mean[3] - 4*curv_sd[3], curv_mean[3] + 4*curv_sd[3], 1000)
+
+    # Normal PDF
+    y = norm.pdf(x, curv_mean[3], curv_sd[3])
+
+    # Plot
+    plt.plot(x, y)
+    plt.axvline(curv_mean[3], linestyle='--')
+    plt.title("Normal Distribution")
+    plt.show()
+    # ===================================================== End - Statistical Analysis 2 =====================================================
     
     
+
     # ==================================================== Start - Time Connected ====================================================
     if plot_time_connected == True:
         if SAW == True:
