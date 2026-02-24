@@ -11,6 +11,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 from matplotlib.colors import Normalize
+from scipy.stats import norm
+from collections import Counter
 from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
@@ -36,7 +38,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 100
+n = 70
 j = 0
 
 # Activate Graphical Interface
@@ -46,7 +48,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 3
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -89,21 +91,31 @@ old_dy = 0
 
 # To delete
 count_nn = 0
+
+# Plot - Count Network Choices
+plot_time_connected = True
+network_choices = {}
+saw_choices = []
+wpm_choices = []
+topsis_choices = []
+fuzzy_choices = []
+rmse_choices = []
+nn_rl_rmse_choices = []
 # ============================================================================================
 
 
 
 
 # ===================================== MADM Algorithms ======================================
-SPMO_Methods = True
+SPMO_Methods = False
 
 SAW = True
 
-WPM = True
+WPM = False
 
 TOPSIS = True
 
-Fuzzy = True
+Fuzzy = False
 
 RMSE = True
 
@@ -206,16 +218,16 @@ def generate_random_WNS(predef):
     
     # 5G N78
     global nr_5g_n78_cband_1
-    nr_5g_n78_cband_1 = WNS("5G-N78-1", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 50, 3500000000, 100000000, 3, "5G-N78", 1.50, 5, 20, 5, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nr_5g_n78_cband_1 = WNS("5G-N78-1", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 50, 3500000000, 100000000, 4, "5G-N78", 1.50, 5, 20, 5, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_n78_cband_1, 'brown', 0.03])
     
     global nr_5g_n78_cband_2
-    nr_5g_n78_cband_2 = WNS("5G-N78-2", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 50, 3500000000, 100000000, 3, "5G-N78", 1.50, 5, 20, 5, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nr_5g_n78_cband_2 = WNS("5G-N78-2", random.uniform(-7*x_max, 7*x_max), random.uniform(-7*y_max, 7*y_max), 50, 3500000000, 100000000, 4, "5G-N78", 1.50, 5, 20, 5, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_n78_cband_2, 'brown', 0.03])
     
     # 5G N28
     global nr_5g_n28_cband_1
-    nr_5g_n28_cband_1 = WNS("5G-N28-1", random.uniform(-17*x_max, 17*x_max), random.uniform(-17*y_max, 17*y_max), 43, 700000000, 20000000, 5, "5G-N28", 1.40, 5, 30, 10, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
+    nr_5g_n28_cband_1 = WNS("5G-N28-1", random.uniform(-17*x_max, 17*x_max), random.uniform(-17*y_max, 17*y_max), 43, 700000000, 20000000, 3, "5G-N28", 1.40, 5, 30, 10, maximum_radius=1000, predef_throughput=[1000000000, 100000000], predef_snr=[20, 10], predef_rssi=[-65, -85], predef_ber=[1e-6, 1e-5], predef_fec=[5/6, 1/6], predef_config=predef, corrections_real_world_applications=corrections_real_world, fading=fading)
     WNS_list.append([nr_5g_n28_cband_1, 'purple', 0.03])
     
     # Print for DEBBUG
@@ -482,6 +494,7 @@ def calculate_parameters(device, x_position, y_position):
             decision_mpmo_saw = device.makeDecision(mpmo_saw, available_networks, hidden_parameters=True)
         else:
             decision_mpmo_saw = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: saw_choices.append(decision_mpmo_saw['Protocol'])
         p_mpmo_saw.store_QoS_parameters(decision_mpmo_saw)
         p_mpmo_saw.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO SAW: {decision_mpmo_saw}")
@@ -518,6 +531,7 @@ def calculate_parameters(device, x_position, y_position):
             decision_mpmo_wpm = device.makeDecision(mpmo_wpm, available_networks, hidden_parameters=True)
         else:
             decision_mpmo_wpm = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: wpm_choices.append(decision_mpmo_wpm['Protocol'])
         p_mpmo_wpm.store_QoS_parameters(decision_mpmo_wpm)
         p_mpmo_wpm.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO WPM: {decision_mpmo_wpm}")
@@ -554,6 +568,7 @@ def calculate_parameters(device, x_position, y_position):
             decision_mpmo_topsis = device.makeDecision(mpmo_topsis, available_networks, hidden_parameters=True)
         else:
             decision_mpmo_topsis = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: topsis_choices.append(decision_mpmo_topsis['Protocol'])
         p_mpmo_topsis.store_QoS_parameters(decision_mpmo_topsis)
         p_mpmo_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO TOPSIS: {decision_mpmo_topsis}")
@@ -591,6 +606,7 @@ def calculate_parameters(device, x_position, y_position):
             decision_mpmo_fuzzy = device.makeDecision(mpmo_fuzzy, available_networks, hidden_parameters=True)
         else:
             decision_mpmo_fuzzy = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: fuzzy_choices.append(decision_mpmo_fuzzy['Protocol'])
         p_mpmo_fuzzy.store_QoS_parameters(decision_mpmo_fuzzy)
         p_mpmo_fuzzy.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO Fuzzy: {decision_mpmo_fuzzy}")
@@ -628,6 +644,7 @@ def calculate_parameters(device, x_position, y_position):
             decision_mpmo_rmse = device.makeDecision(mpmo_rmse, available_networks, hidden_parameters=True)
         else:
             decision_mpmo_rmse = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: rmse_choices.append(decision_mpmo_rmse['Protocol'])
         p_mpmo_rmse.store_QoS_parameters(decision_mpmo_rmse)
         p_mpmo_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision MPMO RMSE: {decision_mpmo_rmse}")
@@ -675,6 +692,7 @@ def calculate_parameters(device, x_position, y_position):
             decision_nn_rl_rmse = device.makeDecision(nn_rl_rmse, available_networks, hidden_parameters=True)
         else:
             decision_nn_rl_rmse = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: nn_rl_rmse_choices.append(decision_nn_rl_rmse['Protocol'])
         p_nn_rl_rmse.store_QoS_parameters(decision_nn_rl_rmse)
         p_nn_rl_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision NN RL RMSE: {decision_nn_rl_rmse}")
@@ -1017,7 +1035,8 @@ def plot_results():
     
     # Safe RMSE RL Model
     if RMSE_RL_NN == True:
-        nn_rl_rmse.saveModel()
+        pass
+        #nn_rl_rmse.saveModel()
     
     # ==================================================== Start - RMSE Analisys ====================================================
 
@@ -1107,7 +1126,9 @@ def plot_results():
             rsme_list_results.append(rmse_results)
             
         rsme_final_results.append(rsme_list_results)
-        
+    
+    raw_rmse_values_for_statistical_analysis = copy.deepcopy(rsme_final_results)
+    
     i = 0
     for sum_result_list in rsme_final_results:
         j = 0
@@ -1136,8 +1157,116 @@ def plot_results():
     print(f"Best option using RMSE: {rmse_per_index.index(min(rmse_per_index))}")
     print("========================================================================================================================")
 
-    # ===================================================== End - RMSE Analisys =====================================================
+    # ===================================================== End - RMSE Analysis =====================================================
     
+    
+    
+    # ==================================================== Start - Statistical Analysis ====================================================
+    
+    # Get Mean Values
+    curv_mean = [val/(iter_x_simu) for val in results_sim_sum]
+    print(f"Normal Mean: {curv_mean}")
+    
+    # Get Standard Deviation Values
+    #print(raw_rmse_values_for_statistical_analysis)
+    
+    curv_sd = [0] * 4
+    i = 0
+    for curv_simulation in raw_rmse_values_for_statistical_analysis:
+        j = 0
+        for curv_rmse_list in curv_simulation:
+            k = 0
+            for curv_rmse_value in curv_rmse_list:
+                curv_sd[j] += (((raw_rmse_values_for_statistical_analysis[i][j][k] - curv_mean[j])**2)/iter_x_simu)
+                k += 1
+            j += 1
+        i += 1
+    
+    curv_sd = [(x**(1/2)) for x in curv_sd]
+    print(f"Normal Standard Deviation: {curv_sd}")
+    
+    # X values (range around the mean)
+    x = np.linspace(curv_mean[1] - 4*curv_sd[1], curv_mean[1] + 4*curv_sd[1], 1000)
+
+    # Normal PDF
+    y = norm.pdf(x, curv_mean[1], curv_sd[1])
+
+    # Plot
+    plt.plot(x, y)
+    plt.axvline(curv_mean[1], linestyle='--')
+    plt.title("Normal Distribution")
+    plt.show()
+    
+    # ===================================================== End - Statistical Analysis =====================================================
+
+    
+    
+    # ==================================================== Start - Time Connected ====================================================
+    if plot_time_connected == True:
+        if SAW == True:
+            counts_saw = Counter(saw_choices)
+            network_choices['SAW'] = counts_saw
+        if WPM == True:
+            counts_wpm = Counter(wpm_choices)
+            network_choices['WPM'] = counts_wpm
+        if TOPSIS == True:
+            counts_topsis = Counter(topsis_choices)
+            network_choices['TOPSIS'] = counts_topsis
+        if Fuzzy == True:
+            counts_fuzzy = Counter(fuzzy_choices)
+            network_choices['FUZZY'] = counts_fuzzy
+        if RMSE == True:
+            counts_rmse = Counter(rmse_choices)
+            network_choices['RMSE'] = counts_rmse
+        if RMSE_RL_NN == True: 
+            counts_nn_rl_rmse = Counter(nn_rl_rmse_choices)
+            network_choices['RMSE-RL-NN'] = counts_nn_rl_rmse
+        print(f"Network Choices: {network_choices}")
+        
+        # Get all unique protocols
+        protocols = sorted(
+            set(protocol for algo in network_choices.values() for protocol in algo.keys())
+        )
+
+        # Get algorithms
+        algorithms = list(network_choices.keys())
+
+        # Build value matrix (TRANSPOSED LOGIC)
+        values = []
+        for protocol in protocols:
+            values.append([network_choices[algo].get(protocol, 0) for algo in algorithms])
+
+        values = np.array(values)
+
+        # Plot settings
+        x = np.arange(len(algorithms))
+        width = 0.8 / len(protocols)
+
+        plt.figure(figsize=(12, 6))
+
+        for i in range(len(protocols)):
+            plt.bar(
+                x + i * width,
+                values[i],
+                width,
+                label=protocols[i],
+                edgecolor='black',
+                linewidth=1.2
+            )
+
+        plt.xticks(x + width*(len(protocols)-1)/2, algorithms, fontsize=12)
+        plt.yticks(fontsize=11)
+
+        plt.xlabel("Decision Algorithm", fontsize=13, fontweight='bold')
+        plt.ylabel("Number of Occurrences", fontsize=13, fontweight='bold')
+        plt.title("Protocol Selection per Decision Algorithm", fontsize=15, fontweight='bold')
+
+        plt.legend(title="Protocol", frameon=True)
+        plt.grid(axis='y', linestyle='--', alpha=0.6)
+
+        plt.tight_layout()
+        plt.show()
+    # ===================================================== End - Time Connected =====================================================
     
     
     
@@ -1289,8 +1418,8 @@ def plot_results():
                 ax = axes[i]
                 
                 # 4 METHODS
-                #hatches = ['', '', '', '', '']
-                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS
                 #hatches = ['', '', '', '', '', '', '', '']
@@ -1313,8 +1442,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS + RMSE + RL
-                hatches = ['', '', '', '', '', '', '', '', '', '']
-                bars = ax.bar(labels, values, color=["grey", "grey", "grey", "blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["grey", "grey", "grey", "blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
                 
                 # TOPSIS + TOPSIS NN
                 #hatches = ['', '']
