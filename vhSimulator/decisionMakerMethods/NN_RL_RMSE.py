@@ -318,9 +318,9 @@ class NN_RL_RMSE(DMM):
         elif self.train_counter >= 150 and self.train_counter < 200:
             times = 1
         elif self.train_counter >= 200 and self.train_counter < 500:
-            times = 2
+            times = 1
         else:
-            times = 3
+            times = 1
 
         for _ in range(times):
             minibatch = random.sample(list(self.memory)[:-self.window_size], self.batch_size)
