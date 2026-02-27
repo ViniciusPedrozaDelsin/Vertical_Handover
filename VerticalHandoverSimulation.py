@@ -31,14 +31,14 @@ x, y = x_max/2, y_max/2
 device_velocity = 10
 
 # Interval between iterations
-iter_interval = 10000
+iter_interval = 1
 
 # Distance for iteration, 0.1 because the iter_interval is 100ms
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
 j = 0
-n = 300
+n = 600
 
 # Activate Graphical Interface
 GUI = False
@@ -47,7 +47,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 2000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -79,6 +79,10 @@ indicators_results = []
 
 # Random Walk
 random_walk_times = 20
+
+# Plots Folder
+plots_folder = "sim_3"
+plots_path = f"outputs//{plots_folder}"
 
 # DO NOT CHANGE
 random_direction_counter = 0
@@ -1279,12 +1283,13 @@ def plot_results():
 
         plt.xlabel("Decision Algorithm", fontsize=13, fontweight='bold')
         plt.ylabel("Number of Occurrences", fontsize=13, fontweight='bold')
-        plt.title("Protocol Selection per Decision Algorithm", fontsize=15, fontweight='bold')
+        plt.title("Network Selection per Decision Algorithm", fontsize=15, fontweight='bold')
 
         plt.legend(title="Protocol", frameon=True)
         plt.grid(axis='y', linestyle='--', alpha=0.6)
 
         plt.tight_layout()
+        plt.savefig(f"{plots_path}//time_connected.png", dpi=600, bbox_inches='tight')
         plt.show()
     # ===================================================== End - Time Connected =====================================================
     
@@ -1339,6 +1344,7 @@ def plot_results():
         ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
 
         plt.tight_layout()
+        plt.savefig(f"{plots_path}//3d_chart.png", dpi=600, bbox_inches='tight')
     # ======================================================= End - 3D Plot ======================================================= 
     
     
@@ -1435,7 +1441,7 @@ def plot_results():
             for j in range(i + 1, len(axes)):
                 fig.delaxes(axes[j])
 
-            #plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
+            plt.savefig(f"{plots_path}//bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
             plt.show()
     # =================================================== End - Bar Chart Plot ====================================================
 
