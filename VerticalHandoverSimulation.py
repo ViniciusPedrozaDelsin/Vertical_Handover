@@ -48,7 +48,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 4
+n_simulations = 200
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -84,6 +84,10 @@ indicators_results = []
 #random_walk_times = random.randint(15, 30)
 random_walk_times = 20
 
+# Plots Folder
+plots_folder = "sim_3"
+plots_path = f"outputs//{plots_folder}"
+
 # DO NOT CHANGE
 random_direction_counter = 0
 old_dx = 0
@@ -111,11 +115,11 @@ SPMO_Methods = False
 
 SAW = True
 
-WPM = False
+WPM = True
 
 TOPSIS = True
 
-Fuzzy = False
+Fuzzy = True
 
 RMSE = True
 
@@ -1188,7 +1192,7 @@ def plot_results():
     # Get Standard Deviation Values
     #print(raw_rmse_values_for_statistical_analysis)
     
-    curv_sd = [0] * 4
+    curv_sd = [0] * 6
     i = 0
     for curv_simulation in raw_rmse_values_for_statistical_analysis:
         j = 0
@@ -1227,7 +1231,7 @@ def plot_results():
     # Get Standard Deviation Values
     #print(raw_rmse_values_for_statistical_analysis)
 
-    curv_sd = [0] * 4
+    curv_sd = [0] * 6
     for curv_simulation in raw_rmse_values_for_statistical_analysis:
         j = 0
         for curv_rmse_list in curv_simulation:
@@ -1316,6 +1320,7 @@ def plot_results():
         plt.grid(axis='y', linestyle='--', alpha=0.6)
 
         plt.tight_layout()
+        plt.savefig(f"{plots_path}//time_connected.png", dpi=600, bbox_inches='tight')
         plt.show()
     # ===================================================== End - Time Connected =====================================================
     
@@ -1427,6 +1432,7 @@ def plot_results():
         ax.set_title("3D Comparison of Algorithms by Parameters", fontsize=14, pad=20)
 
         plt.tight_layout()
+        plt.savefig(f"{plots_path}//3d_chart.png", dpi=600, bbox_inches='tight')
     # ======================================================= End - 3D Plot ======================================================= 
     
     
@@ -1469,8 +1475,8 @@ def plot_results():
                 ax = axes[i]
                 
                 # 4 METHODS
-                hatches = ['', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS
                 #hatches = ['', '', '', '', '', '', '', '']
@@ -1489,8 +1495,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE + RL
-                #hatches = ['', '', '', '', '', '', '']
-                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS + RMSE + RL
                 #hatches = ['', '', '', '', '', '', '', '', '', '']
@@ -1519,8 +1525,8 @@ def plot_results():
             for j in range(i + 1, len(axes)):
                 fig.delaxes(axes[j])
 
-            #plt.savefig(f"outputs/bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
-            plt.show()
+            plt.savefig(f"{plots_path}//bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
+            #plt.show()
     # =================================================== End - Bar Chart Plot ====================================================
 
 
