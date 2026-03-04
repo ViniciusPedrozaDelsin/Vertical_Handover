@@ -38,7 +38,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 600
+n = 120
 j = 0
 
 # Activate Graphical Interface
@@ -48,7 +48,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 200
+n_simulations = 3
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -85,7 +85,7 @@ indicators_results = []
 random_walk_times = 20
 
 # Plots Folder
-plots_folder = "sim_3"
+plots_folder = "sim_4"
 plots_path = f"outputs//{plots_folder}"
 
 # DO NOT CHANGE

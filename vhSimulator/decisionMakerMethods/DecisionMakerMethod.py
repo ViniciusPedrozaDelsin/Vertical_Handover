@@ -31,8 +31,10 @@ class DecisionMakerMethod:
             if self.old_decision != None:
                 for input in inputs:
                     if input['Network'] != self.old_decision:
-                        input['Delay'] = 510
-                        input['Jitter'] = 150
+                        #input['Delay'] = 510
+                        #input['Jitter'] = 150
+                        input['Delay'] = 415.7142857
+                        input['Jitter'] = 122.142857
                         input['HC'] = 1
                 #print("==================================== Inputs ====================================")        
                 self.inputs = inputs
@@ -40,8 +42,10 @@ class DecisionMakerMethod:
                 #print("==================================== '' ====================================")
             else:
                 for input in inputs:
-                    input['Delay'] = 510
-                    input['Jitter'] = 150
+                    #input['Delay'] = 510
+                    #input['Jitter'] = 150
+                    input['Delay'] = 415.7142857
+                    input['Jitter'] = 122.142857
                 self.inputs = inputs
         else:
             self.inputs = inputs
