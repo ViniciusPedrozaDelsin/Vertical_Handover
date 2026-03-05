@@ -38,7 +38,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 120
+n = 600
 j = 0
 
 # Activate Graphical Interface
@@ -48,7 +48,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 3
+n_simulations = 250
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -1039,8 +1039,7 @@ def plot_results():
     
     # Safe RMSE RL Model
     if RMSE_RL_NN == True:
-        pass
-        #nn_rl_rmse.saveModel()
+        nn_rl_rmse.saveModel()
     
     # ==================================================== Start - RMSE Analisys ====================================================
 
@@ -1526,7 +1525,7 @@ def plot_results():
                 fig.delaxes(axes[j])
 
             plt.savefig(f"{plots_path}//bar_chart_part_{group_index + 1}.png", dpi=600, bbox_inches='tight')
-            #plt.show()
+            plt.show()
     # =================================================== End - Bar Chart Plot ====================================================
 
 
