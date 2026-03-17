@@ -233,13 +233,32 @@ class NN_RL_RMSE(DMM):
             new_inp = protocol_encoded_dict | velocity_dict
             new_inp = new_inp | reordered
             inpt_list.append(new_inp)
-
-            params = []
+            
+            # START - OLD CODE
+            """params = []
             for key, value in new_inp.items():
                 params.append(value)
 
             prediction = self.modelPrediction(params[0], params[1:self.memory_velocity_len], params[self.memory_velocity_len:])
-            predict_list.append(prediction)
+            predict_list.append(prediction)"""
+            # END - OLD CODE
+            
+            # START - NEW CODE
+            params = []
+            for key, value in new_inp.items():
+                params.append(value)
+            inpt_list.append(new_inp)
+            predict_list.append(params)  # store params for now
+
+        # NOW batch predict all networks in ONE call
+        all_protocols  = np.array([p[0]                          for p in predict_list])
+        all_velocities = np.array([p[1:self.memory_velocity_len] for p in predict_list])
+        all_params     = np.array([p[self.memory_velocity_len:]  for p in predict_list])
+
+        predict_list = self.model.predict(
+            [all_protocols, all_velocities, all_params], verbose=0
+        ).flatten()
+        # END - NEW CODE
 
         #print("====================")
         #print(predict_list)
