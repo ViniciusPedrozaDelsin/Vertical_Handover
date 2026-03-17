@@ -38,7 +38,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = DO NOT CHANGE
-n = 600
+n = 120
 j = 0
 
 # Activate Graphical Interface
@@ -48,13 +48,13 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 250
+n_simulations = 200
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
 
 # Plot Results
-plots = True
+plots = False
 
 # Predef Configs
 predef_conf = False
@@ -1625,7 +1625,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G09_32_64_32_16.keras")
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras")
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 

@@ -5,6 +5,7 @@ from collections import deque
 import random
 import numpy as np
 import pandas as pd
+import shap
 
 class NN_RL_RMSE(DMM):
     def __init__(self, method_name, attributes, lockin_percentage=None, time_to_trigger=None, simulation_length=100, model_name=None, **kwargs):
@@ -29,7 +30,14 @@ class NN_RL_RMSE(DMM):
             self.model = self.modelBuild(8, 1, self.memory_velocity_len-1, 1)
         else:
             self.model = tf.keras.models.load_model(model_name)
-
+        
+        # SHAP Analysis
+        self.shap_analysis = True
+        if self.shap_analysis:
+            self.memory_shap = deque(maxlen=500)
+            self.memory_shap_warmup = 500
+            self.shap_chance = 0.025
+        
         '''# --- Target network (same architecture) ---
         self.target_model = tf.keras.models.clone_model(self.model)
         self.target_model.set_weights(self.model.get_weights())
@@ -97,6 +105,10 @@ class NN_RL_RMSE(DMM):
 
     def resetMemoryVelocity(self):
         self.memory_velocity.clear()
+    
+    def resetMemoryShap(self):
+        self.memory_shap.clear()
+
 
     def calculateReward(self, normalized_choice):
         reward = (((normalized_choice['RSSI']**2) + (normalized_choice['SNR']**2) + (normalized_choice['BER']**2) + (normalized_choice['FEC']**2) + (normalized_choice['Throughput']**2) + (normalized_choice['PC']**2) + (normalized_choice['MC']**2) + (normalized_choice['HC']**2) + (normalized_choice['Delay']**2) + (normalized_choice['Jitter']**2))/10)**(1/2)
@@ -295,13 +307,36 @@ class NN_RL_RMSE(DMM):
         optimizer = tf.keras.optimizers.Adam(learning_rate=3e-4, clipnorm=1.0)
         model.compile(optimizer=optimizer, loss=tf.keras.losses.Huber())
         return model
+    
+    def Execute_SHAP_Analysis(self, inpts_protocol, inpts_velocities, inpts_model):
+        feature_vector = np.array([inpts_protocol] + list(inpts_velocities) + list(inpts_model))
+        self.memory_shap.append(feature_vector)
+        if len(self.memory_shap) >= self.memory_shap_warmup:
+            shap_sample = np.array(list(self.memory_shap)[:500])  # shape (30, 12)
+            #shap_sample = np.array(random.sample(list(self.memory_shap), min(100, len(self.memory_shap))))
+            feature_names = ['Protocol', 'VEL_1', 'VEL_2', 'VEL_3', 'RSSI', 'SNR', 'Throughput', 'BER', 'FEC', 'PC', 'MC', 'HC']
 
+            # Define a wrapper for SHAP
+            def shap_model(X_input):
+                protocol_col = X_input[:, 0:1]
+                velocity_cols = X_input[:, 1:4]
+                param_cols = X_input[:, 4:]
+                return self.model.predict([protocol_col, velocity_cols, param_cols], verbose=0).flatten()
+
+            explainer = shap.Explainer(shap_model, shap_sample)
+            shap_values = explainer(shap_sample)
+            shap.summary_plot(shap_values.values, shap_sample, feature_names=feature_names)
+            shap.summary_plot(shap_values.values, shap_sample, feature_names=feature_names, plot_type="bar")
+            self.resetMemoryShap()
+    
     def modelPrediction(self, protocol_inputs, velocity_inputs, model_inputs):
         if np.random.rand() < self.epsilon:
             prediction = [[np.random.rand()]]
         else:
             X = [np.array([protocol_inputs]), np.array([velocity_inputs]), np.array([model_inputs])]
             prediction = self.model.predict(X, verbose=0)
+            if self.shap_analysis and np.random.rand() < self.shap_chance:
+                self.Execute_SHAP_Analysis(protocol_inputs, velocity_inputs, model_inputs)
         return prediction
 
     def modelTrain(self):

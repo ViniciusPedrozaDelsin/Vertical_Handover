@@ -3,12 +3,15 @@
 nn unsupervised
 - Normalizar o Delay e o Jitter
 - Treinar a NN RMSE normal e comparar com o RMSE normal
-- Implementar o embedding nos Network Protocol
 - Treinar uma NN utilizando os inputs do RL e o embedding em um dataset pra pre-treinar a NN e iniciar com um epsilon baixo (talvez criar uma NN_RL_RMSE.py para isso) (Utilizar o Baeysian Opt para ver a architetura ideal) (verificar os dados apos coletar)
 - Testar o PodRun
 
-Artigo 1
+Artigo
 - Checar o uso a questão do custo de processamento exato para a rede neural 2x2, e o algoritmo topsis:
 - https://www.youtube.com/watch?v=o7_2bk6qQFE&list=PLgPbN3w-ia_MzatWGASfuPg9hon_Fsz1V
-- Checar o calculo de RMSE no verticalHandover
-- fix and understand fuzzy, checar o uso de fuzzy mais topsis ecc verificar se esta sendo unsado um saw la dentro.
+
+
+MELHORIAS NO SIMULADOR:
+1- MARKOV DECISION PROCESS para REALIZAR HANDOVER FAIL
+2- Curva nova para o caminho do dispositivo SUMO
+3- Reversal RANK - N TER SEMPRE TODAS AS NETWORKS, RANDOMIZAR
