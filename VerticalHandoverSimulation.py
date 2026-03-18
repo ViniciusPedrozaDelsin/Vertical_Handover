@@ -37,8 +37,8 @@ iter_interval = 1
 # Distance for iteration, 0.1 because the iter_interval is 100ms
 dist_iter = device_velocity * 0.1
 
-# n = Number of iterations, j = DO NOT CHANGE
-n = 120
+# n = Number of iterations, j = 0 (DO NOT CHANGE)
+n = 600
 j = 0
 
 # Activate Graphical Interface
@@ -48,13 +48,13 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 200
+n_simulations = 2000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
 
 # Plot Results
-plots = False
+plots = True
 
 # Predef Configs
 predef_conf = False
@@ -85,7 +85,7 @@ indicators_results = []
 random_walk_times = 20
 
 # Plots Folder
-plots_folder = "sim_4"
+plots_folder = "sim_5"
 plots_path = f"outputs//{plots_folder}"
 
 # DO NOT CHANGE

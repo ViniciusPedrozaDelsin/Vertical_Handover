@@ -32,7 +32,7 @@ class NN_RL_RMSE(DMM):
             self.model = tf.keras.models.load_model(model_name)
         
         # SHAP Analysis
-        self.shap_analysis = True
+        self.shap_analysis = False
         if self.shap_analysis:
             self.memory_shap = deque(maxlen=500)
             self.memory_shap_warmup = 500
@@ -279,7 +279,7 @@ class NN_RL_RMSE(DMM):
 
         self.memory.append((inpt_list[max_index], reward))
 
-        if np.random.rand() > 0.5:
+        if np.random.rand() < 0.01:
             self.modelTrain()
 
         return self.inputs[max_index]
