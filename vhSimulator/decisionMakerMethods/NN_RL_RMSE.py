@@ -37,17 +37,16 @@ class NN_RL_RMSE(DMM):
             self.memory_shap = deque(maxlen=500)
             self.memory_shap_warmup = 500
             self.shap_chance = 0.025
-        
-        '''# --- Target network (same architecture) ---
-        self.target_model = tf.keras.models.clone_model(self.model)
-        self.target_model.set_weights(self.model.get_weights())
-
-        # update frequency
-        self.target_update_freq = 1000'''
-
+            
+        # Training Analysis
+        self.train_analysis = True
+        if self.train_analysis:
+            self.training_losses = []
+            self.reward_history = []
+            self.reward_step_counter = 0
 
         # Episode tracking to avoid cross-simulation windows
-        self.simulation_length = simulation_length   # default 50 (you can change)
+        self.simulation_length = simulation_length 
         self.sim_step_counter = 0
         self.episode_id = 0
 
@@ -234,31 +233,18 @@ class NN_RL_RMSE(DMM):
             new_inp = new_inp | reordered
             inpt_list.append(new_inp)
             
-            # START - OLD CODE
-            """params = []
-            for key, value in new_inp.items():
-                params.append(value)
-
-            prediction = self.modelPrediction(params[0], params[1:self.memory_velocity_len], params[self.memory_velocity_len:])
-            predict_list.append(prediction)"""
-            # END - OLD CODE
-            
-            # START - NEW CODE
             params = []
             for key, value in new_inp.items():
                 params.append(value)
             inpt_list.append(new_inp)
-            predict_list.append(params)  # store params for now
+            predict_list.append(params)
 
-        # NOW batch predict all networks in ONE call
+        # Batch predict all networks in ONE call
         all_protocols  = np.array([p[0]                          for p in predict_list])
         all_velocities = np.array([p[1:self.memory_velocity_len] for p in predict_list])
         all_params     = np.array([p[self.memory_velocity_len:]  for p in predict_list])
-
-        predict_list = self.model.predict(
-            [all_protocols, all_velocities, all_params], verbose=0
-        ).flatten()
-        # END - NEW CODE
+        
+        predict_list = self.modelPrediction(all_protocols, all_velocities, all_params)
 
         #print("====================")
         #print(predict_list)
@@ -273,6 +259,12 @@ class NN_RL_RMSE(DMM):
         inpt_list[max_index]['Jitter'] = self.getInputsBkpNormalize('Jitter', max_index)
 
         reward = self.calculateReward(inpt_list[max_index])
+        if self.train_analysis:
+            self.reward_history.append({
+                'step': self.reward_step_counter,
+                'reward': reward
+            })
+            self.reward_step_counter += 1
 
         del inpt_list[max_index]['Delay']
         del inpt_list[max_index]['Jitter']
@@ -328,11 +320,10 @@ class NN_RL_RMSE(DMM):
         return model
     
     def Execute_SHAP_Analysis(self, inpts_protocol, inpts_velocities, inpts_model):
-        feature_vector = np.array([inpts_protocol] + list(inpts_velocities) + list(inpts_model))
+        feature_vector = np.concatenate([[inpts_protocol], np.array(inpts_velocities).flatten(), np.array(inpts_model).flatten()])
         self.memory_shap.append(feature_vector)
         if len(self.memory_shap) >= self.memory_shap_warmup:
             shap_sample = np.array(list(self.memory_shap)[:500])  # shape (30, 12)
-            #shap_sample = np.array(random.sample(list(self.memory_shap), min(100, len(self.memory_shap))))
             feature_names = ['Protocol', 'VEL_1', 'VEL_2', 'VEL_3', 'RSSI', 'SNR', 'Throughput', 'BER', 'FEC', 'PC', 'MC', 'HC']
 
             # Define a wrapper for SHAP
@@ -348,14 +339,23 @@ class NN_RL_RMSE(DMM):
             shap.summary_plot(shap_values.values, shap_sample, feature_names=feature_names, plot_type="bar")
             self.resetMemoryShap()
     
+    def getLearningCurves(self):
+        return {
+            'losses': pd.DataFrame(self.training_losses),
+            'rewards': pd.DataFrame(self.reward_history)
+        }
+    
     def modelPrediction(self, protocol_inputs, velocity_inputs, model_inputs):
         if np.random.rand() < self.epsilon:
-            prediction = [[np.random.rand()]]
+            prediction = []
+            for _ in range(len(protocol_inputs)):
+                prediction.append([np.random.rand()])
         else:
-            X = [np.array([protocol_inputs]), np.array([velocity_inputs]), np.array([model_inputs])]
+            X = [protocol_inputs, velocity_inputs, model_inputs]
             prediction = self.model.predict(X, verbose=0)
             if self.shap_analysis and np.random.rand() < self.shap_chance:
-                self.Execute_SHAP_Analysis(protocol_inputs, velocity_inputs, model_inputs)
+                for i in range(len(protocol_inputs)):
+                    self.Execute_SHAP_Analysis(protocol_inputs[i], velocity_inputs[i], model_inputs[i])
         return prediction
 
     def modelTrain(self):
@@ -402,18 +402,20 @@ class NN_RL_RMSE(DMM):
             # Set the learning rate to 0.00001
             if self.train_counter > 0:
                 self.model.optimizer.learning_rate.assign(3e-5)
-
-            self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
-
+            
+            history = self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
+            if self.train_analysis:
+                self.training_losses.append({
+                    'train_step': self.train_counter,
+                    'loss': history.history['loss'][0]
+                })
+                
             # Decay epsilon
             if self.epsilon > self.epsilon_min:
                 self.epsilon *= self.epsilon_decay
 
         self.train_counter += 1
 
-        '''# update target model every N updates
-        if self.train_counter % self.target_update_freq == 0:
-            self.target_model.set_weights(self.model.get_weights())'''
 
     def saveModel(self):
         if self.model_name != None:

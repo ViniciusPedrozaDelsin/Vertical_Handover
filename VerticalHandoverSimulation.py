@@ -38,7 +38,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = 0 (DO NOT CHANGE)
-n = 600
+n = 120
 j = 0
 
 # Activate Graphical Interface
@@ -48,7 +48,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 2000
+n_simulations = 10
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -85,7 +85,7 @@ indicators_results = []
 random_walk_times = 20
 
 # Plots Folder
-plots_folder = "sim_5"
+plots_folder = "sim_6"
 plots_path = f"outputs//{plots_folder}"
 
 # DO NOT CHANGE
@@ -1039,7 +1039,43 @@ def plot_results():
     
     # Safe RMSE RL Model
     if RMSE_RL_NN == True:
-        nn_rl_rmse.saveModel()
+        pass
+        #nn_rl_rmse.saveModel()
+    
+    if RMSE_RL_NN == True:
+        curves = nn_rl_rmse.getLearningCurves()
+        
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        
+        # --- Loss curve ---
+        if not curves['losses'].empty:
+            ax1.plot(curves['losses']['train_step'], curves['losses']['loss'], 
+                     color='blue', alpha=0.4, linewidth=0.8, label='Loss')
+            loss_rolling = curves['losses']['loss'].rolling(window=50, min_periods=1).mean()
+            ax1.plot(curves['losses']['train_step'], loss_rolling, 
+                     color='blue', linewidth=2, label='Loss (rolling avg 50)')
+            ax1.set_xlabel('Training Step', fontsize=12)
+            ax1.set_ylabel('Huber Loss', fontsize=12)
+            ax1.set_title('NN-RL Training Loss', fontsize=14, fontweight='bold')
+            ax1.legend()
+            ax1.grid(axis='y', linestyle='--', alpha=0.6)
+        
+        # --- Reward curve ---
+        if not curves['rewards'].empty:
+            ax2.plot(curves['rewards']['step'], curves['rewards']['reward'], 
+                     color='orange', alpha=0.2, linewidth=0.6, label='Reward')
+            reward_rolling = curves['rewards']['reward'].rolling(window=200, min_periods=1).mean()
+            ax2.plot(curves['rewards']['step'], reward_rolling, 
+                     color='orange', linewidth=2, label='Reward (rolling avg 200)')
+            ax2.set_xlabel('Decision Step', fontsize=12)
+            ax2.set_ylabel('Reward (neg. RMSE)', fontsize=12)
+            ax2.set_title('NN-RL Reward over Time', fontsize=14, fontweight='bold')
+            ax2.legend()
+            ax2.grid(axis='y', linestyle='--', alpha=0.6)
+        
+        plt.tight_layout()
+        plt.savefig(f"{plots_path}//learning_curves.png", dpi=600, bbox_inches='tight')
+        plt.show()
     
     # ==================================================== Start - RMSE Analisys ====================================================
 
@@ -1625,7 +1661,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras")
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL.keras") #model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
