@@ -262,7 +262,7 @@ class NN_RL_RMSE(DMM):
         if self.train_analysis:
             self.reward_history.append({
                 'step': self.reward_step_counter,
-                'reward': reward
+                'reward': predict_list[max_index][0]
             })
             self.reward_step_counter += 1
 
@@ -271,7 +271,7 @@ class NN_RL_RMSE(DMM):
 
         self.memory.append((inpt_list[max_index], reward))
 
-        if np.random.rand() < 0.01:
+        if np.random.rand() < 0.0:
             self.modelTrain()
 
         return self.inputs[max_index]
