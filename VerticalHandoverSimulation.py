@@ -45,10 +45,10 @@ j = 0
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = False
+verbose = True
 
 # Number of simulations
-n_simulations = 20
+n_simulations = 2000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -125,7 +125,7 @@ RMSE = True
 
 TOPSIS_NN = False
 
-RMSE_RL_NN = True
+RMSE_RL_NN = False
 # ============================================================================================
 
 
