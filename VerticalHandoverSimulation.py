@@ -47,7 +47,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 2000
+n_simulations = 1000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -81,7 +81,7 @@ indicators_results = []
 random_walk_times = 20
 
 # Plots Folder
-plots_folder = "sim_3"
+plots_folder = "test"
 plots_path = f"outputs//{plots_folder}"
 
 # DO NOT CHANGE
@@ -115,7 +115,7 @@ WPM = True
 
 TOPSIS = True
 
-Fuzzy = True
+Fuzzy = False
 
 RMSE = True
 
