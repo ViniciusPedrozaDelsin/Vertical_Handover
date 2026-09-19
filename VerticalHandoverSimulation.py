@@ -28,8 +28,12 @@ x_max, y_max = 1000, 1000
 x, y = x_max/2, y_max/2
 
 # Device Average Velocity
-#device_velocity = random.randint(10, 20) 
-device_velocity = 10
+
+# Pedestrian
+#device_velocity = 1.5
+
+# Car
+device_velocity = 15
 
 # Interval between iterations
 iter_interval = 1
@@ -38,17 +42,17 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = 0 (DO NOT CHANGE)
-n = 600
+n = 50
 j = 0
 
 # Activate Graphical Interface
 GUI = False
 
 # Activate Prints for DEBBUG
-verbose = True
+verbose = False
 
 # Number of simulations
-n_simulations = 2000
+n_simulations = 10
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -80,18 +84,28 @@ hyst_percentage = 0.3
 final_results = []
 indicators_results = []
 
-# Random Walk
-#random_walk_times = random.randint(15, 30)
-random_walk_times = 20
+# Pedestrian Gauss-Markov Mobility Model
+#gm_alpha = 0.7
+#gm_mean_speed = dist_iter           # target average speed per iteration
+#gm_std_speed = dist_iter * 0.15     # speed noise
+#gm_std_direction = math.radians(18)
+#max_turn_rate = None            # people can turn on the spot
+
+# Car Gauss-Markov Mobility Model
+gm_alpha = 0.95
+gm_mean_speed = dist_iter
+gm_std_speed = dist_iter * 0.15     # speed noise
+gm_std_direction = math.radians(6)
+max_turn_rate = math.radians(8) # enforces a realistic turning radius
 
 # Plots Folder
 plots_folder = "sim_7"
 plots_path = f"outputs//{plots_folder}"
 
-# DO NOT CHANGE
-random_direction_counter = 0
-old_dx = 0
-old_dy = 0
+
+# Gauss-Markov state
+current_direction = random.uniform(0, 2 * np.pi)
+current_speed = gm_mean_speed
 
 # To delete
 count_nn = 0
@@ -125,7 +139,7 @@ RMSE = True
 
 TOPSIS_NN = False
 
-RMSE_RL_NN = False
+RMSE_RL_NN = True
 # ============================================================================================
 
 
@@ -262,26 +276,42 @@ def connect_to_net(device):
 
 # =============================== Initialize Graph ===============================
 
-def random_direction():
-    global dist_iter
-    # Random angle in radians
-    angle = random.uniform(0, 2 * np.pi)
-    dx = dist_iter * np.cos(angle)
-    dy = dist_iter * np.sin(angle)
+def gauss_markov_step():
+    global current_direction, current_speed
+    speed_noise = random.gauss(0, gm_std_speed)
+    dir_noise = random.gauss(0, gm_std_direction)
+
+    new_speed = gm_alpha * current_speed + (1 - gm_alpha) * gm_mean_speed + math.sqrt(1 - gm_alpha**2) * speed_noise
+    new_dir = gm_alpha * current_direction + (1 - gm_alpha) * current_direction + math.sqrt(1 - gm_alpha**2) * dir_noise
+
+    if max_turn_rate is not None:
+        delta = (new_dir - current_direction + np.pi) % (2 * np.pi) - np.pi
+        delta = max(-max_turn_rate, min(max_turn_rate, delta))
+        new_dir = current_direction + delta
+
+    current_direction = new_dir
+    current_speed = max(new_speed, 0)
+
+    dx = current_speed * np.cos(current_direction)
+    dy = current_speed * np.sin(current_direction)
     return dx, dy
 
 
 def update_position(device):
-    global x, y, j, n, iter_interval, WNS_list, n_simulations, x_max, y_max, predef_conf, random_direction_counter, random_walk_times, old_dx, old_dy
-    if random_direction_counter == 0 or (random_direction_counter%random_walk_times) == 0:
-        dx, dy = random_direction()
-        old_dx = dx
-        old_dy = dy
-    else:
-        dx, dy = old_dx, old_dy
-    x = min(max(x + dx, 0), x_max)
-    y = min(max(y + dy, 0), y_max)
-    random_direction_counter += 1
+    global x, y, j, n, iter_interval, WNS_list, n_simulations, x_max, y_max, predef_conf, current_direction, current_speed
+    dx, dy = gauss_markov_step()
+
+    # Reflect off boundaries instead of clamping, so the path curves away
+    # from the edge instead of sliding along it.
+    new_x = x + dx
+    new_y = y + dy
+    if new_x < 0 or new_x > x_max:
+        current_direction = np.pi - current_direction
+        new_x = min(max(new_x, 0), x_max)
+    if new_y < 0 or new_y > y_max:
+        current_direction = -current_direction
+        new_y = min(max(new_y, 0), y_max)
+    x, y = new_x, new_y
     
     calculate_parameters(device, x, y)
     
@@ -1039,8 +1069,7 @@ def plot_results():
     
     # Safe RMSE RL Model
     if RMSE_RL_NN == True:
-        pass
-        #nn_rl_rmse.saveModel()
+        nn_rl_rmse.saveModel()
     
     if RMSE_RL_NN == True:
         curves = nn_rl_rmse.getLearningCurves()
@@ -1661,7 +1690,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL.keras") #model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n) #model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras"
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import hashlib
+import random
 import copy
 
 class DecisionMakerMethod:
@@ -36,6 +37,22 @@ class DecisionMakerMethod:
                         input['Delay'] = 415.7142857
                         input['Jitter'] = 122.142857
                         input['HC'] = 1
+                        if input['Protocol'] == "WiFi-2.4GHz":
+                            input['HC'] = 0.22
+                        elif input['Protocol'] == "WiFi-5GHz":
+                            input['HC'] = 0.15
+                        elif input['Protocol'] == "NB-IoT":
+                            input['HC'] = 0.75
+                        elif input['Protocol'] == "LoRa-868":
+                            input['HC'] = 0.9
+                        elif input['Protocol'] == "LTE-4G":
+                            input['HC'] = 0.25
+                        elif input['Protocol'] == "5G-N78":
+                            input['HC'] = 0.05
+                        elif input['Protocol'] == "5G-N28":
+                            input['HC'] = 0.1
+                        else:
+                            input['HC'] = 1
                 #print("==================================== Inputs ====================================")        
                 self.inputs = inputs
                 #print(self.inputs)
@@ -58,9 +75,51 @@ class DecisionMakerMethod:
             #print(self.inputs_bkp)
             #print("=================================================")
             
-            if self.old_decision != None:
-                if final_output['Network'] != self.old_decision:
+            HF_PROBABILITY_TABLE = {
+                "WiFi-2.4GHz": 0.05, "WiFi-5GHz": 0.03, "NB-IoT": 0.12,
+                "LoRa-868": 0.18, "LTE-4G": 0.04, "5G-N78": 0.01, "5G-N28": 0.02,
+            }
+            
+            disconnected = {
+                'Network': 'Disconnected', 
+                'Status': 'Offline', 
+                'Distance': np.float64(0), 
+                'RSSI': np.float64(0), 
+                'SNR': 0, 
+                'Throughput': 0, 
+                'BER': np.float64(0.01), 
+                'FEC': np.float64(0.5), 
+                'Protocol': 'Disconnected', 
+                'PC': 1.5, 
+                'MC': 5, 
+                'Delay': np.float64(1500), 
+                'Jitter': np.float64(600), 
+                'HC': 1
+            }
+            
+            if self.old_decision != None and final_output['Network'] != self.old_decision:
+                if final_output['Protocol'] == "WiFi-2.4GHz":
+                    final_output['HC'] = 0.22
+                elif final_output['Protocol'] == "WiFi-5GHz":
+                    final_output['HC'] = 0.15
+                elif final_output['Protocol'] == "NB-IoT":
+                    final_output['HC'] = 0.75
+                elif final_output['Protocol'] == "LoRa-868":
+                    final_output['HC'] = 0.9
+                elif final_output['Protocol'] == "LTE-4G":
+                    final_output['HC'] = 0.25
+                elif final_output['Protocol'] == "5G-N78":
+                    final_output['HC'] = 0.05
+                elif final_output['Protocol'] == "5G-N28":
+                    final_output['HC'] = 0.1
+                else:
                     final_output['HC'] = 1
+                
+                if random.random() < HF_PROBABILITY_TABLE[final_output['Protocol']]:
+                    final_output = next((inp for inp in self.inputs_bkp if inp['Network'] == self.old_decision), disconnected)
+                    final_output['HC'] = 1
+                    #print(self.old_decision)
+                    #print(final_output)
                     
             #print("==================== INP BKP 2 ====================")
             #print(self.old_decision)
