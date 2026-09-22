@@ -81,7 +81,7 @@ class DecisionMakerMethod:
             }
             
             disconnected = {
-                'Network': 'Disconnected', 
+                'Network': 'Offline', 
                 'Status': 'Offline', 
                 'Distance': np.float64(0), 
                 'RSSI': np.float64(0), 
@@ -89,7 +89,7 @@ class DecisionMakerMethod:
                 'Throughput': 0, 
                 'BER': np.float64(0.01), 
                 'FEC': np.float64(0.5), 
-                'Protocol': 'Disconnected', 
+                'Protocol': 'Offline', 
                 'PC': 1.5, 
                 'MC': 5, 
                 'Delay': np.float64(1500), 

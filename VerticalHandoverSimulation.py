@@ -42,7 +42,7 @@ iter_interval = 1
 dist_iter = device_velocity * 0.1
 
 # n = Number of iterations, j = 0 (DO NOT CHANGE)
-n = 50
+n = 600
 j = 0
 
 # Activate Graphical Interface
@@ -52,7 +52,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 10
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -99,7 +99,7 @@ gm_std_direction = math.radians(6)
 max_turn_rate = math.radians(8) # enforces a realistic turning radius
 
 # Plots Folder
-plots_folder = "sim_7"
+plots_folder = "sim_8"
 plots_path = f"outputs//{plots_folder}"
 
 
@@ -1690,7 +1690,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n) #model_name="RMSE_RL_5g_17inps_VELOCITY_EMBEDDING_W10_G095_32_64_32_16.keras"
+    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL.keras")
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
