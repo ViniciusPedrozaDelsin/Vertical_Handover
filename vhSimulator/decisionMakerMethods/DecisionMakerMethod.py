@@ -13,6 +13,8 @@ class DecisionMakerMethod:
         self.inputs_bkp = None
         self.output = None
         self.old_decision = None
+        self.old_dist = {}
+        self.outage = 0
         self.hp = None
     
     def resetParameters(self):
@@ -20,10 +22,13 @@ class DecisionMakerMethod:
         self.inputs_bkp = None
         self.output = None
         self.old_decision = None
+        self.old_dist = {}
+        self.outage = 0
         self.hp = None
         
     def send_inputs(self, inputs, hp=False):
         self.hp = hp
+
         if self.hp:
             self.inputs_bkp = copy.deepcopy(inputs) 
             #print("==================== INP BKP 1 ====================")
@@ -38,19 +43,19 @@ class DecisionMakerMethod:
                         input['Jitter'] = 122.142857
                         input['HC'] = 1
                         if input['Protocol'] == "WiFi-2.4GHz":
-                            input['HC'] = 0.22
+                            input['HC'] = 0.5
                         elif input['Protocol'] == "WiFi-5GHz":
-                            input['HC'] = 0.15
+                            input['HC'] = 0.4
                         elif input['Protocol'] == "NB-IoT":
                             input['HC'] = 0.75
                         elif input['Protocol'] == "LoRa-868":
-                            input['HC'] = 0.9
+                            input['HC'] = 0.95
                         elif input['Protocol'] == "LTE-4G":
-                            input['HC'] = 0.25
+                            input['HC'] = 0.65
                         elif input['Protocol'] == "5G-N78":
-                            input['HC'] = 0.05
+                            input['HC'] = 0.25
                         elif input['Protocol'] == "5G-N28":
-                            input['HC'] = 0.1
+                            input['HC'] = 0.3
                         else:
                             input['HC'] = 1
                 #print("==================================== Inputs ====================================")        
@@ -67,7 +72,8 @@ class DecisionMakerMethod:
         else:
             self.inputs = inputs
     
-    def return_output(self):
+    '''def return_output(self):
+
         if self.hp:
             final_output = next((inp for inp in self.inputs_bkp if inp['Network'] == self.output['Network']), None)
             
@@ -75,9 +81,19 @@ class DecisionMakerMethod:
             #print(self.inputs_bkp)
             #print("=================================================")
             
-            HF_PROBABILITY_TABLE = {
+            HF_PROBABILITY_TABLE_Too_Early = {
                 "WiFi-2.4GHz": 0.05, "WiFi-5GHz": 0.03, "NB-IoT": 0.12,
                 "LoRa-868": 0.18, "LTE-4G": 0.04, "5G-N78": 0.01, "5G-N28": 0.02,
+            }
+
+            HF_PROBABILITY_TABLE_Too_Late = {
+                "WiFi-2.4GHz": 0.05, "WiFi-5GHz": 0.03, "NB-IoT": 0.12,
+                "LoRa-868": 0.18, "LTE-4G": 0.04, "5G-N78": 0.01, "5G-N28": 0.02,
+            }
+
+            protocol_minimum_snr = {
+                "WiFi-2.4GHz": 10, "WiFi-5GHz": 7, "NB-IoT": 2,
+                "LoRa-868": 0, "LTE-4G": 5, "5G-N78": 4, "5G-N28": 3,
             }
             
             disconnected = {
@@ -99,27 +115,53 @@ class DecisionMakerMethod:
             
             if self.old_decision != None and final_output['Network'] != self.old_decision:
                 if final_output['Protocol'] == "WiFi-2.4GHz":
-                    final_output['HC'] = 0.22
+                    final_output['HC'] = 0.5
                 elif final_output['Protocol'] == "WiFi-5GHz":
-                    final_output['HC'] = 0.15
+                    final_output['HC'] = 0.4
                 elif final_output['Protocol'] == "NB-IoT":
                     final_output['HC'] = 0.75
                 elif final_output['Protocol'] == "LoRa-868":
-                    final_output['HC'] = 0.9
+                    final_output['HC'] = 0.95
                 elif final_output['Protocol'] == "LTE-4G":
-                    final_output['HC'] = 0.25
+                    final_output['HC'] = 0.65
                 elif final_output['Protocol'] == "5G-N78":
-                    final_output['HC'] = 0.05
+                    final_output['HC'] = 0.25
                 elif final_output['Protocol'] == "5G-N28":
-                    final_output['HC'] = 0.1
+                    final_output['HC'] = 0.3
                 else:
                     final_output['HC'] = 1
-                
-                if random.random() < HF_PROBABILITY_TABLE[final_output['Protocol']]:
-                    final_output = next((inp for inp in self.inputs_bkp if inp['Network'] == self.old_decision), disconnected)
+
+                dist_diff = 0
+                prev_dist = self.old_dist.get(final_output['Network'])
+                if prev_dist is not None:
+                    dist_diff = final_output['Distance'] - prev_dist
+
+
+                EDGE_BAND = 10.0      # dB above minimum SNR where the risk starts to grow
+                MAX_MULT = 10.0       # multiplier at the edge when moving directly away
+                REF_SPEED = 1.5       # m per step (15 m/s car); receding at this speed = full effect
+
+                proto = final_output['Protocol']
+                margin = final_output['SNR'] - protocol_minimum_snr[proto]
+
+                # 0 = far from the edge, 1 = at the edge
+                closeness = min(max(1 - margin / EDGE_BAND, 0.0), 1.0)
+
+                # 0 = approaching or static, 1 = moving away at full speed
+                receding = min(max(dist_diff / REF_SPEED, 0.0), 1.0)
+
+                mult = 1 + (MAX_MULT - 1) * closeness * receding
+
+                p_early = min(HF_PROBABILITY_TABLE_Too_Early[proto] * mult, 0.9)
+                p_late = min(HF_PROBABILITY_TABLE_Too_Late[proto] * mult, 0.9)
+
+                r = random.random()
+                if r < p_early:
+                    final_output = copy.deepcopy(next((inp for inp in self.inputs_bkp if inp['Network'] == self.old_decision), disconnected))
                     final_output['HC'] = 1
-                    #print(self.old_decision)
-                    #print(final_output)
+                elif r < p_early + p_late:
+                    final_output = copy.deepcopy(disconnected)
+                    final_output['HC'] = 1
                     
             #print("==================== INP BKP 2 ====================")
             #print(self.old_decision)
@@ -128,6 +170,129 @@ class DecisionMakerMethod:
         else:
             final_output = self.output
         self.inputs = self.inputs_bkp
+
+
+        if self.hp:
+            self.old_dist = {}
+            for input in self.inputs_bkp:
+                self.old_dist[input['Network']] = input['Distance']
+
+        return final_output'''
+
+    def return_output(self):
+
+        if self.hp:
+            final_output = next((inp for inp in self.inputs_bkp if inp['Network'] == self.output['Network']), None)
+            
+            HF_PROBABILITY_TABLE_Too_Early = {
+                "WiFi-2.4GHz": 0.010, "WiFi-5GHz": 0.006, "NB-IoT": 0.024,
+                "LoRa-868": 0.036, "LTE-4G": 0.008, "5G-N78": 0.002, "5G-N28": 0.004,
+            }
+
+            HF_PROBABILITY_TABLE_Too_Late = {
+                "WiFi-2.4GHz": 0.010, "WiFi-5GHz": 0.006, "NB-IoT": 0.024,
+                "LoRa-868": 0.036, "LTE-4G": 0.008, "5G-N78": 0.002, "5G-N28": 0.004,
+            }
+
+            protocol_minimum_snr = {
+                "WiFi-2.4GHz": 10, "WiFi-5GHz": 7, "NB-IoT": 2,
+                "LoRa-868": 0, "LTE-4G": 5, "5G-N78": 4, "5G-N28": 3,
+            }
+            
+            disconnected = {
+                'Network': 'Offline', 
+                'Status': 'Offline', 
+                'Distance': np.float64(0), 
+                'RSSI': np.float64(0), 
+                'SNR': 0, 
+                'Throughput': 0, 
+                'BER': np.float64(0.01), 
+                'FEC': np.float64(0.5), 
+                'Protocol': 'Offline', 
+                'PC': 1.5, 
+                'MC': 5, 
+                'Delay': np.float64(1500), 
+                'Jitter': np.float64(600), 
+                'HC': 1
+            }
+
+            OUTAGE_STEPS = 10       # 1 second of disconnection after a failed handover (10 x 100 ms)
+
+            # Too-late handover: the current network disappeared before the device left it
+            current_nets = {inp['Network'] for inp in self.inputs_bkp}
+            if self.outage == 0 and self.old_decision not in (None, 'Offline') and self.old_decision not in current_nets:
+                # Radio link failure: stayed too long on a network that went out of range
+                self.outage = OUTAGE_STEPS
+
+            if self.outage > 0:
+                # Still inside the 1 s outage from a failed handover
+                self.outage -= 1
+                final_output = copy.deepcopy(disconnected)
+
+            elif self.old_decision != None and final_output['Network'] != self.old_decision:
+                if final_output['Protocol'] == "WiFi-2.4GHz":
+                    final_output['HC'] = 0.5
+                elif final_output['Protocol'] == "WiFi-5GHz":
+                    final_output['HC'] = 0.4
+                elif final_output['Protocol'] == "NB-IoT":
+                    final_output['HC'] = 0.75
+                elif final_output['Protocol'] == "LoRa-868":
+                    final_output['HC'] = 0.95
+                elif final_output['Protocol'] == "LTE-4G":
+                    final_output['HC'] = 0.65
+                elif final_output['Protocol'] == "5G-N78":
+                    final_output['HC'] = 0.25
+                elif final_output['Protocol'] == "5G-N28":
+                    final_output['HC'] = 0.3
+                else:
+                    final_output['HC'] = 1
+
+                dist_diff = 0
+                prev_dist = self.old_dist.get(final_output['Network'])
+                if prev_dist is not None:
+                    dist_diff = final_output['Distance'] - prev_dist
+
+                # ================= Velocity-dependent handover failure =================
+                APPROACH_SCALE = 0.1    # approaching the AP at full speed: failure 10x lower than base
+                EDGE_BAND = 12.0        # dB above minimum SNR where the risk starts to grow
+                P_MAX = 0.7             # total failure chance at the edge, moving straight away
+                REF_SPEED = 1.5         # m per step (15 m/s car)
+
+                proto = final_output['Protocol']
+                table_early = HF_PROBABILITY_TABLE_Too_Early[proto]
+                table_late = HF_PROBABILITY_TABLE_Too_Late[proto]
+                base = table_early + table_late
+
+                margin = final_output['SNR'] - protocol_minimum_snr[proto]
+                closeness = min(max(1 - margin / EDGE_BAND, 0.0), 1.0)   # 0 = safe, 1 = at the edge
+                speed = min(abs(dist_diff) / REF_SPEED, 1.0)             # 0 = static, 1 = full speed
+
+                if dist_diff > 0:
+                    # Moving away: risk grows toward P_MAX near the edge
+                    p_fail = base + (P_MAX - base) * closeness * speed
+                elif dist_diff < 0:
+                    # Approaching: risk drops below the base
+                    p_fail = base * (1 - (1 - APPROACH_SCALE) * speed)
+                else:
+                    # No history for this network: base risk
+                    p_fail = base
+
+                if random.random() < p_fail:
+                    # Handover failed: disconnected now and for the rest of the 1 s outage
+                    final_output = copy.deepcopy(disconnected)
+                    self.outage = OUTAGE_STEPS - 1
+                # ========================================================================
+
+        else:
+            final_output = self.output
+        self.inputs = self.inputs_bkp
+
+
+        if self.hp:
+            self.old_dist = {}
+            for input in self.inputs_bkp:
+                self.old_dist[input['Network']] = input['Distance']
+
         return final_output
     
     def create_unique_id(*args):

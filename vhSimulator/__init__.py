@@ -9,7 +9,9 @@ from .decisionMakerMethods import MPMO_TOPSIS
 from .decisionMakerMethods import MPMO_Fuzzy
 from .decisionMakerMethods import MPMO_RMSE
 from .decisionMakerMethods import NN_TOPSIS
-from .decisionMakerMethods import NN_RL_RMSE
+from .decisionMakerMethods import NN_RL_RMSE_1
+from .decisionMakerMethods import NN_RL_RMSE_2
+from .decisionMakerMethods import NN_RL_RMSE_3
 from .decisionMakerMethods import BenchmarkMethod
 from .decisionMakerMethods import WorstScenarioMethod
 from .analysis import PerformanceAnalysis

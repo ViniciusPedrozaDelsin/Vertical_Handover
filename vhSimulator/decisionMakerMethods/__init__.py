@@ -6,6 +6,8 @@ from .MPMO_TOPSIS import MPMO_TOPSIS
 from .MPMO_Fuzzy import MPMO_Fuzzy
 from .MPMO_RMSE import MPMO_RMSE
 from .NN_TOPSIS import NN_TOPSIS
-from .NN_RL_RMSE import NN_RL_RMSE
+from .NN_RL_RMSE_1 import NN_RL_RMSE_1
+from .NN_RL_RMSE_2 import NN_RL_RMSE_2
+from .NN_RL_RMSE_3 import NN_RL_RMSE_3
 from .BenchmarkMethod import BenchmarkMethod
 from .WorstScenarioMethod import WorstScenarioMethod

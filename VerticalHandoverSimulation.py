@@ -17,7 +17,7 @@ from vhSimulator import Device
 from vhSimulator import WirelessNetworkSystem as WNS
 from vhSimulator import SPMO_Max_Min_Method as SPMO_MMM
 from vhSimulator import SPMO_Preference as SPMO_Pref
-from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, NN_TOPSIS, NN_RL_RMSE, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
+from vhSimulator import MPMO_SAW, MPMO_WPM, MPMO_TOPSIS, MPMO_Fuzzy, MPMO_RMSE, NN_TOPSIS, NN_RL_RMSE_1, NN_RL_RMSE_2, NN_RL_RMSE_3, BenchmarkMethod, WorstScenarioMethod, PerformanceAnalysis
 
 
 # ==================================== Initial Parameters ====================================
@@ -52,7 +52,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 200
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -118,7 +118,9 @@ wpm_choices = []
 topsis_choices = []
 fuzzy_choices = []
 rmse_choices = []
-nn_rl_rmse_choices = []
+nn_rl_rmse_choices_1 = []
+nn_rl_rmse_choices_2 = []
+nn_rl_rmse_choices_3 = []
 # ============================================================================================
 
 
@@ -127,19 +129,23 @@ nn_rl_rmse_choices = []
 # ===================================== MADM Algorithms ======================================
 SPMO_Methods = False
 
-SAW = True
+SAW = False
 
-WPM = True
+WPM = False
 
-TOPSIS = True
+TOPSIS = False
 
-Fuzzy = True
+Fuzzy = False
 
 RMSE = True
 
 TOPSIS_NN = False
 
-RMSE_RL_NN = True
+RMSE_RL_NN_1 = True
+
+RMSE_RL_NN_2 = True
+
+RMSE_RL_NN_3 = True
 # ============================================================================================
 
 
@@ -400,10 +406,18 @@ def update_position(device):
             if TOPSIS_NN == True:
                 nn_topsis.resetParameters()
                 p_nn_topsis.clean_storaged_QoS()
-            if RMSE_RL_NN == True:
-                nn_rl_rmse.resetParameters()
-                nn_rl_rmse.resetMemoryVelocity()
-                p_nn_rl_rmse.clean_storaged_QoS()
+            if RMSE_RL_NN_1 == True:
+                nn_rl_rmse_1.resetParameters()
+                nn_rl_rmse_1.resetMemoryVelocity()
+                p_nn_rl_rmse_1.clean_storaged_QoS()
+            if RMSE_RL_NN_2 == True:
+                nn_rl_rmse_2.resetParameters()
+                nn_rl_rmse_2.resetMemoryVelocity()
+                p_nn_rl_rmse_2.clean_storaged_QoS()
+            if RMSE_RL_NN_3 == True:
+                nn_rl_rmse_3.resetParameters()
+                nn_rl_rmse_3.resetMemoryVelocity()
+                p_nn_rl_rmse_3.clean_storaged_QoS()
             p_benchmark.clean_storaged_QoS()
             p_worst_scenario.clean_storaged_QoS()
             # Cleaning old Benchmark QoS parameters Storaged
@@ -453,8 +467,12 @@ def update_position(device):
                     p_mpmo_rmse_ttt.clean_Benchmark_storaged_QoS()
             if TOPSIS_NN == True:
                 p_nn_topsis.clean_Benchmark_storaged_QoS()
-            if RMSE_RL_NN == True:
-                p_nn_rl_rmse.clean_Benchmark_storaged_QoS()
+            if RMSE_RL_NN_1 == True:
+                p_nn_rl_rmse_1.clean_Benchmark_storaged_QoS()
+            if RMSE_RL_NN_2 == True:
+                p_nn_rl_rmse_2.clean_Benchmark_storaged_QoS()
+            if RMSE_RL_NN_3 == True:
+                p_nn_rl_rmse_3.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             p_worst_scenario.clean_Benchmark_storaged_QoS()
             j = 0
@@ -720,16 +738,38 @@ def calculate_parameters(device, x_position, y_position):
         p_nn_topsis.store_Benchmark_QoS_parameters(decision_benchmark)
         if verbose == True: print(f"Decision NN TOPSIS: {decision_nn_topsis}")
     
-    if RMSE_RL_NN == True:
+    if RMSE_RL_NN_1 == True:
     
         if available_networks != []:
-            decision_nn_rl_rmse = device.makeDecision(nn_rl_rmse, available_networks, hidden_parameters=True)
+            decision_nn_rl_rmse_1 = device.makeDecision(nn_rl_rmse_1, available_networks, hidden_parameters=True)
         else:
-            decision_nn_rl_rmse = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
-        if plot_time_connected: nn_rl_rmse_choices.append(decision_nn_rl_rmse['Protocol'])
-        p_nn_rl_rmse.store_QoS_parameters(decision_nn_rl_rmse)
-        p_nn_rl_rmse.store_Benchmark_QoS_parameters(decision_benchmark)
-        if verbose == True: print(f"Decision NN RL RMSE: {decision_nn_rl_rmse}")
+            decision_nn_rl_rmse_1 = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: nn_rl_rmse_choices_1.append(decision_nn_rl_rmse_1['Protocol'])
+        p_nn_rl_rmse_1.store_QoS_parameters(decision_nn_rl_rmse_1)
+        p_nn_rl_rmse_1.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision NN RL RMSE: {decision_nn_rl_rmse_1}")
+
+    if RMSE_RL_NN_2 == True:
+    
+        if available_networks != []:
+            decision_nn_rl_rmse_2 = device.makeDecision(nn_rl_rmse_2, available_networks, hidden_parameters=True)
+        else:
+            decision_nn_rl_rmse_2 = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: nn_rl_rmse_choices_2.append(decision_nn_rl_rmse_2['Protocol'])
+        p_nn_rl_rmse_2.store_QoS_parameters(decision_nn_rl_rmse_2)
+        p_nn_rl_rmse_2.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision NN RL RMSE: {decision_nn_rl_rmse_2}")
+
+    if RMSE_RL_NN_3 == True:
+    
+        if available_networks != []:
+            decision_nn_rl_rmse_3 = device.makeDecision(nn_rl_rmse_3, available_networks, hidden_parameters=True)
+        else:
+            decision_nn_rl_rmse_3 = {'Network': 'Offline', 'Status': 'Offline', 'Protocol': 'Offline', 'RSSI': 0, 'SNR': 0, 'Throughput': 0, 'PC': 0, 'MC': 0, 'BER': 0, 'FEC': 0, 'Delay': 0, 'Jitter': 0, 'HC': 0}
+        if plot_time_connected: nn_rl_rmse_choices_3.append(decision_nn_rl_rmse_3['Protocol'])
+        p_nn_rl_rmse_3.store_QoS_parameters(decision_nn_rl_rmse_3)
+        p_nn_rl_rmse_3.store_Benchmark_QoS_parameters(decision_benchmark)
+        if verbose == True: print(f"Decision NN RL RMSE: {decision_nn_rl_rmse_3}")
     
     #global count_nn
     #if decision_nn_topsis == decision_mpmo_topsis: count_nn = count_nn + 1
@@ -960,15 +1000,33 @@ def performe_analysis():
         indicators_list.append(indicators_nn_topsis)
         results_list.append(results_nn_topsis)
     
-    if RMSE_RL_NN == True: 
-        results_nn_rl_rmse = p_nn_rl_rmse.calculate_average_QoS_parameters(analyzed_parameters)
-        results_nn_rl_rmse['Handover'] = p_nn_rl_rmse.count_number_of_handovers()
-        results_nn_rl_rmse['Algorithm'] = p_nn_rl_rmse.algorithm
-        indicators_nn_rl_rmse = p_nn_rl_rmse.calculate_Abs_error_QoS_parameters(analyzed_parameters)
-        indicators_nn_rl_rmse['Algorithm'] = results_nn_rl_rmse['Algorithm']
-        indicators_list.append(indicators_nn_rl_rmse)
-        results_list.append(results_nn_rl_rmse)
+    if RMSE_RL_NN_1 == True: 
+        results_nn_rl_rmse_1 = p_nn_rl_rmse_1.calculate_average_QoS_parameters(analyzed_parameters)
+        results_nn_rl_rmse_1['Handover'] = p_nn_rl_rmse_1.count_number_of_handovers()
+        results_nn_rl_rmse_1['Algorithm'] = p_nn_rl_rmse_1.algorithm
+        indicators_nn_rl_rmse_1 = p_nn_rl_rmse_1.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_nn_rl_rmse_1['Algorithm'] = results_nn_rl_rmse_1['Algorithm']
+        indicators_list.append(indicators_nn_rl_rmse_1)
+        results_list.append(results_nn_rl_rmse_1)
     
+    if RMSE_RL_NN_2 == True: 
+        results_nn_rl_rmse_2 = p_nn_rl_rmse_2.calculate_average_QoS_parameters(analyzed_parameters)
+        results_nn_rl_rmse_2['Handover'] = p_nn_rl_rmse_2.count_number_of_handovers()
+        results_nn_rl_rmse_2['Algorithm'] = p_nn_rl_rmse_2.algorithm
+        indicators_nn_rl_rmse_2 = p_nn_rl_rmse_2.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_nn_rl_rmse_2['Algorithm'] = results_nn_rl_rmse_2['Algorithm']
+        indicators_list.append(indicators_nn_rl_rmse_2)
+        results_list.append(results_nn_rl_rmse_2)
+
+    if RMSE_RL_NN_3 == True: 
+        results_nn_rl_rmse_3 = p_nn_rl_rmse_3.calculate_average_QoS_parameters(analyzed_parameters)
+        results_nn_rl_rmse_3['Handover'] = p_nn_rl_rmse_3.count_number_of_handovers()
+        results_nn_rl_rmse_3['Algorithm'] = p_nn_rl_rmse_3.algorithm
+        indicators_nn_rl_rmse_3 = p_nn_rl_rmse_3.calculate_Abs_error_QoS_parameters(analyzed_parameters)
+        indicators_nn_rl_rmse_3['Algorithm'] = results_nn_rl_rmse_3['Algorithm']
+        indicators_list.append(indicators_nn_rl_rmse_3)
+        results_list.append(results_nn_rl_rmse_3)
+
     indicators_worst_scenario = p_worst_scenario.calculate_Abs_error_QoS_parameters(analyzed_parameters)
     indicators_worst_scenario['Algorithm'] = p_worst_scenario.algorithm
     indicators_list.append(indicators_worst_scenario)
@@ -1026,8 +1084,12 @@ def performe_analysis():
             print(f"{results_mpmo_rmse_ttt}, Handoff: {results_mpmo_rmse_ttt['Handover']}")
     if TOPSIS_NN == True: 
         print(f"{results_nn_topsis}, Handoff: {results_nn_topsis['Handover']}")
-    if RMSE_RL_NN == True: 
-        print(f"{results_nn_rl_rmse}, Handoff: {results_nn_rl_rmse['Handover']}")
+    if RMSE_RL_NN_1 == True: 
+        print(f"{results_nn_rl_rmse_1}, Handoff: {results_nn_rl_rmse_1['Handover']}")
+    if RMSE_RL_NN_2 == True: 
+        print(f"{results_nn_rl_rmse_2}, Handoff: {results_nn_rl_rmse_2['Handover']}")
+    if RMSE_RL_NN_3 == True: 
+        print(f"{results_nn_rl_rmse_3}, Handoff: {results_nn_rl_rmse_3['Handover']}")
     print(f"{results_benchmark}, Handoff: {results_benchmark['Handover']}")
     print("========================================================================================================================")
     
@@ -1067,12 +1129,12 @@ def plot_results():
     
     
     
-    # Safe RMSE RL Model
-    if RMSE_RL_NN == True:
-        nn_rl_rmse.saveModel()
+    # Safe RMSE RL_1 Model
+    if RMSE_RL_NN_1 == True:
+        nn_rl_rmse_1.saveModel()
     
-    if RMSE_RL_NN == True:
-        curves = nn_rl_rmse.getLearningCurves()
+    if RMSE_RL_NN_1 == True:
+        curves = nn_rl_rmse_1.getLearningCurves()
         
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
         
@@ -1085,7 +1147,7 @@ def plot_results():
                      color='blue', linewidth=2, label='Loss (rolling avg 50)')
             ax1.set_xlabel('Training Step', fontsize=12)
             ax1.set_ylabel('Huber Loss', fontsize=12)
-            ax1.set_title('NN-RL Training Loss', fontsize=14, fontweight='bold')
+            ax1.set_title('NN-RL-Embedding Training Loss', fontsize=14, fontweight='bold')
             ax1.legend()
             ax1.grid(axis='y', linestyle='--', alpha=0.6)
         
@@ -1098,12 +1160,92 @@ def plot_results():
                      color='orange', linewidth=2, label='Reward (rolling avg 200)')
             ax2.set_xlabel('Decision Step', fontsize=12)
             ax2.set_ylabel('Estimated Reward', fontsize=12)
-            ax2.set_title('NN-RL Reward over Time', fontsize=14, fontweight='bold')
+            ax2.set_title('NN-RL-Embedding Reward over Time', fontsize=14, fontweight='bold')
             ax2.legend()
             ax2.grid(axis='y', linestyle='--', alpha=0.6)
         
         plt.tight_layout()
-        plt.savefig(f"{plots_path}//learning_curves.png", dpi=600, bbox_inches='tight')
+        plt.savefig(f"{plots_path}//learning_curves_1.png", dpi=600, bbox_inches='tight')
+        plt.show()
+
+
+    # Safe RMSE RL_2 Model
+    if RMSE_RL_NN_2 == True:
+        nn_rl_rmse_2.saveModel()
+    
+    if RMSE_RL_NN_2 == True:
+        curves = nn_rl_rmse_2.getLearningCurves()
+        
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        
+        # --- Loss curve ---
+        if not curves['losses'].empty:
+            ax1.plot(curves['losses']['train_step'], curves['losses']['loss'], 
+                     color='blue', alpha=0.4, linewidth=0.8, label='Loss')
+            loss_rolling = curves['losses']['loss'].rolling(window=50, min_periods=1).mean()
+            ax1.plot(curves['losses']['train_step'], loss_rolling, 
+                     color='blue', linewidth=2, label='Loss (rolling avg 50)')
+            ax1.set_xlabel('Training Step', fontsize=12)
+            ax1.set_ylabel('Huber Loss', fontsize=12)
+            ax1.set_title('NN-RL-OneHot Training Loss', fontsize=14, fontweight='bold')
+            ax1.legend()
+            ax1.grid(axis='y', linestyle='--', alpha=0.6)
+        
+        # --- Reward curve ---
+        if not curves['rewards'].empty:
+            ax2.plot(curves['rewards']['step'], curves['rewards']['reward'], 
+                     color='orange', alpha=0.2, linewidth=0.6, label='Reward')
+            reward_rolling = curves['rewards']['reward'].rolling(window=200, min_periods=1).mean()
+            ax2.plot(curves['rewards']['step'], reward_rolling, 
+                     color='orange', linewidth=2, label='Reward (rolling avg 200)')
+            ax2.set_xlabel('Decision Step', fontsize=12)
+            ax2.set_ylabel('Estimated Reward', fontsize=12)
+            ax2.set_title('NN-RL-OneHot Reward over Time', fontsize=14, fontweight='bold')
+            ax2.legend()
+            ax2.grid(axis='y', linestyle='--', alpha=0.6)
+        
+        plt.tight_layout()
+        plt.savefig(f"{plots_path}//learning_curves_2.png", dpi=600, bbox_inches='tight')
+        plt.show()
+
+
+    # Safe RMSE RL_3 Model
+    if RMSE_RL_NN_3 == True:
+        nn_rl_rmse_3.saveModel()
+    
+    if RMSE_RL_NN_3 == True:
+        curves = nn_rl_rmse_3.getLearningCurves()
+        
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        
+        # --- Loss curve ---
+        if not curves['losses'].empty:
+            ax1.plot(curves['losses']['train_step'], curves['losses']['loss'], 
+                     color='blue', alpha=0.4, linewidth=0.8, label='Loss')
+            loss_rolling = curves['losses']['loss'].rolling(window=50, min_periods=1).mean()
+            ax1.plot(curves['losses']['train_step'], loss_rolling, 
+                     color='blue', linewidth=2, label='Loss (rolling avg 50)')
+            ax1.set_xlabel('Training Step', fontsize=12)
+            ax1.set_ylabel('Huber Loss', fontsize=12)
+            ax1.set_title('NN-RL-noProtocol Training Loss', fontsize=14, fontweight='bold')
+            ax1.legend()
+            ax1.grid(axis='y', linestyle='--', alpha=0.6)
+        
+        # --- Reward curve ---
+        if not curves['rewards'].empty:
+            ax2.plot(curves['rewards']['step'], curves['rewards']['reward'], 
+                     color='orange', alpha=0.2, linewidth=0.6, label='Reward')
+            reward_rolling = curves['rewards']['reward'].rolling(window=200, min_periods=1).mean()
+            ax2.plot(curves['rewards']['step'], reward_rolling, 
+                     color='orange', linewidth=2, label='Reward (rolling avg 200)')
+            ax2.set_xlabel('Decision Step', fontsize=12)
+            ax2.set_ylabel('Estimated Reward', fontsize=12)
+            ax2.set_title('NN-RL-noProtocol Reward over Time', fontsize=14, fontweight='bold')
+            ax2.legend()
+            ax2.grid(axis='y', linestyle='--', alpha=0.6)
+        
+        plt.tight_layout()
+        plt.savefig(f"{plots_path}//learning_curves_3.png", dpi=600, bbox_inches='tight')
         plt.show()
     
     # ==================================================== Start - RMSE Analisys ====================================================
@@ -1214,6 +1356,15 @@ def plot_results():
     #print("=======================================================================================")
     
     raw_rmse_values_for_statistical_analysis = copy.deepcopy(rsme_final_results)
+
+    per_sim = np.array([[sum(a) for a in sim] for sim in raw_rmse_values_for_statistical_analysis])
+    # columns: 0 = RMSE, 1 = LSTM, 2 = noLSTM, 3 = noVel
+    for i, k, name in [(1, 2, "Embedding vs OneHot"), (2, 3, "OneHot vs noProtocol"), (1, 3, "Embedding vs noProtocol")]:
+        d = per_sim[:, i] - per_sim[:, k]
+        sd_d = d.std(ddof=1)
+        z = d.mean() / (sd_d / np.sqrt(len(d)))
+        n_needed = (2.80 * sd_d / d.mean()) ** 2
+        print(f"{name}: mean diff = {d.mean():.2f}, sd_d = {sd_d:.2f}, z now = {z:.2f}, n for 80% power = {n_needed:.0f}")
     
     i = 0
     for sum_result_list in rsme_final_results:
@@ -1337,9 +1488,15 @@ def plot_results():
         if RMSE == True:
             counts_rmse = Counter(rmse_choices)
             network_choices['RMSE'] = counts_rmse
-        if RMSE_RL_NN == True: 
-            counts_nn_rl_rmse = Counter(nn_rl_rmse_choices)
-            network_choices['RMSE-RL-NN'] = counts_nn_rl_rmse
+        if RMSE_RL_NN_1 == True: 
+            counts_nn_rl_rmse_1 = Counter(nn_rl_rmse_choices_1)
+            network_choices['RMSE-RL-NN_1'] = counts_nn_rl_rmse_1
+        if RMSE_RL_NN_2 == True: 
+            counts_nn_rl_rmse_2 = Counter(nn_rl_rmse_choices_2)
+            network_choices['RMSE-RL-NN_2'] = counts_nn_rl_rmse_2
+        if RMSE_RL_NN_3 == True: 
+            counts_nn_rl_rmse_3 = Counter(nn_rl_rmse_choices_3)
+            network_choices['RMSE-RL-NN_3'] = counts_nn_rl_rmse_3
         print(f"Network Choices: {network_choices}")
         
         # Get all unique protocols
@@ -1522,10 +1679,10 @@ def plot_results():
             num_rows = math.ceil(num_params_group / num_cols)
             
             # 1 - 3 columns
-            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
+            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
             
             # 4 - 10 columns
-            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
+            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
             
             # 11 - 17 columns
             #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 3 * num_rows), constrained_layout=True)
@@ -1538,9 +1695,13 @@ def plot_results():
 
                 ax = axes[i]
                 
+                # 3 METHODS
+                #hatches = ['', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+
                 # 4 METHODS
-                #hatches = ['', '', '', '', '']
-                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS
                 #hatches = ['', '', '', '', '', '', '', '']
@@ -1559,8 +1720,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE + RL
-                hatches = ['', '', '', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS + RMSE + RL
                 #hatches = ['', '', '', '', '', '', '', '', '', '']
@@ -1689,8 +1850,12 @@ if RMSE == True:
         mpmo_rmse_ttt = MPMO_RMSE("MPMO-RMSE-TimeToTrigger", analyzed_parameters, weights, directions, time_to_trigger=tt_trigger)
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
-if RMSE_RL_NN == True:
-    nn_rl_rmse = NN_RL_RMSE("NN-RL_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL.keras")
+if RMSE_RL_NN_1 == True:
+    nn_rl_rmse_1 = NN_RL_RMSE_1("NN-RL_RMSE_Embedding", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_1.keras") #model_name="RMSE_RL_1.keras"
+if RMSE_RL_NN_2 == True:
+    nn_rl_rmse_2 = NN_RL_RMSE_2("NN-RL_RMSE_OneHot", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_2.keras")
+if RMSE_RL_NN_3 == True:
+    nn_rl_rmse_3 = NN_RL_RMSE_3("NN-RL_RMSE_noProtocol", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_3.keras")
 benchmark = BenchmarkMethod("Benchmark", analyzed_parameters, directions)
 worst_scenario = WorstScenarioMethod("Worst-Scenario", analyzed_parameters, directions)
 
@@ -1741,8 +1906,12 @@ if RMSE == True:
         p_mpmo_rmse_ttt = PerformanceAnalysis("RMSE-TTT")
 if TOPSIS_NN == True: 
     p_nn_topsis = PerformanceAnalysis("NN-TOPSIS")
-if RMSE_RL_NN == True: 
-    p_nn_rl_rmse = PerformanceAnalysis("NN-RL-RMSE")
+if RMSE_RL_NN_1 == True: 
+    p_nn_rl_rmse_1 = PerformanceAnalysis("NN-RL-RMSE_1")
+if RMSE_RL_NN_2 == True: 
+    p_nn_rl_rmse_2 = PerformanceAnalysis("NN-RL-RMSE_2")
+if RMSE_RL_NN_3 == True: 
+    p_nn_rl_rmse_3 = PerformanceAnalysis("NN-RL-RMSE_3")
 p_benchmark = PerformanceAnalysis("Benchmark")
 p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
 
