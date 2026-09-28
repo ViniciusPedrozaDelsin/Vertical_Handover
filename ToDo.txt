@@ -18,55 +18,7 @@ MELHORIAS NO SIMULADOR:
 
 
 
-*** Weak aspects: Comments to the author: what are the weak aspects of the paper?
-- The benchmark definition is an idealized unattainable solution, making the normalized RMSE comparison meaningless because no real algorithm can achieve zero on that scale.  
-- The null hypothesis test comparing TOPSIS and NN-RL-RMSE uses a Z-statistic without checking normality of RMSE distributions across simulations.  
-- The epsilon-greedy policy during testing sets epsilon to zero but keeps a 1% training probability . This is not properly justified and breaks the definition of exploitation.  
-- The hidden parameters (delay, jitter) are set to their average values for conventional MCDM methods, which artificially handicaps them compared to the RL method that learns them online.  
-- Handover cost is defined as binary (0 or 1) with no magnitude scaling, so it has equal weight to other parameters like SNR or throughput, which is unrealistic.
-
-*** Recommended changes: Please indicate any changes that should be made to the paper if accepted.
-- The benchmark definition is an idealized unattainable solution, making the normalized RMSE comparison meaningless because no real algorithm can achieve zero on that scale.  
-- The null hypothesis test comparing TOPSIS and NN-RL-RMSE uses a Z-statistic without checking normality of RMSE distributions across simulations.  
-- The epsilon-greedy policy during testing sets epsilon to zero but keeps a 1% training probability . This is not properly justified and breaks the definition of exploitation.  
-- The hidden parameters (delay, jitter) are set to their average values for conventional MCDM methods, which artificially handicaps them compared to the RL method that learns them online.  
-- Handover cost is defined as binary (0 or 1) with no magnitude scaling, so it has equal weight to other parameters like SNR or throughput, which is unrealistic.
-
-
-
-
-
-
-
-
-
-*** Weak aspects: Comments to the author: what are the weak aspects of the paper?
-- The MDP formulation is also incomplete: the state space, action space, transition model, reward design, and training procedure should be defined more rigorously.
-- The neural network architecture is described at a high level, but important implementation details are missing, such as the number of layers, hidden units, activation functions, optimizer settings beyond the learning rate, and reproducibility details.
+- The null hypothesis test comparing TOPSIS and NN-RL-RMSE uses a Z-statistic without checking normality of RMSE distributions across simulations. 
 - The simulation scenario is useful but still simplified, and the evaluation is mainly based on RMSE and the number of handovers.
-- Other important handover metrics, such as ping-pong rate, handover failure rate, service interruption time, delay during handover, and computational overhead, are not considered.
-- The fairness of the comparison also needs clarification, especially because hidden parameters such as delay and jitter are treated differently for the learning model and the MCDM methods.
-- The convergence claim in Fig. 1 is not fully convincing. While the NN-RL training loss appears to decrease and stabilize after approximately 10,000 steps, the reward curve still exhibits strong oscillations until the end of training. Since the reward is defined as the negative RMSE, the paper should show clearer evidence that the policy performance has converged, for example through episode-level average reward, moving-average reward with confidence intervals, or evaluation under a fixed greedy policy. The current figure mainly supports loss convergence, but not necessarily reward or policy convergence.
 
-*** Recommended changes: Please indicate any changes that should be made to the paper if accepted.
-- The authors should provide a formal and complete MDP formulation, including states, actions, reward, and policy update details.
 - They should give the full neural network architecture and all hyperparameters needed to reproduce the results. The comparison should include stronger learning-based baselines, such as Q-learning, DQN, or other recent AI-based network selection methods, not only classical MCDM algorithms.
-- The authors should add ablation studies to show the impact of the LSTM branch, the embedding branch, the RMSE reward, and the handover cost. More handover-specific metrics should be added, including ping-pong rate, handover failures, service interruption time, and computational latency.
-- Finally, the authors should improve the writing in several places and make the figures more readable.
-
-
-
-
-
-
-
-*** Weak aspects: Comments to the author: what are the weak aspects of the paper?
-As the overall assessment, this paper has an integrated mobility prediction with unknown parameter inference into the network selection. However, explicitly stating the preprocessing (normalization methods) used to integrate metrics with different scales, and adding a discussion on the computational constraints specific to mobile environments, would further enhance the paper's completeness.
-
-*** Recommended changes: Please indicate any changes that should be made to the paper if accepted.
-1) From a network engineering implementation perspective, there are some mathematical deficiencies and challenges toward practical application.
-The paper presents the following MSE (and RMSE) formula to evaluate the error by MSE in Equation (15). However, as shown in Table I, the scales and units of each parameter vary drastically, such as throughput (tens of Mbps), delay (e.g., 750ms for LoRa), and BER. The mathematical definition of how the variables x_i and y_i are normalized is missing. If raw values are substituted directly, the results would be dominated by variables with large scales.
-
-2) There is a lack of discussion on the computational load and the device's own power consumption (overhead) required to run inferences on deep learning models containing LSTMs and embedding layers at 100ms intervals on a mobile device.
-
-3) Captions of figures are supposed to be written at the bottom of the figures in stead of on the top.

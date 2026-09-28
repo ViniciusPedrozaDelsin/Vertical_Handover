@@ -14,7 +14,7 @@ class NN_RL_RMSE_1(DMM):
 
         # NN RL Variables
         self.gamma = 0.95
-        self.epsilon = 0
+        self.epsilon = 1
         self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
@@ -32,7 +32,7 @@ class NN_RL_RMSE_1(DMM):
             self.model = tf.keras.models.load_model(model_name)
         
         # SHAP Analysis
-        self.shap_analysis = True
+        self.shap_analysis = False
         if self.shap_analysis:
             self.memory_shap = deque(maxlen=500)
             self.memory_shap_warmup = 500
@@ -291,7 +291,7 @@ class NN_RL_RMSE_1(DMM):
 
         self.memory.append((inpt_list[max_index], reward))
 
-        if np.random.rand() < 0:
+        if np.random.rand() < 1:
             self.modelTrain()
 
         return self.inputs[max_index]
@@ -420,8 +420,8 @@ class NN_RL_RMSE_1(DMM):
             parameters_list = [sublist[self.memory_velocity_len:] for sublist in X]
 
             # Set the learning rate to 0.00001
-            if self.train_counter > 0:
-                self.model.optimizer.learning_rate.assign(3e-5)
+            '''if self.train_counter > 0:
+                self.model.optimizer.learning_rate.assign(3e-5)'''
             
             history = self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
             if self.train_analysis:

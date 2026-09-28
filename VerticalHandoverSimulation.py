@@ -52,7 +52,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 20
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -99,7 +99,7 @@ gm_std_direction = math.radians(6)
 max_turn_rate = math.radians(8) # enforces a realistic turning radius
 
 # Plots Folder
-plots_folder = "sim_10"
+plots_folder = "sim_11"
 plots_path = f"outputs//{plots_folder}"
 
 
@@ -1851,7 +1851,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN_1 == True:
-    nn_rl_rmse_1 = NN_RL_RMSE_1("NN-RL_RMSE_Embedding", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_1.keras") #model_name="RMSE_RL_1.keras"
+    nn_rl_rmse_1 = NN_RL_RMSE_1("NN-RL_RMSE_Embedding", analyzed_parameters, simulation_length=n) #model_name="RMSE_RL_1.keras"
 if RMSE_RL_NN_2 == True:
     nn_rl_rmse_2 = NN_RL_RMSE_2("NN-RL_RMSE_OneHot", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_2.keras")
 if RMSE_RL_NN_3 == True:
