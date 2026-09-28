@@ -15,7 +15,7 @@ class NN_RL_RMSE_1(DMM):
         # NN RL Variables
         self.gamma = 0.95
         self.epsilon = 0
-        self.epsilon_min = 0.00
+        self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
         self.window_size = 10
@@ -32,7 +32,7 @@ class NN_RL_RMSE_1(DMM):
             self.model = tf.keras.models.load_model(model_name)
         
         # SHAP Analysis
-        self.shap_analysis = False
+        self.shap_analysis = True
         if self.shap_analysis:
             self.memory_shap = deque(maxlen=500)
             self.memory_shap_warmup = 500

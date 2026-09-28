@@ -52,7 +52,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 200
+n_simulations = 20
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -99,7 +99,7 @@ gm_std_direction = math.radians(6)
 max_turn_rate = math.radians(8) # enforces a realistic turning radius
 
 # Plots Folder
-plots_folder = "sim_8"
+plots_folder = "sim_10"
 plots_path = f"outputs//{plots_folder}"
 
 
@@ -129,23 +129,23 @@ nn_rl_rmse_choices_3 = []
 # ===================================== MADM Algorithms ======================================
 SPMO_Methods = False
 
-SAW = False
+SAW = True
 
-WPM = False
+WPM = True
 
-TOPSIS = False
+TOPSIS = True
 
-Fuzzy = False
+Fuzzy = True
 
-RMSE = True
+RMSE = False
 
 TOPSIS_NN = False
 
 RMSE_RL_NN_1 = True
 
-RMSE_RL_NN_2 = True
+RMSE_RL_NN_2 = False
 
-RMSE_RL_NN_3 = True
+RMSE_RL_NN_3 = False
 # ============================================================================================
 
 
@@ -1700,8 +1700,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "green", "red", "black"], edgecolor='black', linewidth=1.2)
 
                 # 4 METHODS
-                hatches = ['', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS
                 #hatches = ['', '', '', '', '', '', '', '']
@@ -1716,8 +1716,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE
-                #hatches = ['', '', '', '', '', '']
-                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE + RL
                 #hatches = ['', '', '', '', '', '', '']
