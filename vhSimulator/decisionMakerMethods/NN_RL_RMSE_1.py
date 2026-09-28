@@ -420,8 +420,8 @@ class NN_RL_RMSE_1(DMM):
             parameters_list = [sublist[self.memory_velocity_len:] for sublist in X]
 
             # Set the learning rate to 0.00001
-            '''if self.train_counter > 0:
-                self.model.optimizer.learning_rate.assign(3e-5)'''
+            if self.train_counter > 0:
+                self.model.optimizer.learning_rate.assign(3e-5)
             
             history = self.model.fit([np.array(protocol_num_list), np.array(velocities_list), np.array(parameters_list)], np.array(y), epochs=1, verbose=0)
             if self.train_analysis:

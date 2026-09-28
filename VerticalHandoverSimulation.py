@@ -99,7 +99,7 @@ gm_std_direction = math.radians(6)
 max_turn_rate = math.radians(8) # enforces a realistic turning radius
 
 # Plots Folder
-plots_folder = "sim_11"
+plots_folder = "sim_12"
 plots_path = f"outputs//{plots_folder}"
 
 
@@ -131,13 +131,13 @@ SPMO_Methods = False
 
 SAW = True
 
-WPM = True
+WPM = False
 
-TOPSIS = True
+TOPSIS = False
 
 Fuzzy = True
 
-RMSE = False
+RMSE = True
 
 TOPSIS_NN = False
 
@@ -475,9 +475,14 @@ def update_position(device):
                 p_nn_rl_rmse_3.clean_Benchmark_storaged_QoS()
             p_benchmark.clean_Benchmark_storaged_QoS()
             p_worst_scenario.clean_Benchmark_storaged_QoS()
+            for s in offline_stats.values():
+                s['prev'] = False
             j = 0
             update_position(device)
         else:
+            print_handover_summary()
+            plot_results()
+            sys.exit()
             plot_results()
             sys.exit()
 
@@ -494,6 +499,8 @@ def calculate_parameters(device, x_position, y_position):
     else:
         device.get_all_QoS_Parameters()
     available_networks = device.get_available_networks()
+    global networks_available
+    networks_available = available_networks != []
     if verbose == True: print(f"Available Networks: {available_networks}")
     
     
@@ -1147,7 +1154,7 @@ def plot_results():
                      color='blue', linewidth=2, label='Loss (rolling avg 50)')
             ax1.set_xlabel('Training Step', fontsize=12)
             ax1.set_ylabel('Huber Loss', fontsize=12)
-            ax1.set_title('NN-RL-Embedding Training Loss', fontsize=14, fontweight='bold')
+            ax1.set_title('NN-RL-RMSE Training Loss', fontsize=14, fontweight='bold')
             ax1.legend()
             ax1.grid(axis='y', linestyle='--', alpha=0.6)
         
@@ -1160,7 +1167,7 @@ def plot_results():
                      color='orange', linewidth=2, label='Reward (rolling avg 200)')
             ax2.set_xlabel('Decision Step', fontsize=12)
             ax2.set_ylabel('Estimated Reward', fontsize=12)
-            ax2.set_title('NN-RL-Embedding Reward over Time', fontsize=14, fontweight='bold')
+            ax2.set_title('NN-RL-RMSE Reward over Time', fontsize=14, fontweight='bold')
             ax2.legend()
             ax2.grid(axis='y', linestyle='--', alpha=0.6)
         
@@ -1700,8 +1707,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "green", "red", "black"], edgecolor='black', linewidth=1.2)
 
                 # 4 METHODS
-                #hatches = ['', '', '', '', '']
-                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS
                 #hatches = ['', '', '', '', '', '', '', '']
@@ -1716,8 +1723,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["gold", "gold", "gold", "gold", "blue", "blue", "blue", "blue", "green", "green", "green", "green", "red", "red", "red", "red", "purple", "purple", "purple", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE
-                hatches = ['', '', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE + RL
                 #hatches = ['', '', '', '', '', '', '']
@@ -1851,7 +1858,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN_1 == True:
-    nn_rl_rmse_1 = NN_RL_RMSE_1("NN-RL_RMSE_Embedding", analyzed_parameters, simulation_length=n) #model_name="RMSE_RL_1.keras"
+    nn_rl_rmse_1 = NN_RL_RMSE_1("NN-RL_RMSE_RMSE", analyzed_parameters, simulation_length=n) #model_name="RMSE_RL_1.keras"
 if RMSE_RL_NN_2 == True:
     nn_rl_rmse_2 = NN_RL_RMSE_2("NN-RL_RMSE_OneHot", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_2.keras")
 if RMSE_RL_NN_3 == True:
@@ -1907,7 +1914,7 @@ if RMSE == True:
 if TOPSIS_NN == True: 
     p_nn_topsis = PerformanceAnalysis("NN-TOPSIS")
 if RMSE_RL_NN_1 == True: 
-    p_nn_rl_rmse_1 = PerformanceAnalysis("NN-RL-RMSE_1")
+    p_nn_rl_rmse_1 = PerformanceAnalysis("NN-RL-RMSE")
 if RMSE_RL_NN_2 == True: 
     p_nn_rl_rmse_2 = PerformanceAnalysis("NN-RL-RMSE_2")
 if RMSE_RL_NN_3 == True: 
@@ -1916,4 +1923,85 @@ p_benchmark = PerformanceAnalysis("Benchmark")
 p_worst_scenario = PerformanceAnalysis("Worst-Scenario")
 
 update_position(device_1)
+
+# ============================ Handover / Disconnection Tracking ============================
+networks_available = True
+offline_stats = {}
+tracked_methods = []
+
+def track_method(dm, p):
+    stats = {'events': 0, 'steps': 0, 'no_coverage_steps': 0, 'prev': False}
+    offline_stats[p.algorithm] = stats
+    original_store = p.store_QoS_parameters
+
+    def wrapped_store(decision):
+        is_offline = decision.get('Network') == 'Offline'
+        if is_offline:
+            stats['steps'] += 1
+            if not networks_available:
+                stats['no_coverage_steps'] += 1
+            if not stats['prev']:
+                stats['events'] += 1
+        stats['prev'] = is_offline
+        return original_store(decision)
+
+    p.store_QoS_parameters = wrapped_store
+    tracked_methods.append((dm, p))
+
+if SAW == True: track_method(mpmo_saw, p_mpmo_saw)
+if WPM == True: track_method(mpmo_wpm, p_mpmo_wpm)
+if TOPSIS == True: track_method(mpmo_topsis, p_mpmo_topsis)
+if Fuzzy == True: track_method(mpmo_fuzzy, p_mpmo_fuzzy)
+if RMSE == True: track_method(mpmo_rmse, p_mpmo_rmse)
+if RMSE_RL_NN_1 == True: track_method(nn_rl_rmse_1, p_nn_rl_rmse_1)
+if RMSE_RL_NN_2 == True: track_method(nn_rl_rmse_2, p_nn_rl_rmse_2)
+if RMSE_RL_NN_3 == True: track_method(nn_rl_rmse_3, p_nn_rl_rmse_3)
+
+
+def print_handover_summary():
+    n_sims = len(final_results)
+    handovers = {}
+    for sim in final_results:
+        for entry in sim:
+            handovers.setdefault(entry['Algorithm'], []).append(entry['Handover'])
+
+    line = "=" * 120
+    print(line)
+    print(f"HANDOVER SUMMARY ({n_sims} simulations)")
+    print(line)
+    header = f"{'Algorithm':<15}{'':<25}{'Total':>15}{'Per simulation':>20}"
+    print(header)
+    print("-" * 120)
+
+    for dm, p in tracked_methods:
+        name = p.algorithm
+        s = offline_stats[name]
+        ho_total = sum(handovers.get(name, []))
+        hf_exec = getattr(dm, 'hf_execution', 0)
+        hf_late = getattr(dm, 'hf_too_late', 0)
+        hf_total = hf_exec + hf_late
+        off_time = s['steps'] * 0.1                   # seconds
+        off_fail_time = (s['steps'] - s['no_coverage_steps']) * 0.1
+        off_cov_time = s['no_coverage_steps'] * 0.1
+
+        rows = [
+            ("Handovers", ho_total, ""),
+            ("HO failures (total)", hf_total, ""),
+            ("  - execution", hf_exec, ""),
+            ("  - too-late (RLF)", hf_late, ""),
+            ("Disconnections", s['events'], ""),
+            ("Time offline", off_time, " s"),
+            ("  - due to failures", off_fail_time, " s"),
+            ("  - no coverage", off_cov_time, " s"),
+        ]
+        for i, (label, total, unit) in enumerate(rows):
+            algo_col = name if i == 0 else ""
+            if unit:
+                print(f"{algo_col:<15}{label:<25}{total:>13.1f}{unit}{total / n_sims:>18.2f}{unit}")
+            else:
+                print(f"{algo_col:<15}{label:<25}{total:>15}{total / n_sims:>20.2f}")
+        print("-" * 120)
+    print(line)
+# ===========================================================================================
+
 root.mainloop()

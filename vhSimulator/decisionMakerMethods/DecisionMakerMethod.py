@@ -16,6 +16,8 @@ class DecisionMakerMethod:
         self.old_dist = {}
         self.outage = 0
         self.hp = None
+        self.hf_too_late = 0      # radio link failures (current network lost)
+        self.hf_execution = 0     # failed handover attempts
     
     def resetParameters(self):
         self.inputs = None
@@ -203,11 +205,11 @@ class DecisionMakerMethod:
                 'Network': 'Offline', 
                 'Status': 'Offline', 
                 'Distance': np.float64(0), 
-                'RSSI': np.float64(0), 
+                'RSSI': np.float64(-120),
                 'SNR': 0, 
                 'Throughput': 0, 
                 'BER': np.float64(0.01), 
-                'FEC': np.float64(0.5), 
+                'FEC': np.float64(0.1666), 
                 'Protocol': 'Offline', 
                 'PC': 1.5, 
                 'MC': 5, 
@@ -223,6 +225,7 @@ class DecisionMakerMethod:
             if self.outage == 0 and self.old_decision not in (None, 'Offline') and self.old_decision not in current_nets:
                 # Radio link failure: stayed too long on a network that went out of range
                 self.outage = OUTAGE_STEPS
+                self.hf_too_late += 1
 
             if self.outage > 0:
                 # Still inside the 1 s outage from a failed handover
@@ -281,6 +284,7 @@ class DecisionMakerMethod:
                     # Handover failed: disconnected now and for the rest of the 1 s outage
                     final_output = copy.deepcopy(disconnected)
                     self.outage = OUTAGE_STEPS - 1
+                    self.hf_execution += 1
                 # ========================================================================
 
         else:
