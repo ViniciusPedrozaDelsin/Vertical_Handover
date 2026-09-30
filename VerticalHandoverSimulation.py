@@ -52,7 +52,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 30
+n_simulations = 100
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -1979,6 +1979,7 @@ def print_handover_summary():
         ho_total = sum(handovers.get(name, []))
         hf_exec = getattr(dm, 'hf_execution', 0)
         hf_late = getattr(dm, 'hf_too_late', 0)
+        hf_early = getattr(dm, 'hf_too_early', 0)
         hf_total = hf_exec + hf_late + hf_early
         off_time = s['steps'] * 0.1                   # seconds
         off_fail_time = (s['steps'] - s['no_coverage_steps']) * 0.1
