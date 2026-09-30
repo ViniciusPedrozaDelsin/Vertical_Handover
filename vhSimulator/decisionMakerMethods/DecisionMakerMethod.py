@@ -280,11 +280,15 @@ class DecisionMakerMethod:
                     # No history for this network: base risk
                     p_fail = base
 
-                if random.random() < p_fail:
+
+                if random.random() < p_fail and dist_diff >= 0:
                     # Handover failed: disconnected now and for the rest of the 1 s outage
                     final_output = copy.deepcopy(disconnected)
                     self.outage = OUTAGE_STEPS - 1
                     self.hf_execution += 1
+                elif random.random() < p_fail and dist_diff < 0:
+                    final_output = copy.deepcopy(next((inp for inp in self.inputs_bkp if inp['Network'] == self.old_decision), disconnected))
+                    final_output['HC'] = 1
                 # ========================================================================
 
         else:

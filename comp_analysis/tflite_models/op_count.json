@@ -1,0 +1,93 @@
+{
+  "layers": [
+    {
+      "name": "protocol_embedding",
+      "type": "Embedding",
+      "macs": 0,
+      "params": 28
+    },
+    {
+      "name": "lstm",
+      "type": "LSTM",
+      "macs": 864,
+      "params": 320
+    },
+    {
+      "name": "lstm_scalar",
+      "type": "Dense",
+      "macs": 8,
+      "params": 9
+    },
+    {
+      "name": "dense",
+      "type": "Dense",
+      "macs": 416,
+      "params": 448
+    },
+    {
+      "name": "batch_normalization",
+      "type": "BatchNormalization",
+      "macs": 0,
+      "params": 128
+    },
+    {
+      "name": "dense_1",
+      "type": "Dense",
+      "macs": 2048,
+      "params": 2112
+    },
+    {
+      "name": "batch_normalization_1",
+      "type": "BatchNormalization",
+      "macs": 0,
+      "params": 256
+    },
+    {
+      "name": "dense_2",
+      "type": "Dense",
+      "macs": 2048,
+      "params": 2080
+    },
+    {
+      "name": "batch_normalization_2",
+      "type": "BatchNormalization",
+      "macs": 0,
+      "params": 128
+    },
+    {
+      "name": "dense_3",
+      "type": "Dense",
+      "macs": 512,
+      "params": 528
+    },
+    {
+      "name": "batch_normalization_3",
+      "type": "BatchNormalization",
+      "macs": 0,
+      "params": 64
+    },
+    {
+      "name": "q_out",
+      "type": "Dense",
+      "macs": 16,
+      "params": 17
+    }
+  ],
+  "macs_per_candidate": 5912,
+  "params": 6118,
+  "input_dims": {
+    "protocol": 1,
+    "velocities": 3,
+    "inputs": 8
+  },
+  "tflite_sizes_bytes": {
+    "N1_fp32": 35388,
+    "N1_int8": 24336,
+    "N5_fp32": 35624,
+    "N5_int8": 24544,
+    "N10_fp32": 35624,
+    "N10_int8": 24544,
+    "N17_fp32": 35624,
+    "N17_int8": 24544
+  }
+}

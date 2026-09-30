@@ -1,0 +1,646 @@
+================================================================================
+ COMPUTATIONAL COMPLEXITY ANALYSIS - COMPLETE RECORD
+ Paper: "A Framework for Analyzing the ABC Paradigm in Vertical Handover"
+ Model: NN-RL-RMSE (NN_RL_RMSE_1, embedding + LSTM version)
+ Measurements taken: 29-30 September 2026
+================================================================================
+
+CONTENTS
+  1. Model analyzed
+  2. Operation count (theory)
+  3. Operation count of the MCDM methods (theory)
+  4. Asymptotic complexity
+  5. Model export to TensorFlow Lite
+  6. Benchmark method (scripts and settings)
+  7. Devices (full configuration)
+  8. RAW RESULTS - Laptop
+  9. RAW RESULTS - Raspberry Pi 4
+ 10. RAW RESULTS - Smartphone
+ 11. Summary table used in the paper (Table "tab:latency")
+ 12. Derived values used in the paragraphs (with calculations)
+ 13. Real-world time references (3GPP / Android)
+ 14. Problems found and how they were solved
+ 15. Pending checks before submission
+ 16. BibTeX entries added
+ 17. Other results and settings from the same work session
+
+
+--------------------------------------------------------------------------------
+1. MODEL ANALYZED
+--------------------------------------------------------------------------------
+Keras file used for all measurements: RMSE_RL_1_old.keras
+(confirmed by the author to be the model that produced the paper results)
+
+Inputs per candidate network:
+  - protocol: 1 integer (index 0..6)
+      WiFi-2.4GHz=0, WiFi-5GHz=1, NB-IoT=2, LoRa-868=3, LTE-4G=4, 5G-N78=5, 5G-N28=6
+  - velocities: 3 floats (relative velocity to the AP over the last 3 steps)
+      computed from the last 4 distances: (d[i+1]-d[i]) * 10 / 30, clipped to [-1, 1]
+      (x10 converts per-100-ms to per-second; 30 m/s = VEL_SCALE)
+  - inputs: 8 floats, order: RSSI, SNR, Throughput, BER, FEC, PC, MC, HC
+      min-max normalized across candidates (0 = best value):
+        benefit (RSSI, SNR, Throughput, FEC): (max - x)/(max - min)
+        cost    (BER, PC, MC, HC):            (x - min)/(max - min)
+        constant column (max == min): 0
+
+Architecture:
+  - Embedding: 7 protocols -> 4-dim vector (Glorot uniform init)
+  - LSTM: 8 units, tanh, sequence of 3 time steps, 1 feature
+  - Dense 8 -> 1, tanh ("lstm_scalar")
+  - Concatenate: 4 (embedding) + 1 (LSTM) + 8 (parameters) = 13 inputs
+  - Dense 32 -> BatchNorm -> ReLU
+  - Dense 64 -> BatchNorm -> ReLU -> Dropout 0.25
+  - Dense 32 -> BatchNorm -> ReLU -> Dropout 0.25
+  - Dense 16 -> BatchNorm -> ReLU
+  - Output Dense 1, linear
+Total parameters: 6,118 (verified by script and by a replica model)
+Memory: 23.9 KB (float32), 6.0 KB (int8)
+
+
+--------------------------------------------------------------------------------
+2. OPERATION COUNT OF THE NN (THEORY)
+--------------------------------------------------------------------------------
+Rule for a dense layer: y = W x + b, W in R^(n_out x n_in) -> n_in * n_out MACs
+1 MAC (multiply-accumulate) = 2 FLOPs (1 multiplication + 1 addition)
+
+Script output (export_and_count_v2.py, run on laptop with RMSE_RL_1_old.keras):
+
+Layer                   Type                      MACs    Params  Note
+protocol_embedding      Embedding                    0        28  table lookup
+lstm                    LSTM                       864       320  3 time steps
+lstm_scalar             Dense                        8         9
+dense                   Dense                      416       448
+batch_normalization     BatchNormalization           0       128  folded into Dense
+dense_1                 Dense                    2,048     2,112
+batch_normalization_1   BatchNormalization           0       256  folded into Dense
+dense_2                 Dense                    2,048     2,080
+batch_normalization_2   BatchNormalization           0       128  folded into Dense
+dense_3                 Dense                      512       528
+batch_normalization_3   BatchNormalization           0        64  folded into Dense
+q_out                   Dense                       16        17
+Total per candidate                              5,912     6,118
+
+Hand calculation (as written in the paper):
+  Dense layers: 13x32 + 32x64 + 64x32 + 32x16 + 16x1
+              = 416 + 2,048 + 2,048 + 512 + 16 = 5,040 MACs
+  LSTM: per step, 4 gates x u(1+u) with u=8 -> 4 x 8 x 9 = 288 MACs
+        3 steps -> 864 MACs
+  Dense 8->1 after LSTM: 8 MACs
+  Embedding: 0 (lookup); BatchNorm: 0 (merged into previous layer at inference)
+  TOTAL = 5,040 + 864 + 8 = 5,912 MACs = 11,824 FLOPs per candidate network
+
+Per decision (N candidates):
+   N     MACs per decision    FLOPs per decision
+   1                 5,912                11,824
+   5                29,560                59,120
+  10                59,120               118,240
+  17               100,504               201,008
+
+Preprocessing cost (added to the paper as one sentence):
+  - normalization: 8 parameters x ~4 ops (2 comparisons, 1 subtraction, 1 division) = 32
+  - velocities: 3 x ~4 ops (1 subtraction, 1 multiplication, 2 comparisons for clip) = 12
+  - total ~44 operations per candidate (~0.4% of 11,824 FLOPs)
+
+TFLite converter's own estimate (includes element-wise ops such as activations,
+additions and LSTM gate operations, not only matrix multiplications):
+  N=1:  0.019 M ops = 0.009 M MACs
+  N=5:  0.095 M ops = 0.047 M MACs
+  N=10: 0.189 M ops = 0.095 M MACs
+  N=17: 0.322 M ops = 0.161 M MACs  (~9,500 MACs per candidate)
+  -> The paper reports the standard count (5,912 MACs, matrix multiplications only).
+     Both counts are of order 10^4 operations per candidate.
+
+
+--------------------------------------------------------------------------------
+3. OPERATION COUNT OF THE MCDM METHODS (THEORY)
+--------------------------------------------------------------------------------
+Counting every arithmetic operation (add, subtract, multiply, divide, comparison,
+square root, power) per attribute of each candidate. Operations done only once
+per attribute (independent of N) are neglected. M = number of attributes = 10.
+
+SAW (min-max normalization + weighted sum):
+  2 comparisons (min and max) + 1 subtraction + 1 division (normalization)
+  + 1 multiplication + 1 addition (weighted sum)
+  = 6 per attribute -> ~6M = ~60 operations per candidate
+
+WPM:
+  1 comparison (max for benefit / min for cost) + 1 division (normalization)
+  + 1 power (weight exponent) + 1 multiplication (product)
+  = 4 per attribute -> ~4M = ~40 operations per candidate
+  (the power operation costs many more cycles than a multiplication)
+
+TOPSIS (vector normalization):
+  2 (square + addition for the column norm) + 1 division (normalization)
+  + 1 multiplication (weighting) + 2 comparisons (ideal and anti-ideal)
+  + 6 (two distances: subtraction, square, addition, twice)
+  = 12 per attribute -> ~12M = ~120, plus 4 per candidate
+    (2 square roots + 1 addition + 1 division for the closeness) = ~124
+
+Summary: 40 to 124 operations per candidate (M=10)
+NN: 11,824 FLOPs per candidate -> ~100 to 300 times more ("two orders of magnitude")
+  11,824/124 = 95;  11,824/60 = 197;  11,824/40 = 296
+
+NOTE: an earlier rough estimate in the session ("4M and 7M", "40 to 70") was wrong;
+the counts above are the corrected ones used in the paper.
+
+
+--------------------------------------------------------------------------------
+4. ASYMPTOTIC COMPLEXITY
+--------------------------------------------------------------------------------
+N = number of candidate networks, M = number of attributes
+  SAW, WPM, TOPSIS: O(NM) per decision
+  NN: O(N) per decision (constant cost per forward pass: fixed architecture,
+      fixed 3 velocity values; argmax is also O(N))
+  With M fixed, all methods are linear in N -> Big-O does not distinguish them;
+  the constant per candidate must be analyzed (operation count + measurements).
+  Fuzzy method left out (depends on the rule implementation).
+Subsection title chosen: "Computational Complexity Analysis" (label sec:complexity)
+
+
+--------------------------------------------------------------------------------
+5. MODEL EXPORT TO TENSORFLOW LITE
+--------------------------------------------------------------------------------
+Script: export_and_count_v2.py (final version)
+Command (laptop):
+  python export_and_count_v2.py --model RMSE_RL_1_old.keras --out tflite_models
+
+What the script does:
+  1. Loads the Keras model, counts MACs and parameters from the real weight shapes.
+  2. Creates a copy with the LSTM unrolled over its 3 time steps (same weights,
+     identical outputs; about 2x faster in a test: ~9 us vs ~18 us).
+  3. Adds a "protocol guard": protocol index -> index mod 7 (FLOOR_MOD op).
+     Identical outputs for valid indices 0..6. Needed because the Android
+     benchmark tool feeds random integers, which crashed the embedding lookup.
+  4. Exports one model per N in {1, 5, 10, 17}, with fixed input shapes, via
+     model.export(SavedModel) -> TFLiteConverter.from_saved_model.
+  5. Two versions per N: fp32, and int8 (dynamic-range quantization,
+     tf.lite.Optimize.DEFAULT, weights only).
+  6. Checks max |TFLite output - Keras output| on random inputs.
+
+Final export results (v2, with FLOOR_MOD):
+  Model              Size      max |TFLite - Keras|
+  nn_N1_fp32         34.6 KB   9.54e-07
+  nn_N1_int8         23.8 KB   3.03e-04
+  nn_N5_fp32         34.8 KB   4.77e-07
+  nn_N5_int8         24.0 KB   3.06e-03
+  nn_N10_fp32        34.8 KB   9.54e-07
+  nn_N10_int8        24.0 KB   6.64e-03
+  nn_N17_fp32        34.8 KB   9.54e-07
+  nn_N17_int8        24.0 KB   4.64e-03
+  -> fp32: differences < 1e-6 (paper states "below 10^-6")
+  -> int8: differences up to ~7e-3 (could occasionally change the chosen network
+     when two candidates have almost equal scores; paper reports fp32)
+
+Operations inside the final model (nn_N17_fp32):
+  ADD, CONCATENATION, DELEGATE, FLOOR_MOD, FULLY_CONNECTED, GATHER, LESS,
+  LOGISTIC, MUL, RESHAPE, SELECT, SPLIT, TANH, TRANSPOSE, UNPACK
+
+On the phone, XNNPACK delegated 47 of 53 nodes (46 of 52 for N=1),
+4 partitions, 2 delegate kernels.
+
+
+--------------------------------------------------------------------------------
+6. BENCHMARK METHOD
+--------------------------------------------------------------------------------
+Laptop and Raspberry Pi: benchmark_decision.py
+  (copy on the Pi named benchmark_decision_rasp.py; same code)
+  Commands:
+    Laptop: python benchmark_decision.py --models tflite_models
+    Pi:     taskset -c 3 python benchmark_decision_rasp.py --models tflite_models
+
+  Settings:
+    - single thread (Interpreter num_threads=1)
+    - warm-up: 500 decisions; measured: 10,000 decisions per method per N
+    - timer: time.perf_counter_ns, each decision timed individually
+    - statistics: mean, std, median, p95, p99 (microseconds)
+    - inputs: random, seed np.random.RandomState(0), 256 pre-generated samples
+      reused cyclically (generation not timed)
+        NN raw parameters: uniform(0.1, 1.0), shape (N, 8)
+        distances: start uniform(10, 1000) m + cumulative steps uniform(-1.5, 1.5)
+        protocol: random integers 0..6
+        MCDM matrix: uniform(0.1, 1.0), shape (N, 10) (> 0 for WPM)
+    - MCDM: vectorized NumPy, M=10, weights 1/10,
+      directions [1,1,1,0,0,0,1,0,0,0] (1 = benefit), same as the simulator
+        SAW: min-max normalization with direction, weighted sum, argmax
+        WPM: x/max (benefit) or min/x (cost), product of powers, argmax
+        TOPSIS: vector normalization, weighting, ideal/anti-ideal,
+                Euclidean distances, closeness, argmax
+    - NN rows:
+        "NN-fp32/NN-int8" = FULL decision as in the simulator:
+          normalization of 8 parameters + velocity computation + inference + argmax
+          (preprocessing verified identical to the simulator's normalizeInputs and
+           velocity code: max difference 3e-8, float32 rounding)
+        "infer-fp32/infer-int8" = inference only (set tensors, invoke, argmax)
+    - Includes Python interface overhead -> conservative (upper-bound) estimates.
+
+Smartphone: official TensorFlow Lite benchmark tool (native C++, no Python)
+  Binary: android_aarch64_benchmark_model (TFLite nightly), via adb
+  Command per model:
+    adb shell taskset <mask> /data/local/tmp/benchmark_model
+        --graph=/data/local/tmp/tflite_models/<model>.tflite
+        --num_threads=1 --use_xnnpack=true --warmup_runs=500 --num_runs=10000
+  Masks: f0 = cores 4-7 (Cortex-A78, performance)
+         0f = cores 0-3 (Cortex-A55, efficiency)
+  Measures inference only (no preprocessing, no MCDM methods).
+  Reports per run: count, min, max, avg, std, p5, median, p95 (integer us for
+  percentiles), Init time, First inference, memory footprint.
+  The tool runs "at least 10,000 iterations and at least 1 s", so counts are
+  larger than 10,000.
+
+
+--------------------------------------------------------------------------------
+7. DEVICES
+--------------------------------------------------------------------------------
+LAPTOP
+  CPU: Intel64 Family 6 Model 186 Stepping 2 (Raptor Lake) = Intel Core i7-13620H
+       (as stated in the paper; confirm)
+  OS: Windows (host name DESKTOP-9C0FFEP), AMD64
+  Python 3.11.9, NumPy 2.3.2, TensorFlow 2.20.0 (tf.lite.Interpreter, XNNPACK)
+  Conditions: single thread, no core pinning
+  (Training machine in the paper: Ubuntu, RTX 4050 6 GB, 16 GB RAM,
+   CUDA 12.9, cuDNN 9.13, cuBLAS 12.9 - not used for these measurements)
+
+RASPBERRY PI (final, valid measurements)
+  Model: Raspberry Pi 4 Model B Rev 1.4
+  SoC: Broadcom BCM2711, 4x ARM Cortex-A72, max frequency 1,800,000 kHz = 1.8 GHz
+  OS: 64-bit Raspberry Pi OS (Debian, glibc 2.41), kernel 6.18.50+rpt-rpi-v8, aarch64
+  Python 3.13.5, NumPy 2.5.3, ai-edge-litert 2.2.0 (LiteRT)
+  Conditions:
+    - governor set to "performance" during the test (restored to "ondemand" after)
+    - process pinned to core 3 (taskset -c 3)
+    - before test: temp=50.6 C, throttled=0x0
+    - after-test check was not reported (optional to repeat)
+  Host name in CSV: pi -> results_pi.csv
+
+  (Failed first attempt, NOT used: Raspberry Pi 4 Rev 1.4 with Raspbian Buster
+   32-bit, armv7l, Python 3.7.3, NumPy 1.16.2, tflite-runtime 2.5.0.post1.
+   Error: "Didn't find op for builtin opcode 'FULLY_CONNECTED' version '12'"
+   -> runtime too old for models made with TF 2.20. Solved by using 64-bit OS.)
+
+SMARTPHONE
+  Model: Redmi 15 (ro.product.model = 25098RA98G)
+  SoC: SM6475 = Qualcomm Snapdragon 6 Gen 3 (confirm in specifications)
+  CPU: cores 0-3: max 1,804,800 kHz, CPU part 0xd05 = ARM Cortex-A55 (efficiency)
+       cores 4-7: max 2,400,000 kHz, CPU part 0xd41 = ARM Cortex-A78 (performance)
+  ABI: arm64-v8a; Android 15 (HyperOS)
+  Conditions: USB (adb), screen on, apps closed, battery > 50%
+
+
+--------------------------------------------------------------------------------
+8. RAW RESULTS - LAPTOP (final run, models WITH FLOOR_MOD guard)
+--------------------------------------------------------------------------------
+Host: DESKTOP-9C0FFEP | AMD64 | Intel64 Family 6 Model 186 Stepping 2, GenuineIntel
+Python 3.11.9 | NumPy 2.3.2 | Runtime: tensorflow 2.20.0
+Single thread | warm-up 500 | runs 10000
+Values in microseconds.
+
+Method           N      mean       std    median       p95       p99
+SAW              1      9.95      9.26      9.20      9.60     18.70
+WPM              1      7.86      7.70      7.30      7.60     15.30
+TOPSIS           1     16.96     16.03     15.50     17.40     59.70
+NN-fp32          1     22.07     18.97     19.70     24.10     83.11
+  infer-fp32     1      6.37      6.05      5.90      6.20     11.20
+NN-int8          1     22.13     24.43     19.70     22.90     78.81
+  infer-int8     1      6.34      7.03      5.90      6.20     10.40
+SAW              5     11.37     12.55     10.00     10.50     55.31
+WPM              5      9.36     10.45      8.50      8.90     18.60
+TOPSIS           5     17.94     14.51     16.50     17.80     60.90
+NN-fp32          5     24.69     19.95     22.20     27.30     88.40
+  infer-fp32     5      7.56     14.29      6.70      7.20     17.90
+NN-int8          5     24.57     18.07     22.20     26.90     87.80
+  infer-int8     5      7.45     10.70      6.80      7.40     11.90
+SAW             10     11.76     13.81     10.50     11.40     42.20
+WPM             10     10.24     13.15      9.40      9.80     15.00
+TOPSIS          10     18.96     17.00     17.30     18.70     59.02
+NN-fp32         10     26.36     23.97     23.70     28.80     93.40
+  infer-fp32    10      8.55      9.37      7.80      8.40     22.12
+NN-int8         10     26.42     22.48     23.70     28.80     94.90
+  infer-int8    10      9.11     14.73      7.80      8.90     31.90
+SAW             17     11.98     12.18     11.10     11.70     22.70
+WPM             17     11.94     10.65     10.80     11.50     38.51
+TOPSIS          17     19.94     12.38     18.50     19.50     69.70
+NN-fp32         17     28.46     15.99     26.00     31.30     92.90
+  infer-fp32    17     10.20      7.54      9.50     10.30     25.30
+NN-int8         17     29.26     21.95     26.20     32.60    120.13
+  infer-int8    17     10.80     13.36      9.50     10.40     47.40
+Saved: results_DESKTOP-9C0FFEP.csv
+Note: p99 values are noisy (Windows background activity); medians and p95 are
+stable and are the values reported in the paper.
+
+Previous laptop run (models WITHOUT the guard, same script) - for reference only:
+  N=17 medians: SAW 11.20, WPM 10.80, TOPSIS 18.60, NN-fp32 25.60,
+                infer-fp32 9.10, NN-int8 25.80, infer-int8 9.10
+  N=1 medians:  SAW 8.80, WPM 7.30, TOPSIS 15.50, NN-fp32 19.40, infer-fp32 5.70
+  -> consistent with the final run (differences < 0.5 us).
+
+Earliest laptop run (INVALID for the comparison: NN timed WITHOUT preprocessing):
+  N=17 medians: SAW 11.10, WPM 10.70, TOPSIS 18.30, NN-fp32 9.10
+  -> This is why an earlier conclusion "NN faster than MCDM" was withdrawn.
+
+
+--------------------------------------------------------------------------------
+9. RAW RESULTS - RASPBERRY PI 4 (64-bit OS, valid run)
+--------------------------------------------------------------------------------
+Host: pi | aarch64 | Linux-6.18.50+rpt-rpi-v8-aarch64-with-glibc2.41
+Python 3.13.5 | NumPy 2.5.3 | Runtime: ai-edge-litert
+Single thread | warm-up 500 | runs 10000 | pinned to core 3 | governor performance
+Values in microseconds.
+
+Method           N      mean       std    median       p95       p99
+SAW              1     87.93      1.95     87.63     88.39     98.57
+WPM              1     69.38      1.79     69.19     69.70     78.11
+TOPSIS           1    147.62      2.56    147.19    148.24    157.74
+NN-fp32          1    181.17      4.86    180.11    189.89    200.54
+  infer-fp32     1     45.25      1.81     45.04     45.76     54.21
+NN-int8          1    179.04      4.32    178.15    186.54    195.61
+  infer-int8     1     45.06      1.51     44.87     45.56     54.02
+SAW              5     95.07      2.23     94.76     95.69    105.13
+WPM              5     77.61      1.82     77.37     78.19     86.82
+TOPSIS           5    154.34      2.65    153.89    155.17    164.54
+NN-fp32          5    208.79      5.80    207.52    221.56    230.54
+  infer-fp32     5     57.15      1.75     56.93     57.69     66.78
+NN-int8          5    212.08      7.73    210.56    226.06    239.24
+  infer-int8     5     56.65      1.96     56.43     57.19     66.67
+SAW             10     97.77      2.18     97.56     98.59    107.48
+WPM             10     83.13      1.97     82.94     84.00     92.37
+TOPSIS          10    157.95      2.75    157.48    158.83    168.30
+NN-fp32         10    222.08      6.28    220.52    236.54    246.02
+  infer-fp32    10     66.18      1.92     65.89     66.93     76.91
+NN-int8         10    221.30      8.48    219.61    234.98    245.22
+  infer-int8    10     66.05      2.26     65.74     66.67     76.83
+SAW             17    103.20      2.27    102.91    104.24    113.26
+WPM             17     91.90      2.19     91.65     92.87    101.52
+TOPSIS          17    167.07      2.84    166.57    168.17    177.56
+NN-fp32         17    243.19      7.84    241.39    258.61    271.48
+  infer-fp32    17     82.03      2.05     81.72     82.72     92.87
+NN-int8         17    243.32      9.51    241.48    258.48    271.31
+  infer-int8    17     82.02      2.30     81.70     82.69     92.91
+Saved: results_pi.csv (on the Pi, ~/Desktop/vinicius/comp_analysis/)
+
+
+--------------------------------------------------------------------------------
+10. RAW RESULTS - SMARTPHONE (Redmi 15, inference only, benchmark_model)
+--------------------------------------------------------------------------------
+Values in microseconds. Measured run (second "count=" line of each model).
+Init = model loading (once, at app start), First = first inference (cold cache).
+File on laptop: comp_analysis\results_phone.txt (full log + DEVICE INFO)
+
+PERFORMANCE CORES (Cortex-A78, taskset f0)
+Model          count    min   max    avg      std  p5  median  p95   Init   First  Mem(MB)
+nn_N1_fp32   180,722     5   104    5.35561    1    5     5     6    2862     55   9.875
+nn_N5_fp32   106,388     8   555    9.16057    4    8     9    11    2752     63   7
+nn_N10_fp32   75,390    11   230   12.9994     4   11    12    15    3959     99   6.375
+nn_N17_fp32   56,370    15  1381   17.4465     9   16    17    20    4720    136   5.625
+nn_N1_int8   188,789     4   189    5.14203    1    5     5     6    4374    112   9.75
+nn_N5_int8    93,297     8  3763   10.4911    35    9     9    10    3651     84   6.75
+nn_N10_int8   81,393    11    65   12.0935     1   12    12    12    5647    103   4.5
+nn_N17_int8   57,671    16   113   17.1208     2   16    17    18    3302     80   3.875
+
+EFFICIENCY CORES (Cortex-A55, taskset 0f)
+Model          count    min   max    avg      std  p5  median  p95   Init   First  Mem(MB)
+nn_N1_fp32    39,329    23   299   24.7832     5   24    24    25    9003    115   3
+nn_N5_fp32    28,286    33   321   34.631      6   33    34    35    8674    156   2.5
+nn_N10_fp32   20,690    45   394   47.479      9   45    46    51   10781    137   2.375
+nn_N17_fp32   15,686    60   376   62.7783    10   60    61    67    7518    163   2.375
+nn_N1_int8    39,526    23   274   24.6784     5   24    24    25   10397    138   2.875
+nn_N5_int8    24,503    38   376   40.0591     6   39    39    40   10031    146   2.5
+nn_N10_int8   17,414    54   567   56.5111     9   55    55    57    9929    174   2.25
+nn_N17_int8   12,600    75   483   78.3363     9   76    76    84   11105    228   1.875
+
+(Memory values are the tool's "overall" footprint delta; the tool itself states
+they are only approximate.)
+
+Model file sizes reported on the phone: fp32 0.035388 MB (N1), 0.035624 MB (others);
+int8 0.024336 MB (N1), 0.024544 MB (others).
+
+Standalone check before the loops (A78, nn_N17_fp32):
+  count=60145 min=16 max=87 avg=16.4189 std=1 median=16 p95=17
+  Init 4317 us, First inference 89 us.
+
+DEVICE INFO (appended to results_phone.txt):
+  25098RA98G / SM6475 / Android 15
+  cpu0-3 max 1804800 kHz, cpu4-7 max 2400000 kHz
+  CPU part: 4x 0xd05 (Cortex-A55), 4x 0xd41 (Cortex-A78)
+
+INVALID earlier phone runs (discarded): all failed with
+  "ERROR: gather index out of bounds / Node number 3 (GATHER) failed to invoke"
+  because models without the protocol guard received random integers.
+
+
+--------------------------------------------------------------------------------
+11. TABLE USED IN THE PAPER (tab:latency) - fp32 medians, us
+--------------------------------------------------------------------------------
+Device            Method                  N=1    N=5    N=10   N=17   P95(N=17)
+Laptop            SAW                     9.2    10.0   10.5   11.1   11.7
+Laptop            WPM                     7.3    8.5    9.4    10.8   11.5
+Laptop            TOPSIS                  15.5   16.5   17.3   18.5   19.5
+Laptop            NN-RL-RMSE              19.7   22.2   23.7   26.0   31.3
+Laptop            NN-RL-RMSE (inference)  5.9    6.7    7.8    9.5    10.3
+Raspberry Pi      SAW                     87.6   94.8   97.6   102.9  104.2
+Raspberry Pi      WPM                     69.2   77.4   82.9   91.7   92.9
+Raspberry Pi      TOPSIS                  147.2  153.9  157.5  166.6  168.2
+Raspberry Pi      NN-RL-RMSE              180.1  207.5  220.5  241.4  258.6
+Raspberry Pi      NN-RL-RMSE (inference)  45.0   56.9   65.9   81.7   82.7
+Smartphone (A78)  NN-RL-RMSE (inference)  5      9      12     17     20
+Smartphone (A55)  NN-RL-RMSE (inference)  24     34     46     61     67
+
+
+--------------------------------------------------------------------------------
+12. DERIVED VALUES USED IN THE PARAGRAPHS (with calculations)
+--------------------------------------------------------------------------------
+Increment per extra candidate (inference, fp32 medians, (N17 - N1)/16):
+  Laptop:       (9.5 - 5.9)/16  = 0.225 us  -> written "approximately 0.23 us"
+  A78:          (17 - 5)/16     = 0.75 us
+  Raspberry Pi: (81.7 - 45.0)/16 = 2.29 us
+  A55:          (61 - 24)/16    = 2.31 us   -> "2.3 us on both Pi and A55"
+
+Sustained throughput = 11,824 FLOPs / increment:
+  Laptop: 11,824 / 0.23 us = 51.4 GFLOP/s  (with 0.225 us: 52.6)  -> "~51"
+  A78:    11,824 / 0.75 us = 15.8 GFLOP/s  -> "~16"
+  Pi/A55: 11,824 / 2.3 us  = 5.1 GFLOP/s   -> "~5"
+
+Fixed cost per call (inference, approx. N1 value minus one increment):
+  Laptop ~5.7 us, A78 ~4.3 us, Pi ~42.7 us, A55 ~21.7 us
+
+Full NN decision vs MCDM (N=17 medians):
+  Laptop: NN/TOPSIS = 26.0/18.5 = 1.41 ; NN/SAW = 26.0/11.1 = 2.34
+  Pi:     NN/TOPSIS = 241.4/166.6 = 1.45 ; NN/SAW = 241.4/102.9 = 2.35
+  -> "approximately 1.4 times TOPSIS and 2.3 times SAW"
+
+Preprocessing time (full NN - inference, N=17 medians):
+  Laptop: 26.0 - 9.5 = 16.5 us
+  Pi:     241.4 - 81.7 = 159.7 us -> "approximately 160 us"
+
+Pi vs laptop: ~9 times slower (e.g. SAW 102.9/11.1 = 9.3; TOPSIS 166.6/18.5 = 9.0)
+
+int8 on A55, N=17: 76/61 = 1.25 -> "up to 25% slower"
+
+Model memory: ~35 KB (fp32 .tflite file); ~24 KB (int8)
+Model loading on phone (Init): 2,752 to 11,105 us -> "between 3 and 11 ms"
+
+Margins against real-world time scales:
+  Worst case (Pi, full NN, N=17, p95 = 258.6 us):
+    40 ms / 258.6 us  = 155  -> "approximately 150 times smaller"
+    200 ms / 258.6 us = 773
+  Pi p99 (271.5 us): 40 ms / 271.5 us = 147
+  Laptop full NN N=17 p95 (31.3 us): 40 ms / 31.3 us = 1,278
+  Phone A55 N=17 median 61 us: 40 ms / 61 us = 656 ; p95 67 us: 597 -> "~600"
+  Phone A55 max observed 376 us: 40 ms / 376 us = 106 -> "~100"
+
+Phone preprocessing bound (not measured on phone):
+  A55 inference 61 us + Pi preprocessing 160 us = 221 us -> "below 250 us"
+
+Energy estimate (arithmetic only):
+  100,504 MACs x 4.6 pJ = 0.462 uJ per decision (N=17) -> "less than 0.5 uJ"
+  (Horowitz 2014, 45 nm: FP32 add 0.9 pJ, FP32 mult 3.7 pJ, MAC ~4.6 pJ;
+   cache access ~10-100 pJ would raise the total to the order of ~1 uJ)
+
+
+--------------------------------------------------------------------------------
+13. REAL-WORLD TIME REFERENCES
+--------------------------------------------------------------------------------
+- 3GPP TS 36.133: intra-frequency measurement period in RRC_CONNECTED
+  (no DRX / short DRX) = 200 ms; NB-IoT normal coverage = 800 ms.
+- 3GPP TS 36.331: TimeToTrigger values: 0, 40, 64, 80, 100, 128, 160, 256, 320,
+  480, 512, 640, 1024, 1280, 2560, 5120 ms -> smallest non-zero = 40 ms.
+- Android (9+) Wi-Fi scan throttling: each foreground app 4 scans per 2 minutes;
+  all background apps together 1 scan per 30 minutes.
+- In cellular networks the base station decides the handover (device measures
+  and reports); Wi-Fi <-> cellular vertical handover is decided on the device.
+- Simulator iteration interval (100 ms) lies between 40 ms and 200 ms.
+
+
+--------------------------------------------------------------------------------
+14. PROBLEMS FOUND AND HOW THEY WERE SOLVED
+--------------------------------------------------------------------------------
+1. Keras 3 conversion via concrete function produced resource variables / WHILE
+   loop -> switched to model.export(SavedModel) + from_saved_model.
+2. LSTM converted as WHILE loop (slower) -> exported with unroll=True.
+3. First benchmark timed the NN without preprocessing (unfair) -> NN now timed
+   over the full decision; inference-only kept as a separate row.
+4. Clip-based protocol guard failed conversion (needs flex op Relu6 on int) ->
+   replaced by modulo (FLOOR_MOD, standard op).
+5. Android benchmark: "gather index out of bounds" with random protocol inputs
+   -> solved by the modulo guard (export_and_count_v2.py).
+6. Old results_phone.txt re-read by mistake (identical timing line) -> file
+   deleted and runs repeated.
+7. Pi 32-bit (Buster, Python 3.7): no ai-edge-litert; old tflite-runtime 2.5
+   cannot read FULLY_CONNECTED v12 -> Pi reinstalled with 64-bit OS.
+8. benchmark script made compatible with old NumPy (RandomState instead of
+   default_rng; randint instead of integers).
+9. University Wi-Fi isolated devices (ssh timeout) -> phone hotspot / other network.
+10. TOPSIS division by zero for N=1 -> guarded denominator.
+
+
+--------------------------------------------------------------------------------
+15. PENDING CHECKS BEFORE SUBMISSION
+--------------------------------------------------------------------------------
+- Confirm SM6475 = Snapdragon 6 Gen 3 in the Redmi 15 specifications.
+- Confirm laptop CPU = Intel Core i7-13620H.
+- Add release/version (e.g. V17.x.0) to the 3GPP bib entries (36.300, 36.133, 36.331).
+- Verify the 800 ms NB-IoT value in TS 36.133 or remove that clause.
+- Upload export_and_count_v2.py and benchmark_decision.py to the GitHub repository
+  (reference [31]) and add a sentence citing it.
+- Optional: repeat "vcgencmd measure_temp; vcgencmd get_throttled" after a Pi run.
+- The phone numbers are inference only (preprocessing not measured on the phone).
+- Laptop/Pi numbers include Python overhead (conservative).
+
+
+--------------------------------------------------------------------------------
+16. BIBTEX ENTRIES ADDED
+--------------------------------------------------------------------------------
+@techreport{3gpp36300,
+  author      = {{3GPP}},
+  title       = {Evolved Universal Terrestrial Radio Access ({E-UTRA}) and Evolved Universal Terrestrial Radio Access Network ({E-UTRAN}); Overall description; Stage 2},
+  institution = {3rd Generation Partnership Project (3GPP)},
+  type        = {Technical Specification},
+  number      = {TS 36.300},
+  note        = {Section 22.4.2.2, Mobility Robustness Optimisation}
+}
+
+@techreport{3gpp36133,
+  author      = {{3GPP}},
+  title       = {Evolved Universal Terrestrial Radio Access ({E-UTRA}); Requirements for support of radio resource management},
+  institution = {3rd Generation Partnership Project (3GPP)},
+  type        = {Technical Specification},
+  number      = {TS 36.133}
+}
+
+@techreport{3gpp36331,
+  author      = {{3GPP}},
+  title       = {Evolved Universal Terrestrial Radio Access ({E-UTRA}); Radio Resource Control ({RRC}); Protocol specification},
+  institution = {3rd Generation Partnership Project (3GPP)},
+  type        = {Technical Specification},
+  number      = {TS 36.331}
+}
+
+@misc{androidwifiscan,
+  author       = {{Android Developers}},
+  title        = {Wi-Fi scanning overview},
+  howpublished = {\url{https://developer.android.com/develop/connectivity/wifi/wifi-scan}},
+  note         = {Accessed: Sep. 2026}
+}
+
+@inproceedings{horowitz2014,
+  author    = {Horowitz, Mark},
+  title     = {Computing's energy problem (and what we can do about it)},
+  booktitle = {IEEE International Solid-State Circuits Conference Digest of Technical Papers (ISSCC)},
+  pages     = {10--14},
+  year      = {2014}
+}
+
+
+--------------------------------------------------------------------------------
+17. OTHER RESULTS AND SETTINGS FROM THE SAME WORK SESSION
+--------------------------------------------------------------------------------
+17.1 Mobility model (car): Gauss-Markov
+  mean velocity 15 m/s, iteration 100 ms (1.5 m per iteration)
+  alpha = 0.95, speed noise std = 15% of mean speed, direction noise std = 6 deg,
+  max turn per iteration = 8 deg, reflection at the borders of the 1000x1000 m area
+  Note: in the code the direction term has no mean direction (random walk on the
+  heading); speed follows a true Gauss-Markov process.
+
+17.2 NN training settings (paper)
+  100 simulations x 600 iterations; epsilon 1 -> decay 0.9975 per training step;
+  Adam, lr 3e-4 (the 3e-5 switch is commented out in the current code),
+  Huber loss, gradient clipnorm 1.0, batch 32, replay buffer 8192,
+  warm-up 2048, TMC window 10, gamma 0.95, reward = -nRMSE.
+  Testing: epsilon 0, training deactivated.
+
+17.3 Handover cost (HC) per target protocol (failed attempt / offline = 1)
+  WiFi-2.4GHz 0.5, WiFi-5GHz 0.4, NB-IoT 0.75, LoRa-868 0.95, LTE-4G 0.65,
+  5G-N78 0.25, 5G-N28 0.3
+
+17.4 Handover failure probabilities (too-early = too-late; base = sum)
+  WiFi-2.4GHz 0.010 (base 0.020), WiFi-5GHz 0.006 (0.012), NB-IoT 0.024 (0.048),
+  LoRa-868 0.036 (0.072), LTE-4G 0.008 (0.016), 5G-N78 0.002 (0.004),
+  5G-N28 0.004 (0.008)
+  p_fail moving away: p_b + (0.7 - p_b)*c*v ; approaching: p_b*(1 - 0.9*v)
+  c = clip(1 - (SNR - SNRmin)/12, 0, 1), v = clip(|delta d|/1.5, 0, 1)
+  Outage after failure: 1 s (10 iterations). Reward -1.0 to the RL agent on failure.
+  Offline state: RSSI -120 dBm, SNR 0, Throughput 0, BER 0.01, FEC 1/6,
+  PC 1.5, MC 5, Delay 1500 ms, Jitter 600 ms, HC 1.
+
+17.5 Ablation study (200 simulations x 600 iterations, paired comparison)
+  Mobility branch (mean nRMSE per simulation / sigma / CI95 / normalized):
+    RMSE-based 305.40 / 88.77 / 293.10-317.70 / 1.0
+    LSTM       251.56 / 59.04 / 243.38-259.74 / 0.0
+    noLSTM     257.64 / 62.87 / 248.93-266.35 / 0.1129
+    noVel      258.36 / 58.03 / 250.32-266.40 / 0.1262
+  Protocol representation:
+    RMSE-based 305.07 / 84.03 / 293.42-316.72 / 1.0
+    Embedding  259.57 / 64.49 / 250.63-268.51 / 0.0
+    OneHot     266.48 / 66.74 / 257.23-275.73 / 0.1517
+    noProtocol 279.60 / 53.21 / 272.23-286.97 / 0.4401
+  Paired (d_mean / s_d / z / CI95):
+    LSTM vs noLSTM          -6.08 / 27.15 / -3.17 / -9.84 to -2.32
+    LSTM vs noVel           -6.80 / 27.43 / -3.50 / -10.60 to -3.00
+    noLSTM vs noVel         -0.72 / 27.85 / -0.37 / -4.58 to 3.14 (not significant)
+    Embedding vs OneHot     -6.90 / 30.21 / -3.23 / -11.09 to -2.71
+    Embedding vs noProtocol -20.02 / 56.60 / -5.00 / -27.86 to -12.18
+    OneHot vs noProtocol    -13.12 / 58.24 / -3.19 / -21.19 to -5.05
+  NB-IoT selections: Embedding 41, OneHot 14,109, noProtocol 19,551
+
+================================================================================
+ END OF RECORD
+================================================================================

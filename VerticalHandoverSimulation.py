@@ -52,7 +52,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 2000
+n_simulations = 30
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -99,7 +99,7 @@ gm_std_direction = math.radians(6)
 max_turn_rate = math.radians(8) # enforces a realistic turning radius
 
 # Plots Folder
-plots_folder = "sim_12"
+plots_folder = "sim_13"
 plots_path = f"outputs//{plots_folder}"
 
 
