@@ -1979,7 +1979,7 @@ def print_handover_summary():
         ho_total = sum(handovers.get(name, []))
         hf_exec = getattr(dm, 'hf_execution', 0)
         hf_late = getattr(dm, 'hf_too_late', 0)
-        hf_total = hf_exec + hf_late
+        hf_total = hf_exec + hf_late + hf_early
         off_time = s['steps'] * 0.1                   # seconds
         off_fail_time = (s['steps'] - s['no_coverage_steps']) * 0.1
         off_cov_time = s['no_coverage_steps'] * 0.1
@@ -1989,6 +1989,7 @@ def print_handover_summary():
             ("HO failures (total)", hf_total, ""),
             ("  - execution", hf_exec, ""),
             ("  - too-late (RLF)", hf_late, ""),
+            ("  - too-early (fallback)", hf_early, ""),
             ("Disconnections", s['events'], ""),
             ("Time offline", off_time, " s"),
             ("  - due to failures", off_fail_time, " s"),
