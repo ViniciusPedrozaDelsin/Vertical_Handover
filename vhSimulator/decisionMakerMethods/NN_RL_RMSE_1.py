@@ -14,7 +14,7 @@ class NN_RL_RMSE_1(DMM):
 
         # NN RL Variables
         self.gamma = 0.95
-        self.epsilon = 1
+        self.epsilon = 0
         self.epsilon_min = 0.0
         self.epsilon_decay = 0.9975
         self.batch_size = 32
@@ -291,7 +291,7 @@ class NN_RL_RMSE_1(DMM):
 
         self.memory.append((inpt_list[max_index], reward))
 
-        if np.random.rand() < 1:
+        if np.random.rand() < 0:
             self.modelTrain()
 
         return self.inputs[max_index]

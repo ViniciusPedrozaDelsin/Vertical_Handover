@@ -52,7 +52,7 @@ GUI = False
 verbose = False
 
 # Number of simulations
-n_simulations = 100
+n_simulations = 2000
 
 # Iteration x Simulations
 iter_x_simu = n_simulations * n
@@ -131,9 +131,9 @@ SPMO_Methods = False
 
 SAW = True
 
-WPM = False
+WPM = True
 
-TOPSIS = False
+TOPSIS = True
 
 Fuzzy = True
 
@@ -1497,7 +1497,7 @@ def plot_results():
             network_choices['RMSE'] = counts_rmse
         if RMSE_RL_NN_1 == True: 
             counts_nn_rl_rmse_1 = Counter(nn_rl_rmse_choices_1)
-            network_choices['RMSE-RL-NN_1'] = counts_nn_rl_rmse_1
+            network_choices['RMSE-RL-NN'] = counts_nn_rl_rmse_1
         if RMSE_RL_NN_2 == True: 
             counts_nn_rl_rmse_2 = Counter(nn_rl_rmse_choices_2)
             network_choices['RMSE-RL-NN_2'] = counts_nn_rl_rmse_2
@@ -1686,10 +1686,10 @@ def plot_results():
             num_rows = math.ceil(num_params_group / num_cols)
             
             # 1 - 3 columns
-            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
+            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 1 * num_rows), constrained_layout=True)
             
             # 4 - 10 columns
-            #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
+            fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 2 * num_rows), constrained_layout=True)
             
             # 11 - 17 columns
             #fig, axes = plt.subplots(num_rows, num_cols, figsize=(7, 3 * num_rows), constrained_layout=True)
@@ -1707,8 +1707,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "green", "red", "black"], edgecolor='black', linewidth=1.2)
 
                 # 4 METHODS
-                hatches = ['', '', '', '', '']
-                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
+                #hatches = ['', '', '', '', '']
+                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS
                 #hatches = ['', '', '', '', '', '', '', '']
@@ -1727,8 +1727,8 @@ def plot_results():
                 #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "black"], edgecolor='black', linewidth=1.2)
                 
                 # 4 METHODS + RMSE + RL
-                #hatches = ['', '', '', '', '', '', '']
-                #bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
+                hatches = ['', '', '', '', '', '', '']
+                bars = ax.bar(labels, values, color=["blue", "orange", "green", "red", "purple", "yellow", "black"], edgecolor='black', linewidth=1.2)
                 
                 # SPMO + 4 METHODS + RMSE + RL
                 #hatches = ['', '', '', '', '', '', '', '', '', '']
@@ -1858,7 +1858,7 @@ if RMSE == True:
 if TOPSIS_NN == True:
     nn_topsis = NN_TOPSIS("NN-TOPSIS", analyzed_parameters)
 if RMSE_RL_NN_1 == True:
-    nn_rl_rmse_1 = NN_RL_RMSE_1("NN-RL_RMSE_RMSE", analyzed_parameters, simulation_length=n) #model_name="RMSE_RL_1.keras"
+    nn_rl_rmse_1 = NN_RL_RMSE_1("NN-RL_RMSE_RMSE", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_1_old.keras") #model_name="RMSE_RL_1.keras"
 if RMSE_RL_NN_2 == True:
     nn_rl_rmse_2 = NN_RL_RMSE_2("NN-RL_RMSE_OneHot", analyzed_parameters, simulation_length=n, model_name="RMSE_RL_2.keras")
 if RMSE_RL_NN_3 == True:
